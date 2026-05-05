@@ -110,13 +110,13 @@
   border-radius: $radius-xl;
   overflow: hidden;
   box-shadow: $shadow-portrait;
-  background: #efe4ee;
+  background: #fff;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center bottom;
+    object-fit: contain;
+    object-position: center;
   }
 }
 

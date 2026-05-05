@@ -20,6 +20,11 @@ export async function PUT(req: Request) {
 
   const current = await readContent();
   const next = mergeContent(current, body);
-  await writeContent(next);
+  try {
+    await writeContent(next);
+  } catch (err) {
+    console.error("[api/content] write failed", err);
+    return NextResponse.json({ error: "Failed to write content" }, { status: 500 });
+  }
   return NextResponse.json(next);
 }

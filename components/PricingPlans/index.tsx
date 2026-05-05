@@ -65,8 +65,8 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
         <span className={styles.unit}>{plan.unit}</span>
       </div>
       <ul className={styles.features}>
-        {plan.features.map((f) => (
-          <li key={f} className={styles.feature}>
+        {plan.features.map((f, i) => (
+          <li key={i} className={styles.feature}>
             <span className={styles.featureIcon}>
               <Icon name="check" size={14} strokeWidth={2.4} />
             </span>

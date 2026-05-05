@@ -16,9 +16,23 @@ export async function readContent(): Promise<SiteContent> {
   }
 }
 
+// Atomic rewrite: write to a sibling .tmp file first, then rename it over the
+// real file. fs.rename is atomic on the same filesystem, so a crash mid-write
+// can never leave content.json half-flushed or corrupt.
 export async function writeContent(next: SiteContent): Promise<void> {
-  await fs.mkdir(path.dirname(STORE_PATH), { recursive: true });
-  await fs.writeFile(STORE_PATH, JSON.stringify(next, null, 2), "utf8");
+  const dir = path.dirname(STORE_PATH);
+  await fs.mkdir(dir, { recursive: true });
+
+  const tmpPath = `${STORE_PATH}.${process.pid}.${Date.now()}.tmp`;
+  const payload = JSON.stringify(next, null, 2);
+  try {
+    await fs.writeFile(tmpPath, payload, "utf8");
+    await fs.rename(tmpPath, STORE_PATH);
+  } catch (err) {
+    // Best-effort cleanup of the orphaned tmp file.
+    await fs.unlink(tmpPath).catch(() => {});
+    throw err;
+  }
 }
 
 // Shallow merge of top-level keys — lets the API accept partial payloads.

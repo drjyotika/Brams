@@ -15,8 +15,8 @@ export function Footer({ data }: FooterProps) {
         <div className={styles.linksGrid}>
           {data.columns.map((col, idx) => (
             <div key={idx} className={styles.col}>
-              {col.links.map((link) => (
-                <a key={link.href} href={link.href} className={styles.link}>
+              {col.links.map((link, i) => (
+                <a key={i} href={link.href} className={styles.link}>
                   {link.label}
                 </a>
               ))}

@@ -12,8 +12,8 @@ export function TopNavBar({ data }: TopNavBarProps) {
           <img src="/logo.png" alt={data.brand} className={styles.logo} />
         </a>
         <nav className={styles.links} aria-label="Primary">
-          {data.links.map((link) => (
-            <a key={link.href} href={link.href} className={styles.link}>
+          {data.links.map((link, i) => (
+            <a key={i} href={link.href} className={styles.link}>
               {link.label}
             </a>
           ))}
