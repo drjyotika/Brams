@@ -7,8 +7,9 @@ export function TopNavBar({ data }: TopNavBarProps) {
   return (
     <header className={styles.nav}>
       <div className={styles.inner}>
-        <a href="/" className={styles.brand}>
-          {data.brand}
+        <a href="/" className={styles.brand} aria-label={data.brand}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt={data.brand} className={styles.logo} />
         </a>
         <nav className={styles.links} aria-label="Primary">
           {data.links.map((link) => (

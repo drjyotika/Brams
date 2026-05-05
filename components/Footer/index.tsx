@@ -8,7 +8,8 @@ export function Footer({ data }: FooterProps) {
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.brandCol}>
-          <span className={styles.brand}>{data.brand}</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt={data.brand} className={styles.logo} />
           <p className={styles.copy}>{data.copyright}</p>
         </div>
         <div className={styles.linksGrid}>

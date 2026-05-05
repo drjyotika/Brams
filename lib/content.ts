@@ -121,7 +121,7 @@ export const defaultContent: SiteContent = {
     primaryCta: { label: "Book Online Consultation", href: "#book" },
     secondaryCta: { label: "Explore Services", href: "#services" },
     portrait: {
-      src: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=80",
+      src: "/hero.png",
       alt: "Dr. Jyotika Kanwar, board-certified psychiatrist",
     },
     badge: {
