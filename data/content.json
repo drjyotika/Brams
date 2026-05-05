@@ -1,0 +1,226 @@
+{
+  "nav": {
+    "brand": "Brams Mind Care",
+    "links": [
+      {
+        "label": "Consultation Plans",
+        "href": "#consultations"
+      },
+      {
+        "label": "How It works",
+        "href": "#approach"
+      },
+      {
+        "label": "",
+        "href": ""
+      },
+      {
+        "label": "",
+        "href": ""
+      }
+    ],
+    "cta": {
+      "label": "Book Your Slot",
+      "href": "#consultations"
+    }
+  },
+  "hero": {
+    "eyebrow": "COMPASSIONATE PSYCHIATRIC CARE",
+    "titleLead": "Private psychiatric care, from the",
+    "titleAccent": "comfort of your home.",
+    "description": "Speak with Dr. Jyotika Kanwar, MD Psychiatry, for confidential online consultations focused on your mental health, emotional wellbeing, and recovery.",
+    "primaryCta": {
+      "label": "Book Online Consultation",
+      "href": "#book"
+    },
+    "secondaryCta": {
+      "label": "Explore Services",
+      "href": "#services"
+    },
+    "portrait": {
+      "src": "/hero.png",
+      "alt": "Dr. Jyotika Kanwar"
+    },
+    "badge": {
+      "label": "Dr. Jyotika Kanwar",
+      "quote": "MD Psychiatry, PGIMER Chandigarh Confidential | Evidence-based | Patient-first care"
+    }
+  },
+  "support": {
+    "title": "Care for your mental health, at every stage.",
+    "description": "Mental health concerns can feel overwhelming, but the right support can make recovery possible. Dr. Jyotika offers structured psychiatric consultations, diagnosis, treatment planning, and follow-up care tailored to your needs.",
+    "link": {
+      "label": "",
+      "href": ""
+    },
+    "cards": [
+      {
+        "id": "anxiety",
+        "title": "Anxiety & Panic",
+        "description": "For excessive worry, panic attacks, restlessness, overthinking, physical anxiety symptoms, and difficulty relaxing.\n\nGet a detailed evaluation and treatment plan to help manage anxiety, reduce panic symptoms, and improve daily functioning.",
+        "iconName": "wind",
+        "tone": "sky",
+        "span": "wide",
+        "imageSrc": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        "id": "depression",
+        "title": "Depression & Mood Concerns",
+        "description": "For persistent sadness, low motivation, hopelessness, irritability, mood swings, and loss of interest.\n\nCompassionate psychiatric care to understand your symptoms, identify the underlying concerns, and begin a structured path toward recovery.",
+        "iconName": "cloud-rain",
+        "tone": "lilac",
+        "meta": "PERSONALIZED CARE PLANS"
+      },
+      {
+        "id": "adhd",
+        "title": "Addiction & Substance Use",
+        "description": "For alcohol, nicotine, cannabis, prescription medication misuse, or other substance-related concerns.\n\nNon-judgmental support for understanding dependence, managing cravings, preventing relapse, and planning safe recovery.",
+        "iconName": "target",
+        "tone": "muted"
+      },
+      {
+        "id": "trauma",
+        "title": "Child & Adolescent Concerns",
+        "description": "For attention issues, behavioral concerns, emotional difficulties, anxiety, academic stress, and parent guidance.\n\nStructured psychiatric evaluation and guidance for children, teenagers, and families.",
+        "iconName": "shield",
+        "tone": "dark",
+        "span": "wide",
+        "imageSrc": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        "cta": {
+          "label": "Learn Approach",
+          "href": "#trauma"
+        }
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "How it Works",
+    "description": "Simple, private, and convenient online care.",
+    "steps": [
+      {
+        "id": "book",
+        "number": "01",
+        "title": "Book Your Slot",
+        "description": "Choose a suitable consultation time and share basic details securely.",
+        "iconName": "calendar",
+        "iconBg": "lilac"
+      },
+      {
+        "id": "join",
+        "number": "02",
+        "title": "Join Online Consultation",
+        "description": "Connect with Dr. Jyotika through a private video consultation from your home.",
+        "iconName": "video",
+        "iconBg": "sky"
+      },
+      {
+        "id": "care",
+        "number": "03",
+        "title": "Continued Care",
+        "description": "Access your treatment plans and schedule follow-ups through your dashboard.",
+        "iconName": "heart-pulse",
+        "iconBg": "lime"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Consultation Plans",
+    "toggle": {
+      "primary": "Self-Pay",
+      "secondary": ""
+    },
+    "plans": [
+      {
+        "id": "follow-up",
+        "eyebrow": "FOR EXISTING PATIENTS",
+        "title": "Follow-up Consultation",
+        "price": "₹1,000",
+        "unit": "20–30 min",
+        "features": [
+          "Medication review",
+          "Progress assessment",
+          "Symptom follow-up",
+          "Treatment adjustment if required"
+        ],
+        "cta": {
+          "label": "Book Follow-up",
+          "href": "#book-followup"
+        }
+      },
+      {
+        "id": "initial",
+        "eyebrow": "FOR FIRST-TIME PATIENTS",
+        "title": "Initial Consultation",
+        "price": "₹2,000",
+        "unit": "45–60 min",
+        "features": [
+          "Detailed psychiatric evaluation",
+          "Mental health history",
+          "Diagnosis and treatment planning",
+          "Medication guidance if required",
+          "Lifestyle and follow-up advice"
+        ],
+        "cta": {
+          "label": "Book Initial Consultation",
+          "href": "#book-initial"
+        },
+        "highlighted": true,
+        "badge": "RECOMMENDED"
+      },
+      {
+        "id": "priority",
+        "eyebrow": "FOR URGENT SUPPORT",
+        "title": "Priority Consultation",
+        "price": "₹3,000",
+        "unit": "Session duration as clinically required",
+        "features": [
+          "Priority slot availability",
+          "Detailed concern assessment",
+          "Immediate treatment guidance",
+          "Follow-up planning if needed"
+        ],
+        "cta": {
+          "label": "Check Availability",
+          "href": "#book-priority"
+        },
+        "highlighted": false
+      }
+    ]
+  },
+  "newsletter": {
+    "title": "Take the first step toward feeling better.",
+    "description": "Join our mailing list for weekly insights on mental health.",
+    "inputPlaceholder": "Your email address",
+    "buttonLabel": "Subscribe"
+  },
+  "footer": {
+    "brand": "Brams Mind Care",
+    "copyright": "© 2024 Brams Mind Care. Professional Psychiatric Care.",
+    "columns": [
+      {
+        "links": [
+          {
+            "label": "Privacy Policy",
+            "href": "#privacy"
+          },
+          {
+            "label": "Confidentiality Agreement",
+            "href": "#confidentiality"
+          }
+        ]
+      },
+      {
+        "links": [
+          {
+            "label": "Terms of Service",
+            "href": "#terms"
+          },
+          {
+            "label": "Emergency Contact",
+            "href": "#emergency"
+          }
+        ]
+      }
+    ]
+  }
+}
