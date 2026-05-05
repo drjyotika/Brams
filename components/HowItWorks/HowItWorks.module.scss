@@ -1,0 +1,117 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.section {
+  background: rgba(243, 243, 245, 0.5);
+  padding-block: 128px;
+}
+
+.inner {
+  @include container;
+  display: flex;
+  flex-direction: column;
+  gap: 96px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.title {
+  @include h2;
+}
+
+.description {
+  margin: 0;
+  max-width: 576px;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink-soft;
+}
+
+.grid {
+  display: grid;
+  gap: 64px;
+  grid-template-columns: 1fr;
+
+  @include md {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include lg {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.step {
+  position: relative;
+}
+
+.bigNumber {
+  position: absolute;
+  left: -32px;
+  top: -112px;
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 192px;
+  line-height: 1;
+  color: rgba(116, 84, 117, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+.card {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.05);
+  border-radius: $radius-lg;
+  padding: 33px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+}
+
+.iconBox {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-plum-deep;
+}
+
+.bgLilac {
+  background: $color-lilac;
+}
+
+.bgSky {
+  background: $color-sky;
+  color: #43627e;
+}
+
+.bgLime {
+  background: $color-lime;
+  color: $color-lime-ink;
+}
+
+.stepTitle {
+  margin: 16px 0 0;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px;
+  color: $color-ink;
+}
+
+.stepBody {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink-soft;
+}

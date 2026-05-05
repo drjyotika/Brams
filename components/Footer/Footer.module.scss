@@ -1,0 +1,64 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.footer {
+  background: $color-bg-footer;
+  padding-block: 48px;
+}
+
+.inner {
+  @include container;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
+}
+
+.brand {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  color: $color-link-purple;
+}
+
+.copy {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-ink-muted;
+  letter-spacing: 0.35px;
+}
+
+.linksGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.link {
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-ink-muted;
+  transition: color 120ms ease;
+
+  &:hover {
+    color: $color-ink;
+  }
+}

@@ -1,0 +1,875 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type {
+  HeroData,
+  HowItWorksData,
+  NavData,
+  NewsletterData,
+  PricingData,
+  PricingPlan,
+  SiteContent,
+  SupportCard,
+  SupportData,
+  FooterData,
+} from "../../lib/content";
+import styles from "./admin.module.scss";
+
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "hero", label: "Hero" },
+  { id: "support", label: "Specialized Support" },
+  { id: "howItWorks", label: "How it Works" },
+  { id: "pricing", label: "Pricing Plans" },
+  { id: "newsletter", label: "Newsletter CTA" },
+  { id: "nav", label: "Navigation" },
+  { id: "footer", label: "Footer" },
+];
+
+export default function AdminPage() {
+  const [content, setContent] = useState<SiteContent | null>(null);
+  const [tab, setTab] = useState<Tab>("hero");
+
+  useEffect(() => {
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((data: SiteContent) => setContent(data));
+  }, []);
+
+  if (!content) {
+    return (
+      <div className={styles.shell}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Admin</h1>
+        </div>
+        <div className={styles.layout}>
+          <div className={styles.panel}>Loading…</div>
+        </div>
+      </div>
+    );
+  }
+
+  const update = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) =>
+    setContent((c) => (c ? { ...c, [key]: value } : c));
+
+  return (
+    <div className={styles.shell}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Brams Admin</h1>
+        <a className={styles.viewLink} href="/" target="_blank" rel="noreferrer">
+          View site ↗
+        </a>
+      </div>
+
+      <div className={styles.layout}>
+        <nav className={styles.tabs} aria-label="Admin sections">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`${styles.tab} ${t.id === tab ? styles.tabActive : ""}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <div>
+          {tab === "hero" && (
+            <HeroEditor data={content.hero} onChange={(v) => update("hero", v)} />
+          )}
+          {tab === "support" && (
+            <SupportEditor data={content.support} onChange={(v) => update("support", v)} />
+          )}
+          {tab === "howItWorks" && (
+            <HowEditor data={content.howItWorks} onChange={(v) => update("howItWorks", v)} />
+          )}
+          {tab === "pricing" && (
+            <PricingEditor data={content.pricing} onChange={(v) => update("pricing", v)} />
+          )}
+          {tab === "newsletter" && (
+            <NewsletterEditor
+              data={content.newsletter}
+              onChange={(v) => update("newsletter", v)}
+            />
+          )}
+          {tab === "nav" && (
+            <NavEditor data={content.nav} onChange={(v) => update("nav", v)} />
+          )}
+          {tab === "footer" && (
+            <FooterEditor data={content.footer} onChange={(v) => update("footer", v)} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Save helper used by every editor
+// ---------------------------------------------------------------------------
+
+type SaveStatus = { state: "idle" | "saving" | "ok" | "err"; message?: string };
+
+function useSaver(sectionKey: keyof SiteContent) {
+  const [status, setStatus] = useState<SaveStatus>({ state: "idle" });
+  const save = async (value: unknown) => {
+    setStatus({ state: "saving" });
+    try {
+      const res = await fetch("/api/content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [sectionKey]: value }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setStatus({ state: "ok", message: "Saved" });
+      setTimeout(() => setStatus({ state: "idle" }), 2000);
+    } catch (e) {
+      setStatus({ state: "err", message: (e as Error).message });
+    }
+  };
+  return { status, save };
+}
+
+function StatusBadge({ status }: { status: SaveStatus }) {
+  if (status.state === "idle") return null;
+  if (status.state === "saving")
+    return <span className={styles.status}>Saving…</span>;
+  if (status.state === "ok")
+    return (
+      <span className={`${styles.status} ${styles.statusOk}`}>{status.message}</span>
+    );
+  return (
+    <span className={`${styles.status} ${styles.statusErr}`}>
+      Error: {status.message}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section editors
+// ---------------------------------------------------------------------------
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function HeroEditor({
+  data,
+  onChange,
+}: {
+  data: HeroData;
+  onChange: (v: HeroData) => void;
+}) {
+  const { status, save } = useSaver("hero");
+  const set = <K extends keyof HeroData>(k: K, v: HeroData[K]) =>
+    onChange({ ...data, [k]: v });
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Hero</h2>
+      <p className={styles.panelHint}>Top of the page — title, subtitle, CTAs, portrait.</p>
+
+      <Field label="Eyebrow">
+        <input
+          className={styles.input}
+          value={data.eyebrow}
+          onChange={(e) => set("eyebrow", e.target.value)}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Title — lead">
+          <input
+            className={styles.input}
+            value={data.titleLead}
+            onChange={(e) => set("titleLead", e.target.value)}
+          />
+        </Field>
+        <Field label="Title — accent">
+          <input
+            className={styles.input}
+            value={data.titleAccent}
+            onChange={(e) => set("titleAccent", e.target.value)}
+          />
+        </Field>
+      </div>
+      <Field label="Description">
+        <textarea
+          className={styles.textarea}
+          value={data.description}
+          onChange={(e) => set("description", e.target.value)}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Primary CTA label">
+          <input
+            className={styles.input}
+            value={data.primaryCta.label}
+            onChange={(e) => set("primaryCta", { ...data.primaryCta, label: e.target.value })}
+          />
+        </Field>
+        <Field label="Primary CTA href">
+          <input
+            className={styles.input}
+            value={data.primaryCta.href}
+            onChange={(e) => set("primaryCta", { ...data.primaryCta, href: e.target.value })}
+          />
+        </Field>
+      </div>
+      <div className={styles.row}>
+        <Field label="Secondary CTA label">
+          <input
+            className={styles.input}
+            value={data.secondaryCta.label}
+            onChange={(e) =>
+              set("secondaryCta", { ...data.secondaryCta, label: e.target.value })
+            }
+          />
+        </Field>
+        <Field label="Secondary CTA href">
+          <input
+            className={styles.input}
+            value={data.secondaryCta.href}
+            onChange={(e) =>
+              set("secondaryCta", { ...data.secondaryCta, href: e.target.value })
+            }
+          />
+        </Field>
+      </div>
+      <Field label="Portrait image URL">
+        <input
+          className={styles.input}
+          value={data.portrait.src}
+          onChange={(e) => set("portrait", { ...data.portrait, src: e.target.value })}
+        />
+      </Field>
+      <Field label="Portrait alt">
+        <input
+          className={styles.input}
+          value={data.portrait.alt}
+          onChange={(e) => set("portrait", { ...data.portrait, alt: e.target.value })}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Badge label">
+          <input
+            className={styles.input}
+            value={data.badge.label}
+            onChange={(e) => set("badge", { ...data.badge, label: e.target.value })}
+          />
+        </Field>
+        <Field label="Badge quote">
+          <input
+            className={styles.input}
+            value={data.badge.quote}
+            onChange={(e) => set("badge", { ...data.badge, quote: e.target.value })}
+          />
+        </Field>
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Hero
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function SupportEditor({
+  data,
+  onChange,
+}: {
+  data: SupportData;
+  onChange: (v: SupportData) => void;
+}) {
+  const { status, save } = useSaver("support");
+  const setCard = (idx: number, patch: Partial<SupportCard>) => {
+    const cards = data.cards.map((c, i) => (i === idx ? { ...c, ...patch } : c));
+    onChange({ ...data, cards });
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Specialized Support</h2>
+      <p className={styles.panelHint}>Header copy + the four bento cards.</p>
+
+      <Field label="Title">
+        <input
+          className={styles.input}
+          value={data.title}
+          onChange={(e) => onChange({ ...data, title: e.target.value })}
+        />
+      </Field>
+      <Field label="Description">
+        <textarea
+          className={styles.textarea}
+          value={data.description}
+          onChange={(e) => onChange({ ...data, description: e.target.value })}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Link label">
+          <input
+            className={styles.input}
+            value={data.link.label}
+            onChange={(e) => onChange({ ...data, link: { ...data.link, label: e.target.value } })}
+          />
+        </Field>
+        <Field label="Link href">
+          <input
+            className={styles.input}
+            value={data.link.href}
+            onChange={(e) => onChange({ ...data, link: { ...data.link, href: e.target.value } })}
+          />
+        </Field>
+      </div>
+
+      {data.cards.map((card, i) => (
+        <div key={card.id} className={styles.cardArrayItem}>
+          <div className={styles.cardArrayHead}>Card #{i + 1}</div>
+          <Field label="Title">
+            <input
+              className={styles.input}
+              value={card.title}
+              onChange={(e) => setCard(i, { title: e.target.value })}
+            />
+          </Field>
+          <Field label="Description">
+            <textarea
+              className={styles.textarea}
+              value={card.description}
+              onChange={(e) => setCard(i, { description: e.target.value })}
+            />
+          </Field>
+          <div className={styles.row}>
+            <Field label="Icon name (lucide)">
+              <input
+                className={styles.input}
+                value={card.iconName}
+                onChange={(e) => setCard(i, { iconName: e.target.value })}
+              />
+            </Field>
+            <Field label="Tone">
+              <select
+                className={styles.select}
+                value={card.tone}
+                onChange={(e) =>
+                  setCard(i, { tone: e.target.value as SupportCard["tone"] })
+                }
+              >
+                <option value="sky">sky</option>
+                <option value="lilac">lilac</option>
+                <option value="muted">muted</option>
+                <option value="dark">dark</option>
+              </select>
+            </Field>
+          </div>
+        </div>
+      ))}
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Support
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function HowEditor({
+  data,
+  onChange,
+}: {
+  data: HowItWorksData;
+  onChange: (v: HowItWorksData) => void;
+}) {
+  const { status, save } = useSaver("howItWorks");
+  const setStep = (idx: number, patch: Partial<HowItWorksData["steps"][number]>) => {
+    const steps = data.steps.map((s, i) => (i === idx ? { ...s, ...patch } : s));
+    onChange({ ...data, steps });
+  };
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>How it Works</h2>
+      <p className={styles.panelHint}>Three numbered steps.</p>
+
+      <Field label="Title">
+        <input
+          className={styles.input}
+          value={data.title}
+          onChange={(e) => onChange({ ...data, title: e.target.value })}
+        />
+      </Field>
+      <Field label="Description">
+        <textarea
+          className={styles.textarea}
+          value={data.description}
+          onChange={(e) => onChange({ ...data, description: e.target.value })}
+        />
+      </Field>
+
+      {data.steps.map((step, i) => (
+        <div key={step.id} className={styles.cardArrayItem}>
+          <div className={styles.cardArrayHead}>Step {step.number}</div>
+          <Field label="Title">
+            <input
+              className={styles.input}
+              value={step.title}
+              onChange={(e) => setStep(i, { title: e.target.value })}
+            />
+          </Field>
+          <Field label="Description">
+            <textarea
+              className={styles.textarea}
+              value={step.description}
+              onChange={(e) => setStep(i, { description: e.target.value })}
+            />
+          </Field>
+        </div>
+      ))}
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Steps
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function PricingEditor({
+  data,
+  onChange,
+}: {
+  data: PricingData;
+  onChange: (v: PricingData) => void;
+}) {
+  const [status, setStatus] = useState<SaveStatus>({ state: "idle" });
+
+  const setPlan = (idx: number, patch: Partial<PricingPlan>) => {
+    const plans = data.plans.map((p, i) => (i === idx ? { ...p, ...patch } : p));
+    onChange({ ...data, plans });
+  };
+  const removePlan = (idx: number) =>
+    onChange({ ...data, plans: data.plans.filter((_, i) => i !== idx) });
+  const addPlan = () => {
+    const id = `plan-${Date.now()}`;
+    onChange({
+      ...data,
+      plans: [
+        ...data.plans,
+        {
+          id,
+          eyebrow: "NEW PLAN",
+          title: "New Plan",
+          price: "₹0",
+          unit: "/ session",
+          features: ["Feature one"],
+          cta: { label: "Book", href: "#" },
+        },
+      ],
+    });
+  };
+
+  const saveAll = async () => {
+    setStatus({ state: "saving" });
+    try {
+      // Bulk save the plans array via the dedicated /api/plans endpoint.
+      const r1 = await fetch("/api/plans", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data.plans),
+      });
+      if (!r1.ok) throw new Error(`plans HTTP ${r1.status}`);
+      // And patch the section header (title + toggle labels) via /api/content.
+      const r2 = await fetch("/api/content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pricing: { ...data, plans: data.plans },
+        }),
+      });
+      if (!r2.ok) throw new Error(`content HTTP ${r2.status}`);
+      setStatus({ state: "ok", message: "Saved" });
+      setTimeout(() => setStatus({ state: "idle" }), 2000);
+    } catch (e) {
+      setStatus({ state: "err", message: (e as Error).message });
+    }
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Pricing Plans</h2>
+      <p className={styles.panelHint}>
+        Edit copy, prices, features. Add or remove plans — at least one should
+        stay marked as <code>highlighted</code>.
+      </p>
+
+      <Field label="Section title">
+        <input
+          className={styles.input}
+          value={data.title}
+          onChange={(e) => onChange({ ...data, title: e.target.value })}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Toggle — primary label">
+          <input
+            className={styles.input}
+            value={data.toggle.primary}
+            onChange={(e) =>
+              onChange({ ...data, toggle: { ...data.toggle, primary: e.target.value } })
+            }
+          />
+        </Field>
+        <Field label="Toggle — secondary label">
+          <input
+            className={styles.input}
+            value={data.toggle.secondary}
+            onChange={(e) =>
+              onChange({ ...data, toggle: { ...data.toggle, secondary: e.target.value } })
+            }
+          />
+        </Field>
+      </div>
+
+      {data.plans.map((plan, i) => (
+        <div key={plan.id} className={styles.planCard}>
+          <div className={styles.planHead}>
+            <h3 className={styles.planTitle}>
+              {plan.title || "Untitled plan"}{" "}
+              {plan.highlighted && <span style={{ color: "#745475" }}>★</span>}
+            </h3>
+            <button className={styles.danger} onClick={() => removePlan(i)}>
+              Remove
+            </button>
+          </div>
+
+          <div className={styles.row}>
+            <Field label="Eyebrow">
+              <input
+                className={styles.input}
+                value={plan.eyebrow}
+                onChange={(e) => setPlan(i, { eyebrow: e.target.value })}
+              />
+            </Field>
+            <Field label="Title">
+              <input
+                className={styles.input}
+                value={plan.title}
+                onChange={(e) => setPlan(i, { title: e.target.value })}
+              />
+            </Field>
+          </div>
+
+          <div className={styles.row}>
+            <Field label="Price">
+              <input
+                className={styles.input}
+                value={plan.price}
+                onChange={(e) => setPlan(i, { price: e.target.value })}
+              />
+            </Field>
+            <Field label="Unit">
+              <input
+                className={styles.input}
+                value={plan.unit}
+                onChange={(e) => setPlan(i, { unit: e.target.value })}
+              />
+            </Field>
+          </div>
+
+          <Field label="Features">
+            <div>
+              {plan.features.map((f, fi) => (
+                <div key={fi} className={styles.featureRow}>
+                  <input
+                    className={styles.input}
+                    value={f}
+                    onChange={(e) => {
+                      const features = [...plan.features];
+                      features[fi] = e.target.value;
+                      setPlan(i, { features });
+                    }}
+                  />
+                  <button
+                    className={styles.danger}
+                    type="button"
+                    onClick={() =>
+                      setPlan(i, {
+                        features: plan.features.filter((_, x) => x !== fi),
+                      })
+                    }
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                className={styles.secondary}
+                type="button"
+                onClick={() => setPlan(i, { features: [...plan.features, ""] })}
+              >
+                + Add feature
+              </button>
+            </div>
+          </Field>
+
+          <div className={styles.row}>
+            <Field label="CTA label">
+              <input
+                className={styles.input}
+                value={plan.cta.label}
+                onChange={(e) => setPlan(i, { cta: { ...plan.cta, label: e.target.value } })}
+              />
+            </Field>
+            <Field label="CTA href">
+              <input
+                className={styles.input}
+                value={plan.cta.href}
+                onChange={(e) => setPlan(i, { cta: { ...plan.cta, href: e.target.value } })}
+              />
+            </Field>
+          </div>
+
+          <div className={styles.row}>
+            <Field label="Badge (optional)">
+              <input
+                className={styles.input}
+                value={plan.badge ?? ""}
+                onChange={(e) => setPlan(i, { badge: e.target.value || undefined })}
+              />
+            </Field>
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={!!plan.highlighted}
+                onChange={(e) => setPlan(i, { highlighted: e.target.checked })}
+              />
+              Highlighted (recommended)
+            </label>
+          </div>
+        </div>
+      ))}
+
+      <div className={styles.actions}>
+        <button className={styles.secondary} type="button" onClick={addPlan}>
+          + Add plan
+        </button>
+        <button className={styles.primary} onClick={saveAll}>
+          Save Plans
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function NewsletterEditor({
+  data,
+  onChange,
+}: {
+  data: NewsletterData;
+  onChange: (v: NewsletterData) => void;
+}) {
+  const { status, save } = useSaver("newsletter");
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Newsletter CTA</h2>
+      <Field label="Title">
+        <input
+          className={styles.input}
+          value={data.title}
+          onChange={(e) => onChange({ ...data, title: e.target.value })}
+        />
+      </Field>
+      <Field label="Description">
+        <textarea
+          className={styles.textarea}
+          value={data.description}
+          onChange={(e) => onChange({ ...data, description: e.target.value })}
+        />
+      </Field>
+      <div className={styles.row}>
+        <Field label="Input placeholder">
+          <input
+            className={styles.input}
+            value={data.inputPlaceholder}
+            onChange={(e) => onChange({ ...data, inputPlaceholder: e.target.value })}
+          />
+        </Field>
+        <Field label="Button label">
+          <input
+            className={styles.input}
+            value={data.buttonLabel}
+            onChange={(e) => onChange({ ...data, buttonLabel: e.target.value })}
+          />
+        </Field>
+      </div>
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Newsletter
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function NavEditor({
+  data,
+  onChange,
+}: {
+  data: NavData;
+  onChange: (v: NavData) => void;
+}) {
+  const { status, save } = useSaver("nav");
+  const setLink = (idx: number, patch: Partial<NavData["links"][number]>) =>
+    onChange({
+      ...data,
+      links: data.links.map((l, i) => (i === idx ? { ...l, ...patch } : l)),
+    });
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Navigation</h2>
+      <Field label="Brand">
+        <input
+          className={styles.input}
+          value={data.brand}
+          onChange={(e) => onChange({ ...data, brand: e.target.value })}
+        />
+      </Field>
+      {data.links.map((link, i) => (
+        <div key={i} className={styles.row}>
+          <Field label={`Link ${i + 1} label`}>
+            <input
+              className={styles.input}
+              value={link.label}
+              onChange={(e) => setLink(i, { label: e.target.value })}
+            />
+          </Field>
+          <Field label="href">
+            <input
+              className={styles.input}
+              value={link.href}
+              onChange={(e) => setLink(i, { href: e.target.value })}
+            />
+          </Field>
+        </div>
+      ))}
+      <div className={styles.row}>
+        <Field label="CTA label">
+          <input
+            className={styles.input}
+            value={data.cta.label}
+            onChange={(e) => onChange({ ...data, cta: { ...data.cta, label: e.target.value } })}
+          />
+        </Field>
+        <Field label="CTA href">
+          <input
+            className={styles.input}
+            value={data.cta.href}
+            onChange={(e) => onChange({ ...data, cta: { ...data.cta, href: e.target.value } })}
+          />
+        </Field>
+      </div>
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Nav
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function FooterEditor({
+  data,
+  onChange,
+}: {
+  data: FooterData;
+  onChange: (v: FooterData) => void;
+}) {
+  const { status, save } = useSaver("footer");
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Footer</h2>
+      <Field label="Brand">
+        <input
+          className={styles.input}
+          value={data.brand}
+          onChange={(e) => onChange({ ...data, brand: e.target.value })}
+        />
+      </Field>
+      <Field label="Copyright">
+        <input
+          className={styles.input}
+          value={data.copyright}
+          onChange={(e) => onChange({ ...data, copyright: e.target.value })}
+        />
+      </Field>
+      {data.columns.map((col, ci) => (
+        <div key={ci} className={styles.cardArrayItem}>
+          <div className={styles.cardArrayHead}>Column {ci + 1}</div>
+          {col.links.map((l, li) => (
+            <div key={li} className={styles.row}>
+              <Field label={`Link ${li + 1} label`}>
+                <input
+                  className={styles.input}
+                  value={l.label}
+                  onChange={(e) => {
+                    const columns = [...data.columns];
+                    columns[ci] = {
+                      links: columns[ci].links.map((x, i) =>
+                        i === li ? { ...x, label: e.target.value } : x
+                      ),
+                    };
+                    onChange({ ...data, columns });
+                  }}
+                />
+              </Field>
+              <Field label="href">
+                <input
+                  className={styles.input}
+                  value={l.href}
+                  onChange={(e) => {
+                    const columns = [...data.columns];
+                    columns[ci] = {
+                      links: columns[ci].links.map((x, i) =>
+                        i === li ? { ...x, href: e.target.value } : x
+                      ),
+                    };
+                    onChange({ ...data, columns });
+                  }}
+                />
+              </Field>
+            </div>
+          ))}
+        </div>
+      ))}
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>
+          Save Footer
+        </button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}

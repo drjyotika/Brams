@@ -1,0 +1,47 @@
+@use "tokens" as *;
+
+@mixin container {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding-inline: $gutter;
+}
+
+@mixin md {
+  @media (min-width: $bp-md) {
+    @content;
+  }
+}
+
+@mixin lg {
+  @media (min-width: $bp-lg) {
+    @content;
+  }
+}
+
+@mixin eyebrow {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+@mixin h2 {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 40px;
+  color: $color-ink;
+  margin: 0;
+}
+
+@mixin h3 {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: $color-ink;
+  margin: 0;
+}

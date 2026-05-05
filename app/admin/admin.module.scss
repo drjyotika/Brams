@@ -1,0 +1,267 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg;
+  padding-block: 48px;
+}
+
+.header {
+  @include container;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0;
+}
+
+.viewLink {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-plum;
+  border: 1px solid $color-lilac-soft;
+  padding: 8px 16px;
+  border-radius: $radius-pill;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.layout {
+  @include container;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include lg {
+    grid-template-columns: 220px 1fr;
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-md;
+  padding: 8px;
+  position: sticky;
+  top: 24px;
+  height: fit-content;
+}
+
+.tab {
+  text-align: left;
+  font-family: $font-body;
+  font-weight: 500;
+  font-size: 14px;
+  color: $color-ink-soft;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: $color-bg-muted;
+  }
+
+  &.tabActive {
+    background: $color-plum;
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-lg;
+  padding: 32px;
+}
+
+.panelTitle {
+  margin: 0 0 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.panelHint {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: $color-ink-muted;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.label {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 13px;
+  color: $color-ink;
+}
+
+.input,
+.textarea,
+.select {
+  font: inherit;
+  font-size: 14px;
+  color: $color-ink;
+  background: #fff;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    border-color: $color-plum;
+    box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.15);
+  }
+}
+
+.textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: $font-body;
+}
+
+.row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.primary {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: $radius-sm;
+  transition: opacity 120ms ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.secondary {
+  background: $color-bg-muted;
+  color: $color-ink;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: $radius-sm;
+}
+
+.danger {
+  background: transparent;
+  color: #b91c1c;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: $radius-sm;
+
+  &:hover {
+    background: rgba(185, 28, 28, 0.08);
+  }
+}
+
+.status {
+  font-size: 13px;
+  font-weight: 600;
+
+  &.statusOk {
+    color: #15803d;
+  }
+
+  &.statusErr {
+    color: #b91c1c;
+  }
+}
+
+.planCard {
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-md;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: $color-bg;
+}
+
+.planHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.planTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0;
+}
+
+.featureRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.featureRow .input {
+  flex: 1;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $color-ink;
+  margin-top: 8px;
+}
+
+.cardArrayItem {
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-md;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: $color-bg;
+}
+
+.cardArrayHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+}

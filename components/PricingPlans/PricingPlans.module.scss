@@ -1,0 +1,219 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.section {
+  background: $color-bg;
+  padding-block: 128px 208px;
+}
+
+.inner {
+  @include container;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+
+  @include md {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.title {
+  @include h2;
+}
+
+.toggle {
+  background: $color-pill;
+  border-radius: $radius-pill;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.toggleBtn {
+  font-family: $font-body;
+  font-weight: 500;
+  font-size: 14px;
+  color: $color-ink-soft;
+  border-radius: $radius-pill;
+  padding: 8px 24px;
+  transition: background 120ms ease, color 120ms ease;
+
+  &.toggleActive {
+    background: #fff;
+    color: $color-ink;
+    font-weight: 600;
+    box-shadow: $shadow-card;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+
+  @include lg {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+  }
+}
+
+.plan {
+  background: #fff;
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-xl;
+  padding: 41px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.eyebrow {
+  @include eyebrow;
+  color: $color-ink-muted;
+}
+
+.planTitle {
+  margin: 16px 0 8px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: $color-ink;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+
+.price {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 40px;
+  color: $color-ink;
+}
+
+.unit {
+  font-size: 14px;
+  color: $color-ink-soft;
+}
+
+.features {
+  list-style: none;
+  margin: 0 0 38px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-ink-soft;
+}
+
+.featureIcon {
+  color: $color-plum;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.button {
+  margin-top: auto;
+  border-radius: $radius-sm;
+  padding: 18px 2px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+  border: 2px solid rgba(207, 195, 204, 0.2);
+  color: $color-ink-soft;
+  background: #fff;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: $color-bg-muted;
+  }
+}
+
+.planFeatured {
+  position: relative;
+  background: $color-plum;
+  color: #fff;
+  box-shadow: $shadow-recommended;
+  transform: scale(1.05);
+
+  .eyebrow {
+    color: $color-lilac;
+  }
+
+  .planTitle,
+  .price {
+    color: #fff;
+  }
+
+  .unit,
+  .feature {
+    color: rgba(200, 162, 200, 0.8);
+  }
+
+  .featureIcon {
+    color: $color-lilac;
+  }
+
+  .button {
+    background: $color-lilac;
+    color: $color-plum-deep;
+    border-color: transparent;
+
+    &:hover {
+      background: #d6b3d6;
+    }
+  }
+}
+
+.featuredBtnPrimary {
+  background: $color-lilac !important;
+  color: $color-plum-deep !important;
+  border-color: transparent !important;
+}
+
+.basicBtn {
+  border-color: $color-lilac !important;
+  color: $color-plum-deep !important;
+}
+
+.badge {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: $color-lime;
+  color: $color-lime-ink;
+  border-radius: $radius-pill;
+  padding: 4px 16px;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}

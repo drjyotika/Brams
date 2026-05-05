@@ -1,0 +1,160 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.hero {
+  background: radial-gradient(
+    1500px 1500px at 100% 0%,
+    rgba(200, 162, 200, 1) 0%,
+    rgba(225, 206, 226, 1) 30%,
+    rgba(249, 249, 251, 1) 60%
+  );
+  padding-block: 80px;
+}
+
+.inner {
+  @include container;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 64px;
+  align-items: center;
+  min-height: 560px;
+
+  @include lg {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  background: $color-sky;
+  color: #43627e;
+  border-radius: $radius-pill;
+  padding: 6px 16px;
+  @include eyebrow;
+  width: fit-content;
+}
+
+.title {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 1;
+  letter-spacing: -1.8px;
+  color: $color-ink;
+  margin: 24px 0 0;
+
+  span {
+    display: block;
+    color: $color-plum;
+  }
+}
+
+.description {
+  margin: 32px 0 0;
+  max-width: 512px;
+  color: $color-ink-soft;
+  font-size: 20px;
+  line-height: 32.5px;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.primary {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  padding: 16px 32px;
+  border-radius: $radius-sm;
+  transition: transform 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.secondary {
+  border: 1px solid $color-lilac-soft;
+  color: $color-ink;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 18px 33px;
+  border-radius: $radius-sm;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.portraitWrap {
+  position: relative;
+  max-width: 448px;
+  justify-self: center;
+  width: 100%;
+}
+
+.portrait {
+  height: 560px;
+  width: 100%;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: $shadow-portrait;
+  background: #efe4ee;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+  }
+}
+
+.badge {
+  position: absolute;
+  bottom: -24px;
+  left: -24px;
+  max-width: 240px;
+  background: #fff;
+  border-radius: $radius-md;
+  padding: 20px;
+  box-shadow: $shadow-pop;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badgeIcon {
+  color: $color-plum;
+}
+
+.badgeLabel {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.badgeQuote {
+  font-style: italic;
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-ink-soft;
+  margin: 0;
+}

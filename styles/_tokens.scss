@@ -1,0 +1,57 @@
+// Color tokens — extracted from Figma node 8:3
+$color-bg: #f9f9fb;
+$color-bg-muted: #f3f3f5;
+$color-bg-footer: #fafafa;
+
+$color-ink: #1a1c1d;
+$color-ink-soft: #4c444b;
+$color-ink-muted: #71717a;
+$color-ink-zinc: #a1a1aa;
+
+$color-plum: #745475;
+$color-plum-deep: #553757;
+$color-lilac: #c8a2c8;
+$color-lilac-soft: rgba(207, 195, 204, 0.3);
+$color-lilac-line: rgba(207, 195, 204, 0.1);
+
+$color-sky: #bddefe;
+$color-sky-tint: rgba(189, 222, 254, 0.2);
+$color-cta: #cde5ff;
+$color-cta-ink: #001d32;
+$color-cta-sub: #294964;
+
+$color-lime: #dee8ad;
+$color-lime-ink: #181e00;
+
+$color-dark-card: #18181b;
+$color-pill: #edeef0;
+$color-input-placeholder: #6b7280;
+
+$color-link-purple: #6b21a8;
+
+// Typography (CSS variables come from next/font in layout.tsx)
+$font-display: var(--font-manrope), system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-body: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+
+// Layout
+$max-width: 1280px;
+$gutter: 32px;
+
+// Radii
+$radius-sm: 12px;
+$radius-md: 16px;
+$radius-lg: 24px;
+$radius-xl: 32px;
+$radius-pill: 9999px;
+
+// Shadow
+$shadow-card: 0 1px 1px rgba(0, 0, 0, 0.05);
+$shadow-pop: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+$shadow-portrait: 0 25px 50px -12px rgba(116, 84, 117, 0.1);
+$shadow-recommended: 0 25px 50px -12px rgba(116, 84, 117, 0.2);
+$shadow-image: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+$shadow-nav: 0 20px 25px -5px rgba(168, 85, 247, 0.05), 0 8px 10px -6px rgba(168, 85, 247, 0.05);
+
+// Breakpoints
+$bp-md: 768px;
+$bp-lg: 1024px;
