@@ -47,49 +47,54 @@
     }
   },
   "support": {
-    "title": "Care for your mental health, at every stage.",
-    "description": "Mental health concerns can feel overwhelming, but the right support can make recovery possible. Dr. Jyotika offers structured psychiatric consultations, diagnosis, treatment planning, and follow-up care tailored to your needs.",
+    "title": "Specialized Support",
+    "description": "Compassionate care tailored to your unique psychological needs and life circumstances.",
     "link": {
-      "label": "",
-      "href": ""
+      "label": "View all specialties",
+      "href": "#specialties"
     },
     "cards": [
       {
         "id": "anxiety",
-        "title": "Anxiety & Panic",
-        "description": "For excessive worry, panic attacks, restlessness, overthinking, physical anxiety symptoms, and difficulty relaxing.\n\nGet a detailed evaluation and treatment plan to help manage anxiety, reduce panic symptoms, and improve daily functioning.",
+        "title": "Anxiety & Panic Disorders",
+        "description": "Evidence-based approaches to manage overwhelming stress and help you regain control of your daily life.",
         "iconName": "wind",
-        "tone": "sky",
-        "span": "wide",
-        "imageSrc": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+        "tone": "sky"
       },
       {
         "id": "depression",
         "title": "Depression & Mood Concerns",
-        "description": "For persistent sadness, low motivation, hopelessness, irritability, mood swings, and loss of interest.\n\nCompassionate psychiatric care to understand your symptoms, identify the underlying concerns, and begin a structured path toward recovery.",
+        "description": "Navigating the complexities of mood disorders with empathy and clinical precision.",
         "iconName": "cloud-rain",
-        "tone": "lilac",
-        "meta": "PERSONALIZED CARE PLANS"
+        "tone": "lilac"
       },
       {
         "id": "adhd",
-        "title": "Addiction & Substance Use",
-        "description": "For alcohol, nicotine, cannabis, prescription medication misuse, or other substance-related concerns.\n\nNon-judgmental support for understanding dependence, managing cravings, preventing relapse, and planning safe recovery.",
+        "title": "ADHD & Focus",
+        "description": "Comprehensive evaluation and management for adults navigating executive function challenges.",
         "iconName": "target",
         "tone": "muted"
       },
       {
         "id": "trauma",
-        "title": "Child & Adolescent Concerns",
-        "description": "For attention issues, behavioral concerns, emotional difficulties, anxiety, academic stress, and parent guidance.\n\nStructured psychiatric evaluation and guidance for children, teenagers, and families.",
+        "title": "Trauma Recovery",
+        "description": "Specialized therapeutic interventions for processing past experiences in a gentle, secure environment.",
         "iconName": "shield",
-        "tone": "dark",
-        "span": "wide",
-        "imageSrc": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
-        "cta": {
-          "label": "Learn Approach",
-          "href": "#trauma"
-        }
+        "tone": "dark"
+      },
+      {
+        "id": "addiction",
+        "title": "Addiction & Substance Use",
+        "description": "For alcohol, nicotine, cannabis, prescription medication misuse, or other substance-related concerns. Non-judgmental support for understanding dependence, managing cravings, preventing relapse, and planning safe recovery.",
+        "iconName": "flame",
+        "tone": "lime"
+      },
+      {
+        "id": "child",
+        "title": "Child & Adolescent Concerns",
+        "description": "For attention issues, behavioral concerns, emotional difficulties, anxiety, academic stress, and parent guidance.",
+        "iconName": "users",
+        "tone": "sand"
       }
     ]
   },

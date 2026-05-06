@@ -20,15 +20,20 @@ export type HeroData = {
   badge: { label: string; quote: string };
 };
 
-export type SupportTone = "sky" | "lilac" | "muted" | "dark";
+export type SupportTone =
+  | "sky"
+  | "lilac"
+  | "muted"
+  | "dark"
+  | "lime"
+  | "sand"
+  | "mint";
 export type SupportCard = {
   id: string;
   title: string;
   description: string;
   iconName: string;
   tone: SupportTone;
-  span?: "wide" | "single";
-  imageSrc?: string;
   meta?: string;
   cta?: { label: string; href: string };
 };
@@ -143,9 +148,6 @@ export const defaultContent: SiteContent = {
           "Evidence-based approaches to manage overwhelming stress and help you regain control of your daily life.",
         iconName: "wind",
         tone: "sky",
-        span: "wide",
-        imageSrc:
-          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
       },
       {
         id: "depression",
@@ -171,9 +173,6 @@ export const defaultContent: SiteContent = {
           "Specialized therapeutic interventions for processing past experiences in a gentle, secure environment.",
         iconName: "shield",
         tone: "dark",
-        span: "wide",
-        imageSrc:
-          "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
         cta: { label: "Learn Approach", href: "#trauma" },
       },
     ],

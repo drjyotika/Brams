@@ -58,32 +58,57 @@
   }
 }
 
+// Auto-sized rows + equal-height cards via stretch — content drives height,
+// nothing gets clipped, and tiles stay aligned in each row.
 .grid {
   display: grid;
   gap: 24px;
   grid-template-columns: 1fr;
+  grid-auto-rows: 1fr;
+
+  @include md {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
   @include lg {
-    grid-template-columns: 2fr 1fr;
-    grid-auto-rows: 408px 270px;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .card {
   border-radius: $radius-lg;
-  padding: 40px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   position: relative;
-  overflow: hidden;
-  min-height: 270px;
+  overflow: visible;
+  min-height: 240px;
+  height: 100%;
+  word-break: break-word;
+  hyphens: auto;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 32px -16px rgba(116, 84, 117, 0.25);
+  }
+
+  // Respect users who opt out of motion.
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover {
+      transform: none;
+    }
+  }
 }
 
-.cardWide {
-  @include lg {
-    grid-column: span 1;
-  }
+.icon {
+  color: $color-plum;
+  display: inline-flex;
 }
 
 .toneSky {
@@ -94,9 +119,6 @@
 .toneLilac {
   background: rgba(200, 162, 200, 0.2);
   color: $color-ink;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .toneMuted {
@@ -107,17 +129,21 @@
 .toneDark {
   background: $color-dark-card;
   color: #fff;
-  flex-direction: column;
-  gap: 24px;
-
-  @include lg {
-    flex-direction: row;
-    align-items: center;
-  }
 }
 
-.icon {
-  color: $color-plum;
+.toneLime {
+  background: #e6efc3;
+  color: $color-ink;
+}
+
+.toneSand {
+  background: #fde9c8;
+  color: $color-ink;
+}
+
+.toneMint {
+  background: #cdeadc;
+  color: $color-ink;
 }
 
 .toneDark .icon {
@@ -128,19 +154,10 @@
   margin: 0;
   font-family: $font-display;
   font-weight: 700;
-  color: inherit;
-}
-
-.toneSky .cardTitle,
-.toneDark .cardTitle {
-  font-size: 30px;
-  line-height: 36px;
-}
-
-.toneLilac .cardTitle,
-.toneMuted .cardTitle {
   font-size: 24px;
   line-height: 32px;
+  color: inherit;
+  overflow-wrap: break-word;
 }
 
 .cardBody {
@@ -148,69 +165,50 @@
   font-size: 16px;
   line-height: 26px;
   color: $color-ink-soft;
-  max-width: 480px;
+  overflow-wrap: break-word;
 }
 
 .toneDark .cardBody {
   color: $color-ink-zinc;
 }
 
-.cardImage {
-  margin-top: auto;
-  border-radius: $radius-md;
-  overflow: hidden;
-  height: 128px;
-  width: 192px;
-  box-shadow: $shadow-image;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.toneDark .cardImage {
-  height: 200px;
-  width: 100%;
-  flex: 1;
-  opacity: 0.6;
-  margin-top: 0;
-
-  @include lg {
-    max-width: 50%;
-  }
-}
-
 .cardMeta {
   margin-top: auto;
   padding-top: 24px;
-  border-top: 1px solid rgba(116, 84, 117, 0.1);
+  border-top: 1px solid rgba(116, 84, 117, 0.15);
   color: $color-plum;
   @include eyebrow;
 }
 
+.toneDark .cardMeta {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .cardCta {
+  margin-top: auto;
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
+  border: 1px solid rgba(116, 84, 117, 0.25);
+  color: $color-plum;
   border-radius: $radius-pill;
-  padding: 9px 25px;
+  padding: 9px 22px;
   font-family: $font-body;
   font-weight: 600;
-  font-size: 16px;
-  width: fit-content;
+  font-size: 14px;
   transition: background 120ms ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(116, 84, 117, 0.08);
   }
 }
 
-.darkBody {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.toneDark .cardCta {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }

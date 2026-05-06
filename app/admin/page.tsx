@@ -13,7 +13,18 @@ import type {
   SupportData,
   FooterData,
 } from "../../lib/content";
+import { ICON_NAMES, pickIconForHeading } from "../../components/Icon";
 import styles from "./admin.module.scss";
+
+const SUPPORT_TONES: SupportCard["tone"][] = [
+  "sky",
+  "lilac",
+  "muted",
+  "lime",
+  "sand",
+  "mint",
+  "dark",
+];
 
 type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer";
 
@@ -302,6 +313,29 @@ function SupportEditor({
     const cards = data.cards.map((c, i) => (i === idx ? { ...c, ...patch } : c));
     onChange({ ...data, cards });
   };
+  const removeCard = (idx: number) =>
+    onChange({ ...data, cards: data.cards.filter((_, i) => i !== idx) });
+  const addCard = () => {
+    // Pick the first tone not already in use; fall back to rotating by index.
+    const used = new Set(data.cards.map((c) => c.tone));
+    const nextTone =
+      SUPPORT_TONES.find((t) => !used.has(t)) ??
+      SUPPORT_TONES[data.cards.length % SUPPORT_TONES.length];
+    const title = "New Card";
+    onChange({
+      ...data,
+      cards: [
+        ...data.cards,
+        {
+          id: `card-${Date.now()}`,
+          title,
+          description: "Describe this area of support.",
+          iconName: pickIconForHeading(title),
+          tone: nextTone,
+        },
+      ],
+    });
+  };
 
   return (
     <section className={styles.panel}>
@@ -341,12 +375,29 @@ function SupportEditor({
 
       {data.cards.map((card, i) => (
         <div key={card.id} className={styles.cardArrayItem}>
-          <div className={styles.cardArrayHead}>Card #{i + 1}</div>
+          <div className={styles.cardArrayHead}>
+            <span>Card #{i + 1}</span>
+            <button
+              type="button"
+              className={styles.danger}
+              onClick={() => removeCard(i)}
+            >
+              Remove
+            </button>
+          </div>
           <Field label="Title">
             <input
               className={styles.input}
               value={card.title}
-              onChange={(e) => setCard(i, { title: e.target.value })}
+              onChange={(e) => {
+                const title = e.target.value;
+                // If the icon hasn't been hand-picked yet, follow the heading.
+                const suggested = pickIconForHeading(title);
+                const shouldFollow =
+                  card.iconName === "sparkles" ||
+                  card.iconName === pickIconForHeading(card.title);
+                setCard(i, { title, iconName: shouldFollow ? suggested : card.iconName });
+              }}
             />
           </Field>
           <Field label="Description">
@@ -357,14 +408,20 @@ function SupportEditor({
             />
           </Field>
           <div className={styles.row}>
-            <Field label="Icon name (lucide)">
-              <input
-                className={styles.input}
+            <Field label="Icon">
+              <select
+                className={styles.select}
                 value={card.iconName}
                 onChange={(e) => setCard(i, { iconName: e.target.value })}
-              />
+              >
+                {ICON_NAMES.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
             </Field>
-            <Field label="Tone">
+            <Field label="Tone (background)">
               <select
                 className={styles.select}
                 value={card.tone}
@@ -372,10 +429,11 @@ function SupportEditor({
                   setCard(i, { tone: e.target.value as SupportCard["tone"] })
                 }
               >
-                <option value="sky">sky</option>
-                <option value="lilac">lilac</option>
-                <option value="muted">muted</option>
-                <option value="dark">dark</option>
+                {SUPPORT_TONES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
               </select>
             </Field>
           </div>
@@ -383,6 +441,9 @@ function SupportEditor({
       ))}
 
       <div className={styles.actions}>
+        <button className={styles.secondary} type="button" onClick={addCard}>
+          + Add card
+        </button>
         <button className={styles.primary} onClick={() => save(data)}>
           Save Support
         </button>
