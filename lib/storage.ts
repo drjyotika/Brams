@@ -58,6 +58,7 @@ async function blobWrite(next: SiteContent): Promise<void> {
   await put(BLOB_PATHNAME, JSON.stringify(next, null, 2), {
     access: "private",
     addRandomSuffix: false,
+    allowOverwrite: true,
     contentType: "application/json",
   });
 }
