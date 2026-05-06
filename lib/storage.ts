@@ -42,27 +42,31 @@ const BLOB_PATHNAME = "brams-content.json";
 const USE_BLOB = process.env.VERCEL === "1" && !!process.env.BLOB_READ_WRITE_TOKEN;
 
 async function blobRead(): Promise<SiteContent> {
-  const { list } = await import("@vercel/blob");
-  const { blobs } = await list({ prefix: BLOB_PATHNAME });
-  const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
-  if (!found) return defaultContent;
-
-  // For private blobs, use `downloadUrl` — a pre-signed URL that doesn't
-  // need an Authorization header (unlike `url`, which hangs on direct fetch).
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
   try {
-    const res = await fetch(found.downloadUrl, {
+    const { list } = await import("@vercel/blob");
+    const { blobs } = await list({ prefix: BLOB_PATHNAME });
+    const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    if (!found) return defaultContent;
+
+    // Private blobs must be fetched with the Bearer token — `downloadUrl`
+    // (pre-signed) returns 403 in this store configuration.
+    const res = await fetch(found.url, {
       cache: "no-store",
-      signal: controller.signal,
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+      },
     });
-    if (!res.ok) return defaultContent;
+
+    if (!res.ok) {
+      console.error(`[storage] blobRead HTTP ${res.status} — falling back to defaults`);
+      return defaultContent;
+    }
+
     return mergeContent(defaultContent, (await res.json()) as Partial<SiteContent>);
-  } catch {
-    console.warn("[storage] blobRead timed out or failed, using defaults");
+  } catch (err) {
+    console.error("[storage] blobRead failed:", err);
     return defaultContent;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
