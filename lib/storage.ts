@@ -36,7 +36,10 @@ const PROJECT_PATH = path.join(process.cwd(), "data", "content.json");
 // ─── Tier 1 — Vercel Blob ─────────────────────────────────────────────────────
 
 const BLOB_PATHNAME = "brams-content.json";
-const USE_BLOB      = !!process.env.BLOB_READ_WRITE_TOKEN;
+// Only use Blob when actually running on Vercel (VERCEL=1 is set by the
+// platform at runtime). In local dev we always use the filesystem so page
+// renders don't make slow cross-network blob API calls on every request.
+const USE_BLOB = process.env.VERCEL === "1" && !!process.env.BLOB_READ_WRITE_TOKEN;
 
 async function blobRead(): Promise<SiteContent> {
   const { list } = await import("@vercel/blob");
