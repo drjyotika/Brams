@@ -14,6 +14,7 @@ import type {
   FooterData,
 } from "../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../components/Icon";
+import { API_BASE } from "../../lib/config";
 import styles from "./admin.module.scss";
 
 const SUPPORT_TONES: SupportCard["tone"][] = [
@@ -43,7 +44,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("hero");
 
   useEffect(() => {
-    fetch("/api/content")
+    fetch(`${API_BASE}/content`)
       .then((r) => r.json())
       .then((data: SiteContent) => setContent(data));
   }, []);
@@ -129,7 +130,7 @@ function useSaver(sectionKey: keyof SiteContent) {
   const save = async (value: unknown) => {
     setStatus({ state: "saving" });
     try {
-      const res = await fetch("/api/content", {
+      const res = await fetch(`${API_BASE}/content`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [sectionKey]: value }),
@@ -553,14 +554,14 @@ function PricingEditor({
     setStatus({ state: "saving" });
     try {
       // Bulk save the plans array via the dedicated /api/plans endpoint.
-      const r1 = await fetch("/api/plans", {
+      const r1 = await fetch(`${API_BASE}/plans`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data.plans),
       });
       if (!r1.ok) throw new Error(`plans HTTP ${r1.status}`);
       // And patch the section header (title + toggle labels) via /api/content.
-      const r2 = await fetch("/api/content", {
+      const r2 = await fetch(`${API_BASE}/content`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
