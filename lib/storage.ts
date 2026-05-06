@@ -43,15 +43,20 @@ async function blobRead(): Promise<SiteContent> {
   const { blobs } = await list({ prefix: BLOB_PATHNAME });
   const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
   if (!found) return defaultContent;
-  const res = await fetch(found.url, { cache: "no-store" });
+  // Private blobs require Bearer auth on the download request.
+  const res = await fetch(found.url, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+  });
   if (!res.ok) return defaultContent;
   return mergeContent(defaultContent, (await res.json()) as Partial<SiteContent>);
 }
 
 async function blobWrite(next: SiteContent): Promise<void> {
   const { put } = await import("@vercel/blob");
+  // Use "private" to match the store's access policy.
   await put(BLOB_PATHNAME, JSON.stringify(next, null, 2), {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     contentType: "application/json",
   });
