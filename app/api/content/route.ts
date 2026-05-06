@@ -23,8 +23,13 @@ export async function PUT(req: Request) {
   try {
     await writeContent(next);
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const code = (err as NodeJS.ErrnoException).code ?? "unknown";
     console.error("[api/content] write failed", err);
-    return NextResponse.json({ error: "Failed to write content" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to write content", detail: message, code },
+      { status: 500 }
+    );
   }
   return NextResponse.json(next);
 }
