@@ -1,32 +1,40 @@
-// Storage layer — Vercel Blob in production, local JSON file in dev.
+// Storage layer — three-tier strategy:
 //
-// Vercel's serverless filesystem is read-only (only /tmp is writable, but
-// that's ephemeral per-instance). We therefore use Vercel Blob as the
-// durable store whenever BLOB_READ_WRITE_TOKEN is present (i.e. in
-// production). In local dev the token won't be set, so we fall through to
-// the same atomic file-write logic we've always used.
+//  1. Vercel Blob  (persistent)  — when BLOB_READ_WRITE_TOKEN is set
+//  2. /tmp         (ephemeral)   — when running on Vercel without a Blob token
+//                                  (/tmp is writable; resets on cold start)
+//  3. Local file   (persistent)  — local dev, process.cwd()/data/content.json
+//
+// Tiers 2 → 3 require no setup — they work out of the box.
+// Tier 1 can be enabled later by connecting a Vercel Blob store.
 
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { defaultContent, type SiteContent } from "./content";
 
-// ─── Shared helpers ──────────────────────────────────────────────────────────
+// ─── Routing flags ───────────────────────────────────────────────────────────
 
-// Shallow merge of top-level keys — lets the API accept partial payloads.
+const ON_VERCEL = !!process.env.VERCEL;
+const USE_BLOB  = !!process.env.BLOB_READ_WRITE_TOKEN;
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
 export function mergeContent(
   base: SiteContent,
   override: Partial<SiteContent>
 ): SiteContent {
   return {
-    nav: { ...base.nav, ...override.nav },
-    hero: { ...base.hero, ...override.hero },
-    support: { ...base.support, ...override.support },
-    howItWorks: { ...base.howItWorks, ...override.howItWorks },
-    pricing: { ...base.pricing, ...override.pricing },
-    newsletter: { ...base.newsletter, ...override.newsletter },
-    footer: { ...base.footer, ...override.footer },
+    nav:         { ...base.nav,         ...override.nav         },
+    hero:        { ...base.hero,        ...override.hero        },
+    support:     { ...base.support,     ...override.support     },
+    howItWorks:  { ...base.howItWorks,  ...override.howItWorks  },
+    pricing:     { ...base.pricing,     ...override.pricing     },
+    newsletter:  { ...base.newsletter,  ...override.newsletter  },
+    footer:      { ...base.footer,      ...override.footer      },
   };
 }
 
-// ─── Blob storage (production) ───────────────────────────────────────────────
+// ─── Tier 1 — Vercel Blob (persistent) ───────────────────────────────────────
 
 const BLOB_PATHNAME = "brams-content.json";
 
@@ -36,7 +44,7 @@ async function blobRead(): Promise<SiteContent> {
   const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
   if (!found) return defaultContent;
 
-  const res = await fetch(found.url, { next: { revalidate: 0 } } as RequestInit);
+  const res = await fetch(found.url, { cache: "no-store" });
   if (!res.ok) return defaultContent;
   const parsed = (await res.json()) as Partial<SiteContent>;
   return mergeContent(defaultContent, parsed);
@@ -51,13 +59,16 @@ async function blobWrite(next: SiteContent): Promise<void> {
   });
 }
 
-// ─── Local-file storage (dev) ─────────────────────────────────────────────────
+// ─── Tier 2 & 3 — File system ─────────────────────────────────────────────────
+//
+// On Vercel:  /tmp is writable (ephemeral — cleared on cold start).
+// Local dev:  project root data/ folder (atomic write, persistent).
+
+const STORE_PATH = ON_VERCEL
+  ? "/tmp/brams-content.json"
+  : path.join(process.cwd(), "data", "content.json");
 
 async function fileRead(): Promise<SiteContent> {
-  const { promises: fs } = await import("node:fs");
-  const path = await import("node:path");
-  const STORE_PATH = path.join(process.cwd(), "data", "content.json");
-
   try {
     const raw = await fs.readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(raw) as Partial<SiteContent>;
@@ -70,28 +81,26 @@ async function fileRead(): Promise<SiteContent> {
 }
 
 async function fileWrite(next: SiteContent): Promise<void> {
-  const { promises: fs } = await import("node:fs");
-  const path = await import("node:path");
-  const STORE_PATH = path.join(process.cwd(), "data", "content.json");
-
   const dir = path.dirname(STORE_PATH);
   await fs.mkdir(dir, { recursive: true });
 
-  // Atomic: write to .tmp then rename so a crash never corrupts the file.
-  const tmpPath = `${STORE_PATH}.${process.pid}.${Date.now()}.tmp`;
-  const payload = JSON.stringify(next, null, 2);
-  try {
-    await fs.writeFile(tmpPath, payload, "utf8");
-    await fs.rename(tmpPath, STORE_PATH);
-  } catch (err) {
-    await fs.unlink(tmpPath).catch(() => {});
-    throw err;
+  if (ON_VERCEL) {
+    // /tmp doesn't support cross-device rename, so write directly.
+    await fs.writeFile(STORE_PATH, JSON.stringify(next, null, 2), "utf8");
+  } else {
+    // Local dev: atomic rename so a crash never corrupts the file.
+    const tmpPath = `${STORE_PATH}.${process.pid}.${Date.now()}.tmp`;
+    try {
+      await fs.writeFile(tmpPath, JSON.stringify(next, null, 2), "utf8");
+      await fs.rename(tmpPath, STORE_PATH);
+    } catch (err) {
+      await fs.unlink(tmpPath).catch(() => {});
+      throw err;
+    }
   }
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
-
-const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export async function readContent(): Promise<SiteContent> {
   return USE_BLOB ? blobRead() : fileRead();
