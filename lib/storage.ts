@@ -43,13 +43,24 @@ async function blobRead(): Promise<SiteContent> {
   const { blobs } = await list({ prefix: BLOB_PATHNAME });
   const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
   if (!found) return defaultContent;
-  // Private blobs require Bearer auth on the download request.
-  const res = await fetch(found.url, {
-    cache: "no-store",
-    headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
-  });
-  if (!res.ok) return defaultContent;
-  return mergeContent(defaultContent, (await res.json()) as Partial<SiteContent>);
+
+  // For private blobs, use `downloadUrl` — a pre-signed URL that doesn't
+  // need an Authorization header (unlike `url`, which hangs on direct fetch).
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(found.downloadUrl, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!res.ok) return defaultContent;
+    return mergeContent(defaultContent, (await res.json()) as Partial<SiteContent>);
+  } catch {
+    console.warn("[storage] blobRead timed out or failed, using defaults");
+    return defaultContent;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function blobWrite(next: SiteContent): Promise<void> {
