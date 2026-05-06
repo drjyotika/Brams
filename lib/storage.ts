@@ -1,18 +1,17 @@
-// Storage layer — three-tier fallback:
+// Storage layer — three-tier strategy:
 //
-//  1. Vercel Blob  (persistent)  — when BLOB_READ_WRITE_TOKEN is set
-//  2. /tmp         (ephemeral)   — when project-root filesystem is read-only
-//                                  (Vercel serverless; resets on cold start)
-//  3. Local file   (persistent)  — local dev at data/content.json
+//  1. Vercel Blob  — persistent, when BLOB_READ_WRITE_TOKEN is set
+//  2. /tmp         — ephemeral, always writable (Vercel + local dev)
+//  3. project-root data/ — persistent only in local dev (Vercel fs is read-only)
 //
-// Tiers 2 and 3 are detected automatically by attempting the write and
-// catching read-only filesystem errors — no env-var probing needed.
+// Write path:  always succeeds on /tmp; also tries project root (silently ignored if read-only).
+// Read path:   prefers project root (local dev), then /tmp, then hard-coded defaults.
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { defaultContent, type SiteContent } from "./content";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function mergeContent(
   base: SiteContent,
@@ -31,13 +30,13 @@ export function mergeContent(
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
 
-const PRIMARY_PATH  = path.join(process.cwd(), "data", "content.json");
-const FALLBACK_PATH = "/tmp/brams-content.json";
+const TMP_PATH     = "/tmp/brams-content.json";
+const PROJECT_PATH = path.join(process.cwd(), "data", "content.json");
 
-// ─── Tier 1 — Vercel Blob (persistent) ───────────────────────────────────────
+// ─── Tier 1 — Vercel Blob ─────────────────────────────────────────────────────
 
 const BLOB_PATHNAME = "brams-content.json";
-const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
+const USE_BLOB      = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 async function blobRead(): Promise<SiteContent> {
   const { list } = await import("@vercel/blob");
@@ -60,41 +59,34 @@ async function blobWrite(next: SiteContent): Promise<void> {
 
 // ─── Tiers 2 & 3 — File system ───────────────────────────────────────────────
 
-// Read: try project root first (dev), then /tmp (Vercel).
 async function fileRead(): Promise<SiteContent> {
-  for (const p of [PRIMARY_PATH, FALLBACK_PATH]) {
+  // Try project root first (persists across local dev restarts),
+  // then /tmp (survives within the same Vercel function instance).
+  for (const p of [PROJECT_PATH, TMP_PATH]) {
     try {
       const raw = await fs.readFile(p, "utf8");
       return mergeContent(defaultContent, JSON.parse(raw) as Partial<SiteContent>);
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-        console.warn(`[storage] read error at ${p}`, err);
-      }
-      // ENOENT → try next path
+    } catch {
+      // ENOENT or any other read error → try next path
     }
   }
   return defaultContent;
 }
 
-// These codes mean the filesystem itself is read-only — not a transient error.
-const READ_ONLY_CODES = new Set(["EROFS", "EACCES", "EPERM"]);
-
-// Write: try project root; if read-only (Vercel production) fall back to /tmp.
 async function fileWrite(next: SiteContent): Promise<void> {
   const payload = JSON.stringify(next, null, 2);
 
-  try {
-    await fs.mkdir(path.dirname(PRIMARY_PATH), { recursive: true });
-    await fs.writeFile(PRIMARY_PATH, payload, "utf8");
-    return; // success — local dev path
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code ?? "";
-    if (!READ_ONLY_CODES.has(code)) throw err; // unexpected error — re-throw
-    console.warn(`[storage] project root is read-only (${code}), writing to /tmp`);
-  }
+  // /tmp is always writable — write here first so the save always succeeds.
+  await fs.writeFile(TMP_PATH, payload, "utf8");
 
-  // /tmp is always writable on Vercel serverless.
-  await fs.writeFile(FALLBACK_PATH, payload, "utf8");
+  // Also try to persist to the project root (only works in local dev).
+  // Silently ignore any error here — /tmp already has the data.
+  try {
+    await fs.mkdir(path.dirname(PROJECT_PATH), { recursive: true });
+    await fs.writeFile(PROJECT_PATH, payload, "utf8");
+  } catch {
+    // Read-only on Vercel — expected, not an error.
+  }
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
