@@ -22,6 +22,12 @@
   margin: 0;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .viewLink {
   font-family: $font-body;
   font-weight: 600;
@@ -33,6 +39,23 @@
 
   &:hover {
     background: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.logoutBtn {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  padding: 8px 16px;
+  border-radius: $radius-pill;
+  background: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.06);
   }
 }
 

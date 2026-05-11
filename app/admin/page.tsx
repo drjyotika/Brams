@@ -69,9 +69,21 @@ export default function AdminPage() {
     <div className={styles.shell}>
       <div className={styles.header}>
         <h1 className={styles.title}>Brams Admin</h1>
-        <a className={styles.viewLink} href="/" target="_blank" rel="noreferrer">
-          View site ↗
-        </a>
+        <div className={styles.headerActions}>
+          <a className={styles.viewLink} href="/" target="_blank" rel="noreferrer">
+            View site ↗
+          </a>
+          <button
+            type="button"
+            className={styles.logoutBtn}
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/admin/login";
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className={styles.layout}>
