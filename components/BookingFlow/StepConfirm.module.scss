@@ -187,6 +187,24 @@
   &:hover:not(:disabled) { opacity: 0.92; }
 }
 
+.backInline {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  color: $color-ink-soft;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+
+  &:hover:not(:disabled) { color: $color-ink; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
 .error {
   margin: 12px 0 0;
   padding: 10px 14px;

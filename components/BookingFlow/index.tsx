@@ -142,6 +142,7 @@ export function BookingFlow() {
             scheduledDate={selectedDate!}
             scheduledTime={selectedTime!}
             patientName={details.full_name}
+            onBack={() => setStep(2)}
           />
         )}
       </main>

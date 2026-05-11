@@ -19,12 +19,14 @@ export function StepConfirm({
   scheduledDate,
   scheduledTime,
   patientName,
+  onBack,
 }: {
   plan: PlanInfo;
   bookingId: string;
   scheduledDate: string;
   scheduledTime: string;
   patientName: string;
+  onBack: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploads, setUploads]     = useState<Upload[]>([]);
@@ -198,14 +200,24 @@ export function StepConfirm({
               <Link href="/" className={cStyles.homeLink}>Return to home</Link>
             </div>
           ) : (
-            <button
-              type="button"
-              className={cStyles.payBtn}
-              onClick={pay}
-              disabled={paying}
-            >
-              {paying ? "Processing…" : `Pay ${formatINR(total)} →`}
-            </button>
+            <>
+              <button
+                type="button"
+                className={cStyles.payBtn}
+                onClick={pay}
+                disabled={paying}
+              >
+                {paying ? "Processing…" : `Pay ${formatINR(total)} →`}
+              </button>
+              <button
+                type="button"
+                className={cStyles.backInline}
+                onClick={onBack}
+                disabled={paying}
+              >
+                ← Back to details
+              </button>
+            </>
           )}
         </div>
       </div>
