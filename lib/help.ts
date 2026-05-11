@@ -1,17 +1,8 @@
 import { sql } from "./db";
+import { HELP_ISSUE_OPTIONS, type HelpIssue, type HelpStatus } from "./help-types";
 
-export type HelpStatus = "new" | "in_progress" | "resolved";
-
-export const HELP_ISSUE_OPTIONS = [
-  "Booking issue",
-  "Payment issue",
-  "Reschedule / Cancel",
-  "Technical problem",
-  "Medical emergency",
-  "Other",
-] as const;
-
-export type HelpIssue = (typeof HELP_ISSUE_OPTIONS)[number];
+export { HELP_ISSUE_OPTIONS };
+export type { HelpIssue, HelpStatus };
 
 export type HelpRequest = {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HELP_ISSUE_OPTIONS } from "../../lib/help";
+import { HELP_ISSUE_OPTIONS } from "../../lib/help-types";
 import styles from "./NeedHelpButton.module.scss";
 
 export function NeedHelpButton({ source }: { source?: string }) {
