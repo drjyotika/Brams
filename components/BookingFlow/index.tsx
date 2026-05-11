@@ -81,14 +81,6 @@ export function BookingFlow() {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
-        <Link href="/" className={styles.brand}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Brams Mind Care" />
-        </Link>
-        <Link href="/#consultations" className={styles.cancelLink}>Cancel</Link>
-      </header>
-
       <main className={styles.main}>
         {step === 1 && (
           <StepDateTime

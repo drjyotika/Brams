@@ -8,39 +8,9 @@
   flex-direction: column;
 }
 
-.header {
-  @include container;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-block: 24px;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-
-  img {
-    height: 36px;
-    width: auto;
-  }
-}
-
-.cancelLink {
-  font-family: $font-body;
-  font-weight: 600;
-  font-size: 14px;
-  color: $color-ink-soft;
-  border: 1px solid $color-lilac-soft;
-  padding: 8px 16px;
-  border-radius: $radius-pill;
-  transition: background 120ms ease;
-
-  &:hover { background: rgba(255, 255, 255, 0.7); }
-}
-
 .main {
   @include container;
+  padding-top: 32px;
   padding-bottom: 80px;
 }
 
