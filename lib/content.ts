@@ -156,7 +156,6 @@ export const defaultContent: SiteContent = {
           "Navigating the complexities of mood disorders with empathy and clinical precision.",
         iconName: "cloud-rain",
         tone: "lilac",
-        meta: "PERSONALIZED CARE PLANS",
       },
       {
         id: "adhd",
@@ -173,7 +172,6 @@ export const defaultContent: SiteContent = {
           "Specialized therapeutic interventions for processing past experiences in a gentle, secure environment.",
         iconName: "shield",
         tone: "dark",
-        cta: { label: "Learn Approach", href: "#trauma" },
       },
     ],
   },

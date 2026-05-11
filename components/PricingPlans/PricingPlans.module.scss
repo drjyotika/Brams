@@ -16,44 +16,11 @@
 .head {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   align-items: flex-start;
-
-  @include md {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
 }
 
 .title {
   @include h2;
-}
-
-.toggle {
-  background: $color-pill;
-  border-radius: $radius-pill;
-  padding: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-}
-
-.toggleBtn {
-  font-family: $font-body;
-  font-weight: 500;
-  font-size: 14px;
-  color: $color-ink-soft;
-  border-radius: $radius-pill;
-  padding: 8px 24px;
-  transition: background 120ms ease, color 120ms ease;
-
-  &.toggleActive {
-    background: #fff;
-    color: $color-ink;
-    font-weight: 600;
-    box-shadow: $shadow-card;
-  }
 }
 
 .grid {

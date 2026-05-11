@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import type { PricingData, PricingPlan } from "../../lib/content";
 import { Icon } from "../Icon";
 import styles from "./PricingPlans.module.scss";
@@ -8,8 +5,6 @@ import styles from "./PricingPlans.module.scss";
 export type PricingPlansProps = { data: PricingData };
 
 export function PricingPlans({ data }: PricingPlansProps) {
-  const [tab, setTab] = useState<"primary" | "secondary">("primary");
-
   return (
     <section className={styles.section} id="consultations" aria-labelledby="pricing-title">
       <div className={styles.inner}>
@@ -17,26 +12,6 @@ export function PricingPlans({ data }: PricingPlansProps) {
           <h2 id="pricing-title" className={styles.title}>
             {data.title}
           </h2>
-          <div className={styles.toggle} role="tablist" aria-label="Payment type">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "primary"}
-              className={`${styles.toggleBtn} ${tab === "primary" ? styles.toggleActive : ""}`}
-              onClick={() => setTab("primary")}
-            >
-              {data.toggle.primary}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "secondary"}
-              className={`${styles.toggleBtn} ${tab === "secondary" ? styles.toggleActive : ""}`}
-              onClick={() => setTab("secondary")}
-            >
-              {data.toggle.secondary}
-            </button>
-          </div>
         </header>
 
         <div className={styles.grid}>
