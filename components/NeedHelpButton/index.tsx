@@ -1,20 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { HELP_ISSUE_OPTIONS } from "../../lib/help-types";
 import styles from "./NeedHelpButton.module.scss";
 
 export function NeedHelpButton({ source }: { source?: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]       = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Close on Esc
+  // For SSR-safe portal: only render to document.body after mount.
+  useEffect(() => setMounted(true), []);
+
+  // Close on Esc + lock body scroll while open.
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
 
   return (
@@ -22,7 +32,10 @@ export function NeedHelpButton({ source }: { source?: string }) {
       <button type="button" className={styles.trigger} onClick={() => setOpen(true)}>
         Need Help?
       </button>
-      {open && <HelpModal source={source} onClose={() => setOpen(false)} />}
+      {open && mounted && createPortal(
+        <HelpModal source={source} onClose={() => setOpen(false)} />,
+        document.body,
+      )}
     </>
   );
 }

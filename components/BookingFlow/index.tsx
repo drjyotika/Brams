@@ -6,6 +6,7 @@ import Link from "next/link";
 import { StepDateTime } from "./StepDateTime";
 import { StepDetails }  from "./StepDetails";
 import { StepConfirm }  from "./StepConfirm";
+import { StepHeader }   from "./StepHeader";
 import styles from "./BookingFlow.module.scss";
 
 export type PlanInfo = {
@@ -65,6 +66,13 @@ export function BookingFlow() {
       .catch(() => setPlanError(`Plan "${planId}" not found.`));
   }, [planId]);
 
+  // Smoothly scroll back to the top of the booking shell on step change,
+  // so users see the new step header — but never jump above the nav.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   if (planError) {
     return (
       <div className={styles.errorShell}>
@@ -82,6 +90,8 @@ export function BookingFlow() {
   return (
     <div className={styles.shell}>
       <main className={styles.main}>
+        <StepHeader step={step} />
+
         {step === 1 && (
           <StepDateTime
             plan={plan}

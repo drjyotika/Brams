@@ -48,22 +48,6 @@ export function StepDetails({
 
   return (
     <div>
-      <div className={styles.stepHeader}>
-        <div>
-          <span className={styles.stepEyebrow}>Step 2 of 3</span>
-          <h1 className={styles.stepTitle}>Your Details</h1>
-          <p className={styles.stepSubtitle}>
-            Help us understand you better before your session. All information shared
-            here is strictly confidential.
-          </p>
-        </div>
-        <div className={styles.progress}>
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-          <span className={styles.progressDot} />
-        </div>
-      </div>
-
       <div className={styles.layout}>
         {/* Form */}
         <div className={styles.card}>
