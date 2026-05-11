@@ -25,12 +25,12 @@ function bufToHex(buf: ArrayBuffer): string {
     .join("");
 }
 
-function hexToBuf(hex: string): Uint8Array {
+function hexToBuf(hex: string): ArrayBuffer {
   const arr = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
     arr[i / 2] = parseInt(hex.slice(i, i + 2), 16);
   }
-  return arr;
+  return arr.buffer as ArrayBuffer;
 }
 
 // ─── Session token ────────────────────────────────────────────────────────────
