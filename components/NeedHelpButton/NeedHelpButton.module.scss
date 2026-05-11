@@ -1,0 +1,223 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+// ─── Trigger button (matches the look of the homepage CTA) ───────────────────
+
+.trigger {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: $radius-pill;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 120ms ease;
+
+  &:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 27, 36, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 16px 16px;
+  overflow-y: auto;
+  animation: fadeIn 160ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: $radius-md;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(30, 27, 36, 0.25);
+  animation: slideIn 200ms ease;
+
+  @include md { padding: 32px; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: $color-ink-soft;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: $color-bg-muted; color: $color-ink; }
+}
+
+.header {
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0 0 6px;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 22px;
+    color: $color-ink;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $color-ink-soft;
+  }
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 4px;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 13px;
+  color: $color-ink;
+}
+
+.input,
+.textarea {
+  font: inherit;
+  font-size: 14px;
+  color: $color-ink;
+  background: #fff;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  padding: 11px 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    border-color: $color-plum;
+    box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.12);
+  }
+}
+
+select.input {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3e%3cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23745475' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  appearance: none;
+  padding-right: 36px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 92px;
+  font-family: $font-body;
+}
+
+.error {
+  margin: 6px 0 0;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.primaryBtn {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:hover:not(:disabled) { opacity: 0.92; }
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: $color-ink;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 18px;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  cursor: pointer;
+
+  &:hover { background: $color-bg-muted; }
+}
+
+.success {
+  text-align: center;
+  padding: 12px 0;
+
+  h3 {
+    margin: 0 0 10px;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 20px;
+    color: $color-ink;
+  }
+
+  p {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: $color-ink-soft;
+    line-height: 1.6;
+  }
+}

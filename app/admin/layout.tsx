@@ -12,8 +12,9 @@ const NAV = [
   {
     group: "Bookings",
     items: [
-      { label: "Patients",     href: "/admin/patients"     },
-      { label: "Appointments", href: "/admin/appointments" },
+      { label: "Patients",      href: "/admin/patients"      },
+      { label: "Appointments",  href: "/admin/appointments"  },
+      { label: "Help Requests", href: "/admin/help-requests" },
     ],
   },
   {

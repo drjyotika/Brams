@@ -189,3 +189,26 @@ await sql`CREATE INDEX IF NOT EXISTS idx_payments_appointment ON payments (appoi
 await sql`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status)`;
 
 console.log("✅  Tables 'patients', 'appointments', 'appointment_uploads', 'payments' ready.");
+
+// ─── Help requests ────────────────────────────────────────────────────────────
+
+await sql`
+  CREATE TABLE IF NOT EXISTS help_requests (
+    id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    name        VARCHAR(255) NOT NULL,
+    phone       VARCHAR(30),
+    email       VARCHAR(255),
+    issue       VARCHAR(100),
+    message     TEXT         NOT NULL,
+    source      VARCHAR(50),
+    status      VARCHAR(20)  NOT NULL DEFAULT 'new',
+    admin_notes TEXT,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+  )
+`;
+
+await sql`CREATE INDEX IF NOT EXISTS idx_help_status ON help_requests (status)`;
+await sql`CREATE INDEX IF NOT EXISTS idx_help_created ON help_requests (created_at DESC)`;
+
+console.log("✅  Table 'help_requests' ready.");
