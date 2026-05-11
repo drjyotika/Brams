@@ -7,7 +7,7 @@ import styles from "./create.module.scss";
 
 export default function CreateUserPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ username: "", password: "", full_name: "", email: "", role: "editor" });
+  const [form, setForm] = useState({ username: "", password: "", passwordConfirm: "", full_name: "", email: "", role: "editor" });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -17,12 +17,17 @@ export default function CreateUserPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (form.password !== form.passwordConfirm) {
+      setError("Passwords do not match.");
+      return;
+    }
     setSaving(true);
     try {
+      const { passwordConfirm: _ignore, ...payload } = form;
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create user."); return; }
@@ -30,6 +35,8 @@ export default function CreateUserPage() {
     } catch { setError("Network error. Please try again."); }
     finally { setSaving(false); }
   };
+
+  const pwMismatch = !!form.passwordConfirm && form.password !== form.passwordConfirm;
 
   return (
     <div>
@@ -45,9 +52,39 @@ export default function CreateUserPage() {
               <label className={styles.label}>Username *</label>
               <input className={styles.input} value={form.username} onChange={set("username")} required />
             </div>
+            <div className={styles.field} />
+          </div>
+
+          <div className={styles.row}>
             <div className={styles.field}>
               <label className={styles.label}>Password *</label>
-              <input className={styles.input} type="password" value={form.password} onChange={set("password")} required minLength={8} />
+              <input
+                className={styles.input}
+                type="password"
+                value={form.password}
+                onChange={set("password")}
+                required
+                minLength={8}
+                autoComplete="new-password"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Re-enter Password *</label>
+              <input
+                className={styles.input}
+                type="password"
+                value={form.passwordConfirm}
+                onChange={set("passwordConfirm")}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                aria-invalid={pwMismatch || undefined}
+              />
+              {pwMismatch && (
+                <span style={{ fontSize: 12, color: "#b91c1c", marginTop: 4 }}>
+                  Passwords do not match
+                </span>
+              )}
             </div>
           </div>
           <div className={styles.row}>
@@ -71,7 +108,7 @@ export default function CreateUserPage() {
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.actions}>
-            <button type="submit" className={styles.saveBtn} disabled={saving}>
+            <button type="submit" className={styles.saveBtn} disabled={saving || pwMismatch}>
               {saving ? "Creating…" : "Create User"}
             </button>
           </div>

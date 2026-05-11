@@ -12,12 +12,13 @@ type UserForm = {
   role: string;
   is_active: boolean;
   password: string;
+  passwordConfirm: string;
 };
 
 export default function EditUserPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [form, setForm] = useState<UserForm>({ username: "", full_name: "", email: "", role: "editor", is_active: true, password: "" });
+  const [form, setForm] = useState<UserForm>({ username: "", full_name: "", email: "", role: "editor", is_active: true, password: "", passwordConfirm: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ export default function EditUserPage() {
     fetch(`/api/users/${id}`)
       .then((r) => r.json())
       .then((d) => {
-        setForm({ username: d.username ?? "", full_name: d.full_name ?? "", email: d.email ?? "", role: d.role ?? "editor", is_active: d.is_active ?? true, password: "" });
+        setForm({ username: d.username ?? "", full_name: d.full_name ?? "", email: d.email ?? "", role: d.role ?? "editor", is_active: d.is_active ?? true, password: "", passwordConfirm: "" });
         setLoading(false);
       });
   }, [id]);
@@ -37,7 +38,21 @@ export default function EditUserPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); setSaving(true);
+    setError("");
+
+    // Validate password / confirm pair only when changing.
+    if (form.password || form.passwordConfirm) {
+      if (form.password.length < 8) {
+        setError("Password must be at least 8 characters.");
+        return;
+      }
+      if (form.password !== form.passwordConfirm) {
+        setError("Passwords do not match.");
+        return;
+      }
+    }
+
+    setSaving(true);
     try {
       const body: Record<string, unknown> = { username: form.username, full_name: form.full_name || null, email: form.email || null, role: form.role, is_active: form.is_active };
       if (form.password) body.password = form.password;
@@ -49,6 +64,8 @@ export default function EditUserPage() {
     } catch { setError("Network error."); }
     finally { setSaving(false); }
   };
+
+  const pwMismatch = !!(form.password || form.passwordConfirm) && form.password !== form.passwordConfirm;
 
   if (loading) return <p style={{ color: "#71717a", fontSize: 14 }}>Loading…</p>;
 
@@ -67,8 +84,40 @@ export default function EditUserPage() {
               <input className={styles.input} value={form.username} onChange={set("username")} required />
             </div>
             <div className={styles.field}>
+              {/* spacer to keep the username row 1-column on the right */}
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
               <label className={styles.label}>New Password (leave blank to keep)</label>
-              <input className={styles.input} type="password" value={form.password} onChange={set("password")} minLength={8} placeholder="••••••••" />
+              <input
+                className={styles.input}
+                type="password"
+                value={form.password}
+                onChange={set("password")}
+                minLength={8}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Re-enter Password</label>
+              <input
+                className={styles.input}
+                type="password"
+                value={form.passwordConfirm}
+                onChange={set("passwordConfirm")}
+                minLength={8}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                aria-invalid={pwMismatch || undefined}
+              />
+              {pwMismatch && (
+                <span style={{ fontSize: 12, color: "#b91c1c", marginTop: 4 }}>
+                  Passwords do not match
+                </span>
+              )}
             </div>
           </div>
           <div className={styles.row}>
@@ -101,7 +150,7 @@ export default function EditUserPage() {
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.actions}>
-            <button type="submit" className={styles.saveBtn} disabled={saving}>{saving ? "Saving…" : saved ? "Saved!" : "Save Changes"}</button>
+            <button type="submit" className={styles.saveBtn} disabled={saving || pwMismatch}>{saving ? "Saving…" : saved ? "Saved!" : "Save Changes"}</button>
           </div>
         </form>
       </div>
