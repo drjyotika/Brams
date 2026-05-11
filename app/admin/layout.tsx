@@ -10,6 +10,13 @@ const NAV = [
     items: [{ label: "Homepage", href: "/admin/content" }],
   },
   {
+    group: "Bookings",
+    items: [
+      { label: "Patients",     href: "/admin/patients"     },
+      { label: "Appointments", href: "/admin/appointments" },
+    ],
+  },
+  {
     group: "Users",
     items: [
       { label: "All Users",    href: "/admin/users"        },

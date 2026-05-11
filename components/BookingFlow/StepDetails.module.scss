@@ -1,0 +1,84 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 13px;
+  color: $color-ink;
+}
+
+.input,
+.textarea {
+  font: inherit;
+  font-size: 14px;
+  color: $color-ink;
+  background: #fff;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  padding: 12px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    border-color: $color-plum;
+    box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.12);
+  }
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+  font-family: $font-body;
+}
+
+select.input {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3e%3cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23745475' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  appearance: none;
+  padding-right: 36px;
+}
+
+.uploadNote {
+  margin: 8px 0 16px;
+  font-size: 12px;
+  color: $color-ink-muted;
+}
+
+.error {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}

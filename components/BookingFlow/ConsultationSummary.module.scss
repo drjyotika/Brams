@@ -1,0 +1,83 @@
+@use "../../styles/tokens" as *;
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+  position: sticky;
+  top: 24px;
+}
+
+.privacyBox {
+  background: $color-bg-muted;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+
+  strong {
+    display: block;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 13px;
+    color: $color-ink;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.55;
+    color: $color-ink-soft;
+  }
+}
+
+.heading {
+  margin: 0 0 16px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: $color-ink-muted;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.rowLabel {
+  color: $color-ink-soft;
+}
+
+.rowValue {
+  color: $color-ink;
+  font-weight: 600;
+  text-align: right;
+}
+
+.rowStrong {
+  font-size: 16px;
+
+  .rowLabel {
+    font-family: $font-display;
+    font-weight: 700;
+    color: $color-ink;
+  }
+  .rowValue {
+    font-family: $font-display;
+    font-weight: 700;
+    color: $color-plum;
+  }
+}
+
+.divider {
+  height: 1px;
+  background: rgba(207, 195, 204, 0.3);
+  margin: 10px 0;
+}

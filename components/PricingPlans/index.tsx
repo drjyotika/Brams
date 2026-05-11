@@ -49,7 +49,7 @@ function PlanCard({ plan }: { plan: PricingPlan }) {
           </li>
         ))}
       </ul>
-      <a href={plan.cta.href} className={btnCls}>
+      <a href={`/book?plan=${plan.id}`} className={btnCls}>
         {plan.cta.label}
       </a>
     </article>

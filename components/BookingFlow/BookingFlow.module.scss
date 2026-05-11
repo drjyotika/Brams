@@ -1,0 +1,225 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  @include container;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+
+  img {
+    height: 36px;
+    width: auto;
+  }
+}
+
+.cancelLink {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-ink-soft;
+  border: 1px solid $color-lilac-soft;
+  padding: 8px 16px;
+  border-radius: $radius-pill;
+  transition: background 120ms ease;
+
+  &:hover { background: rgba(255, 255, 255, 0.7); }
+}
+
+.main {
+  @include container;
+  padding-bottom: 80px;
+}
+
+.loadingShell,
+.errorShell {
+  text-align: center;
+  padding: 96px 24px;
+  font-size: 16px;
+  color: $color-ink-soft;
+}
+
+.errorShell {
+  h2 {
+    font-family: $font-display;
+    font-size: 24px;
+    color: $color-ink;
+    margin: 0 0 12px;
+  }
+  p { margin: 0 0 24px; }
+}
+
+.backLink {
+  color: $color-plum;
+  font-weight: 600;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Shared step header ──────────────────────────────────────────────────────
+
+.stepHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.stepEyebrow {
+  display: block;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: $color-plum;
+  text-transform: uppercase;
+}
+
+.stepTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.1;
+  color: $color-ink;
+  margin: 8px 0 12px;
+}
+
+.stepSubtitle {
+  color: $color-ink-soft;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 480px;
+}
+
+.progress {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progressDot {
+  width: 48px;
+  height: 6px;
+  border-radius: 3px;
+  background: $color-lilac-soft;
+}
+
+.progressDotActive {
+  background: $color-plum;
+}
+
+// ─── Asymmetric layout (left + right sidebar) ────────────────────────────────
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include lg {
+    grid-template-columns: 2fr 1fr;
+    align-items: flex-start;
+  }
+}
+
+.layoutEqual {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include md {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+}
+
+.summaryCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+  position: sticky;
+  top: 24px;
+}
+
+// ─── Step buttons row ────────────────────────────────────────────────────────
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-ink-soft;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover { color: $color-ink; }
+}
+
+.primaryBtn {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  &:hover:not(:disabled) { opacity: 0.92; }
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: $color-ink;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  cursor: pointer;
+
+  &:hover { background: rgba(255, 255, 255, 0.6); }
+}

@@ -1,0 +1,202 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.calendarLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include lg {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.calendarCard,
+.slotsCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+}
+
+// ─── Calendar ────────────────────────────────────────────────────────────────
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.monthLabel {
+  margin: 0;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.monthNav {
+  display: flex;
+  gap: 4px;
+}
+
+.navBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid $color-lilac-soft;
+  color: $color-ink;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: $color-bg-muted; }
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: $color-ink-muted;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-family: $font-body;
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-ink;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+
+  &:hover:not(:disabled):not(.dayActive) {
+    background: $color-bg-muted;
+  }
+}
+
+.dayActive {
+  background: $color-plum;
+  color: #fff;
+  font-weight: 700;
+}
+
+.dayToday:not(.dayActive) {
+  border: 1px solid $color-plum;
+}
+
+.dayDisabled {
+  color: $color-ink-muted;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.empty { /* placeholder cell */ }
+
+// ─── Slots ───────────────────────────────────────────────────────────────────
+
+.slotsTitle {
+  margin: 0 0 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.slotsDate {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: $color-ink-soft;
+  font-weight: 500;
+}
+
+.slotsHint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: $color-ink-muted;
+  font-style: italic;
+}
+
+.slotsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+
+  &:hover:not(:disabled):not(.slotActive) {
+    border-color: $color-plum;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.slotActive {
+  border-color: $color-plum;
+  background: rgba(116, 84, 117, 0.06);
+}
+
+.slotTime {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  color: $color-ink;
+}
+
+.slotDuration {
+  font-size: 11px;
+  color: $color-ink-muted;
+}
+
+.waitlistNote {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: $color-bg-muted;
+  border-radius: 8px;
+  font-size: 12px;
+  color: $color-ink-soft;
+
+  a {
+    color: $color-plum;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+}

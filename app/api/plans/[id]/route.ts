@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readContent, writeContent } from "../../../../lib/storage";
+import { parsePriceToPaise, parseDurationMinutes } from "../../../../lib/plans";
 import type { PricingPlan } from "../../../../lib/content";
 
 type Params = { params: Promise<{ id: string }> };
@@ -9,7 +10,11 @@ export async function GET(_req: Request, { params }: Params) {
   const content = await readContent();
   const plan = content.pricing.plans.find((p) => p.id === id);
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
-  return NextResponse.json(plan);
+  return NextResponse.json({
+    ...plan,
+    price_paise:      parsePriceToPaise(plan.price),
+    duration_minutes: parseDurationMinutes(plan.unit),
+  });
 }
 
 export async function PUT(req: Request, { params }: Params) {
