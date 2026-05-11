@@ -95,22 +95,6 @@ export function StepConfirm({
 
   return (
     <div>
-      <div className={styles.stepHeader}>
-        <div>
-          <span className={styles.stepEyebrow}>Step 3 of 3</span>
-          <h1 className={styles.stepTitle}>Confirm Your Booking</h1>
-          <p className={styles.stepSubtitle}>
-            Review your details below. You can attach any reports or prior prescriptions
-            (optional).
-          </p>
-        </div>
-        <div className={styles.progress}>
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-        </div>
-      </div>
-
       <div className={styles.layout}>
         <div className={cStyles.confirmCard}>
           <div className={cStyles.headerRow}>

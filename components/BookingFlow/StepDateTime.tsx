@@ -60,22 +60,6 @@ export function StepDateTime({
 
   return (
     <div>
-      <div className={styles.stepHeader}>
-        <div>
-          <span className={styles.stepEyebrow}>Step 1 of 3</span>
-          <h1 className={styles.stepTitle}>Choose Date & Time</h1>
-          <p className={styles.stepSubtitle}>
-            Find a slot that works for you. All sessions are conducted via a secure,
-            confidential video platform.
-          </p>
-        </div>
-        <div className={styles.progress}>
-          <span className={`${styles.progressDot} ${styles.progressDotActive}`} />
-          <span className={styles.progressDot} />
-          <span className={styles.progressDot} />
-        </div>
-      </div>
-
       <div className={dtStyles.calendarLayout}>
         {/* Calendar */}
         <div className={dtStyles.calendarCard}>
