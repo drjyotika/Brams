@@ -1,0 +1,90 @@
+@use "../../../../styles/tokens" as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(207, 195, 204, 0.15);
+}
+
+.title {
+  margin: 0;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 22px;
+  color: $color-ink;
+}
+
+.back {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-ink-muted;
+  &:hover { color: $color-ink; }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.2);
+  border-radius: $radius-md;
+  padding: 32px;
+  max-width: 680px;
+}
+
+.form { display: flex; flex-direction: column; gap: 20px; }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-ink-soft;
+  letter-spacing: 0.2px;
+}
+
+.input, .select {
+  padding: 10px 14px;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-ink;
+  background: $color-bg;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    border-color: $color-plum;
+    box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.1);
+  }
+}
+
+.error {
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: $radius-sm;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+
+.saveBtn {
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 28px;
+  border-radius: $radius-sm;
+  border: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover:not(:disabled) { background: $color-plum-deep; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}

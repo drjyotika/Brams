@@ -72,3 +72,38 @@ await sql`
 
 console.log(`✅  Admin user '${username}' seeded.`);
 console.log("🎉  Migration complete.");
+
+// ─── Pages table ─────────────────────────────────────────────────────────────
+
+await sql`
+  CREATE TABLE IF NOT EXISTS pages (
+    slug        VARCHAR(100)  PRIMARY KEY,
+    title       VARCHAR(255)  NOT NULL,
+    content     TEXT          NOT NULL DEFAULT '',
+    updated_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  )
+`;
+
+await sql`
+  INSERT INTO pages (slug, title, content) VALUES
+    ('privacy-policy',    'Privacy Policy',              ''),
+    ('confidentiality',   'Confidentiality Agreement',   ''),
+    ('terms',             'Terms of Service',            ''),
+    ('emergency-contact', 'Emergency Contact',           ''),
+    ('contact',           'Contact Us',                  '')
+  ON CONFLICT (slug) DO NOTHING
+`;
+
+await sql`
+  CREATE TABLE IF NOT EXISTS contact_submissions (
+    id         UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    name       VARCHAR(255)  NOT NULL,
+    email      VARCHAR(255)  NOT NULL,
+    phone      VARCHAR(50),
+    subject    VARCHAR(255),
+    message    TEXT          NOT NULL,
+    created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  )
+`;
+
+console.log("✅  Tables 'pages' and 'contact_submissions' ready.");

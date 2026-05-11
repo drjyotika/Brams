@@ -1,0 +1,121 @@
+@use "../../styles/tokens" as *;
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+.sidebar {
+  width: 228px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid rgba(207, 195, 204, 0.2);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.brand {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(207, 195, 204, 0.15);
+}
+
+.logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+}
+
+.nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.groupLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: $color-ink-zinc;
+  padding: 0 8px 6px;
+}
+
+.navItem {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-ink-soft;
+  transition: background 100ms ease, color 100ms ease;
+
+  &:hover {
+    background: $color-bg-muted;
+    color: $color-ink;
+  }
+}
+
+.navActive {
+  background: rgba(116, 84, 117, 0.08);
+  color: $color-plum;
+  font-weight: 600;
+}
+
+.sidebarFooter {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(207, 195, 204, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.viewSite {
+  display: block;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid $color-lilac-soft;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-plum;
+  transition: background 100ms ease;
+
+  &:hover { background: rgba(116, 84, 117, 0.05); }
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  cursor: pointer;
+  transition: background 100ms ease;
+  background: none;
+
+  &:hover { background: rgba(220, 38, 38, 0.06); }
+}
+
+.main {
+  flex: 1;
+  margin-left: 228px;
+  padding: 40px 48px;
+  min-height: 100vh;
+}

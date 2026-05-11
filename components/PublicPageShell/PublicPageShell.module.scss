@@ -1,0 +1,37 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.main {
+  background: $color-bg;
+  min-height: 60vh;
+  padding-block: 80px;
+}
+
+.container {
+  @include container;
+  max-width: 800px;
+}
+
+.title {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.15;
+  color: $color-ink;
+  margin: 0 0 40px;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.75;
+  color: $color-ink-soft;
+
+  h1, h2, h3 { font-family: $font-display; font-weight: 700; color: $color-ink; margin: 32px 0 12px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 18px; }
+  p { margin: 0 0 16px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  a { color: $color-plum; text-decoration: underline; }
+  strong { color: $color-ink; font-weight: 600; }
+}
