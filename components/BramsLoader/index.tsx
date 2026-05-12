@@ -13,12 +13,15 @@ export function BramsLoader({ fullPage = false }: { fullPage?: boolean }) {
       role="status"
       aria-label="Loading"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt="Brams Mind Care"
-        className={styles.logo}
-      />
+      {/* Clip to the icon-only left portion of the wide logo PNG */}
+      <div className={styles.logoWrap}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="Brams Mind Care"
+          className={styles.logo}
+        />
+      </div>
       <div className={styles.dots} aria-hidden>
         <span className={styles.dot} />
         <span className={styles.dot} />
