@@ -42,12 +42,6 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
       <div className={styles.blobA} aria-hidden />
       <div className={styles.blobB} aria-hidden />
 
-      {/* Brand logo */}
-      <div className={styles.successLogo}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Brams Mind Care" className={styles.logoImg} />
-      </div>
-
       {/* Main card */}
       <div className={styles.successCard}>
         {/* Icon + heading */}

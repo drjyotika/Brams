@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { readContent } from "../../../lib/storage";
+import { TopNavBar } from "../../../components/TopNavBar";
+import { NeedHelpButton } from "../../../components/NeedHelpButton";
 import { BookingSuccess } from "../../../components/BookingStatus/BookingSuccess";
 
 export const metadata = { title: "Booking Confirmed — Brams Mind Care" };
@@ -7,8 +9,15 @@ export const metadata = { title: "Booking Confirmed — Brams Mind Care" };
 export default async function BookingSuccessPage() {
   const content = await readContent();
   return (
-    <Suspense fallback={null}>
-      <BookingSuccess data={content.bookingSuccess} />
-    </Suspense>
+    <>
+      <TopNavBar
+        data={content.nav}
+        hideLinks
+        ctaSlot={<NeedHelpButton source="booking-flow" />}
+      />
+      <Suspense fallback={null}>
+        <BookingSuccess data={content.bookingSuccess} />
+      </Suspense>
+    </>
   );
 }

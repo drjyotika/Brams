@@ -4,7 +4,7 @@
 // ─── Success Page ─────────────────────────────────────────────────────────────
 
 .successPage {
-  min-height: 100vh;
+  min-height: calc(100vh - 72px); // subtract nav height
   background: radial-gradient(
     ellipse at 110% -10%,
     rgba(200, 162, 200, 0.9) 0%,
