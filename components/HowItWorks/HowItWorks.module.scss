@@ -35,14 +35,16 @@
 
 .grid {
   display: grid;
-  gap: 64px;
+  gap: 32px;
   grid-template-columns: 1fr;
 
   @include md {
+    gap: 48px;
     grid-template-columns: repeat(2, 1fr);
   }
 
   @include lg {
+    gap: 64px;
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -51,17 +53,51 @@
   position: relative;
 }
 
+// Mobile: the big watermark number is hidden — we render an inline
+// number next to the icon instead (see .iconRow / .inlineNumber).
 .bigNumber {
-  position: absolute;
-  left: -32px;
-  top: -112px;
+  display: none;
+
+  @include md {
+    display: block;
+    position: absolute;
+    left: -32px;
+    top: -112px;
+    font-family: $font-display;
+    font-weight: 800;
+    font-size: 192px;
+    line-height: 1;
+    color: rgba(116, 84, 117, 0.05);
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+.iconRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.inlineNumber {
   font-family: $font-display;
   font-weight: 800;
-  font-size: 192px;
+  font-size: 64px;
   line-height: 1;
-  color: rgba(116, 84, 117, 0.05);
-  pointer-events: none;
+  letter-spacing: -2px;
+  color: $color-plum;
+  opacity: 0.25;
   user-select: none;
+  margin-left: auto;
+  // Optical alignment — pull the right edge so the digit sits flush with
+  // the card's right padding without a visual gap.
+  margin-right: -4px;
+
+  @include md {
+    display: none;
+  }
 }
 
 .card {
