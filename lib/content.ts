@@ -130,8 +130,15 @@ export type TimeSlot = {
   time: string; // "HH:MM" 24-hour e.g. "10:00", "17:30"
 };
 
+/** Schedule for one day of the week (0 = Sunday … 6 = Saturday). */
+export type DaySchedule = {
+  day: number;      // 0–6
+  enabled: boolean; // false = no appointments on this weekday
+  slots: TimeSlot[];
+};
+
 export type BookingStep1Data = {
-  timeSlots: TimeSlot[];
+  schedule: DaySchedule[]; // 7 entries, one per weekday
 };
 
 export type BookingFieldKey =
@@ -390,13 +397,14 @@ export const defaultContent: SiteContent = {
       "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account.",
   },
   bookingStep1: {
-    timeSlots: [
-      { id: "slot-1", time: "10:00" },
-      { id: "slot-2", time: "11:30" },
-      { id: "slot-3", time: "12:15" },
-      { id: "slot-4", time: "13:30" },
-      { id: "slot-5", time: "14:00" },
-      { id: "slot-6", time: "17:30" },
+    schedule: [
+      { day: 0, enabled: false, slots: [] }, // Sunday
+      { day: 1, enabled: true,  slots: [{ id: "s1-1", time: "10:00" }, { id: "s1-2", time: "11:30" }, { id: "s1-3", time: "13:30" }, { id: "s1-4", time: "17:30" }] }, // Monday
+      { day: 2, enabled: true,  slots: [{ id: "s2-1", time: "10:00" }, { id: "s2-2", time: "12:15" }, { id: "s2-3", time: "14:00" }] }, // Tuesday
+      { day: 3, enabled: true,  slots: [{ id: "s3-1", time: "10:00" }, { id: "s3-2", time: "11:30" }, { id: "s3-3", time: "13:30" }, { id: "s3-4", time: "17:30" }] }, // Wednesday
+      { day: 4, enabled: true,  slots: [{ id: "s4-1", time: "10:00" }, { id: "s4-2", time: "12:15" }, { id: "s4-3", time: "14:00" }] }, // Thursday
+      { day: 5, enabled: true,  slots: [{ id: "s5-1", time: "10:00" }, { id: "s5-2", time: "11:30" }, { id: "s5-3", time: "14:00" }, { id: "s5-4", time: "17:30" }] }, // Friday
+      { day: 6, enabled: false, slots: [] }, // Saturday
     ],
   },
   bookingStep2: {

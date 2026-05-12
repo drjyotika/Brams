@@ -111,6 +111,15 @@
   cursor: not-allowed;
 }
 
+// Days that exist but have no configured slots (not past, just unavailable)
+.dayUnavailable {
+  color: $color-ink-muted;
+  opacity: 0.3;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-color: rgba(116, 84, 117, 0.3);
+}
+
 .empty { /* placeholder cell */ }
 
 // ─── Slots ───────────────────────────────────────────────────────────────────

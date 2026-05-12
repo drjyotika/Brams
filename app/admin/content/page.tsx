@@ -7,6 +7,7 @@ import type {
   BookingStep1Data,
   BookingStep2Data,
   BookingField,
+  DaySchedule,
   HeroData,
   HowItWorksData,
   NavData,
@@ -18,7 +19,6 @@ import type {
   SupportCard,
   SupportData,
   FooterData,
-  TimeSlot,
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
@@ -517,6 +517,8 @@ function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; on
 
 // ─── Booking — Step 1 (Time Slots) ───────────────────────────────────────────
 
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 /** "10:00" → "10:00 AM" */
 function fmt12(time: string): string {
   const [hStr, minStr] = time.split(":");
@@ -530,82 +532,137 @@ function fmt12(time: string): string {
 function BookingStep1Editor({ data, onChange }: { data: BookingStep1Data; onChange: (v: BookingStep1Data) => void }) {
   const { status, save } = useSaver("bookingStep1");
 
-  const setSlot = (id: string, time: string) =>
-    onChange({ ...data, timeSlots: data.timeSlots.map((s) => s.id === id ? { ...s, time } : s) });
+  const patchDay = (dayIdx: number, patch: Partial<DaySchedule>) =>
+    onChange({
+      ...data,
+      schedule: data.schedule.map((ds) => ds.day === dayIdx ? { ...ds, ...patch } : ds),
+    });
 
-  const removeSlot = (id: string) =>
-    onChange({ ...data, timeSlots: data.timeSlots.filter((s) => s.id !== id) });
+  const setSlotTime = (dayIdx: number, slotId: string, time: string) =>
+    patchDay(dayIdx, {
+      slots: data.schedule
+        .find((ds) => ds.day === dayIdx)!
+        .slots.map((s) => (s.id === slotId ? { ...s, time } : s)),
+    });
 
-  const addSlot = () =>
-    onChange({ ...data, timeSlots: [...data.timeSlots, { id: `slot-${Date.now()}`, time: "09:00" }] });
+  const removeSlot = (dayIdx: number, slotId: string) =>
+    patchDay(dayIdx, {
+      slots: data.schedule.find((ds) => ds.day === dayIdx)!.slots.filter((s) => s.id !== slotId),
+    });
 
-  const moveSlot = (idx: number, dir: -1 | 1) => {
-    const slots = [...data.timeSlots];
-    const target = idx + dir;
+  const addSlot = (dayIdx: number) =>
+    patchDay(dayIdx, {
+      slots: [
+        ...(data.schedule.find((ds) => ds.day === dayIdx)?.slots ?? []),
+        { id: `s${dayIdx}-${Date.now()}`, time: "09:00" },
+      ],
+    });
+
+  const moveSlot = (dayIdx: number, slotIdx: number, dir: -1 | 1) => {
+    const ds = data.schedule.find((s) => s.day === dayIdx);
+    if (!ds) return;
+    const slots = [...ds.slots];
+    const target = slotIdx + dir;
     if (target < 0 || target >= slots.length) return;
-    [slots[idx], slots[target]] = [slots[target], slots[idx]];
-    onChange({ ...data, timeSlots: slots });
+    [slots[slotIdx], slots[target]] = [slots[target], slots[slotIdx]];
+    patchDay(dayIdx, { slots });
   };
 
   return (
     <section className={styles.panel}>
       <h2 className={styles.panelTitle}>Booking — Time Slots</h2>
       <p className={styles.panelHint}>
-        Add, remove or reorder the appointment slots shown in Step 1 of the booking flow.
-        Times are in 24-hour format; patients see them in 12-hour (AM/PM).
+        Enable or disable each day of the week and configure the available appointment slots for that day.
+        Times are in 24-hour format; patients see them as AM/PM.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-        {data.timeSlots.map((slot, i) => (
-          <div key={slot.id} className={styles.cardArrayItem} style={{ padding: "12px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              {/* Reorder */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <button
-                  type="button"
-                  className={styles.secondary}
-                  style={{ padding: "2px 8px", fontSize: 11 }}
-                  onClick={() => moveSlot(i, -1)}
-                  disabled={i === 0}
-                  title="Move up"
-                >▲</button>
-                <button
-                  type="button"
-                  className={styles.secondary}
-                  style={{ padding: "2px 8px", fontSize: 11 }}
-                  onClick={() => moveSlot(i, 1)}
-                  disabled={i === data.timeSlots.length - 1}
-                  title="Move down"
-                >▼</button>
-              </div>
-
-              {/* Time picker */}
-              <div style={{ flex: 1, minWidth: 140 }}>
-                <label className={styles.label} style={{ display: "block", marginBottom: 4 }}>
-                  Slot {i + 1} — <span style={{ color: "#745475", fontWeight: 700 }}>{fmt12(slot.time)}</span>
-                </label>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {data.schedule.map((ds) => (
+          <div key={ds.day} className={styles.cardArrayItem}>
+            {/* Day header */}
+            <div className={styles.cardArrayHead}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{DAY_NAMES[ds.day]}</span>
+              <label className={styles.checkbox} style={{ marginLeft: "auto" }}>
                 <input
-                  type="time"
-                  className={styles.input}
-                  value={slot.time}
-                  onChange={(e) => setSlot(slot.id, e.target.value)}
+                  type="checkbox"
+                  checked={ds.enabled}
+                  onChange={(e) => patchDay(ds.day, { enabled: e.target.checked })}
                 />
-              </div>
-
-              <button
-                type="button"
-                className={styles.danger}
-                onClick={() => removeSlot(slot.id)}
-              >
-                Remove
-              </button>
+                Enabled
+              </label>
             </div>
+
+            {ds.enabled ? (
+              <>
+                {ds.slots.length === 0 && (
+                  <p style={{ fontSize: 12, color: "#9b8fa0", margin: "8px 0 4px", fontStyle: "italic" }}>
+                    No slots yet — add one below.
+                  </p>
+                )}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: ds.slots.length ? 8 : 0 }}>
+                  {ds.slots.map((slot, si) => (
+                    <div key={slot.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      {/* Reorder */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <button
+                          type="button"
+                          className={styles.secondary}
+                          style={{ padding: "2px 8px", fontSize: 11 }}
+                          onClick={() => moveSlot(ds.day, si, -1)}
+                          disabled={si === 0}
+                          title="Move up"
+                        >▲</button>
+                        <button
+                          type="button"
+                          className={styles.secondary}
+                          style={{ padding: "2px 8px", fontSize: 11 }}
+                          onClick={() => moveSlot(ds.day, si, 1)}
+                          disabled={si === ds.slots.length - 1}
+                          title="Move down"
+                        >▼</button>
+                      </div>
+
+                      {/* Time picker */}
+                      <div style={{ flex: 1, minWidth: 140 }}>
+                        <label className={styles.label} style={{ display: "block", marginBottom: 4 }}>
+                          Slot {si + 1} — <span style={{ color: "#745475", fontWeight: 700 }}>{fmt12(slot.time)}</span>
+                        </label>
+                        <input
+                          type="time"
+                          className={styles.input}
+                          value={slot.time}
+                          onChange={(e) => setSlotTime(ds.day, slot.id, e.target.value)}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        className={styles.danger}
+                        onClick={() => removeSlot(ds.day, slot.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <button type="button" className={styles.secondary} onClick={() => addSlot(ds.day)}>
+                    + Add Slot
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p style={{ fontSize: 12, color: "#9b8fa0", margin: "8px 0 0", fontStyle: "italic" }}>
+                No appointments scheduled on this day.
+              </p>
+            )}
           </div>
         ))}
       </div>
 
       <div className={styles.actions}>
-        <button type="button" className={styles.secondary} onClick={addSlot}>+ Add Slot</button>
         <button className={styles.primary} onClick={() => save(data)}>Save Time Slots</button>
         <StatusBadge status={status} />
       </div>

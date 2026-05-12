@@ -113,7 +113,7 @@ export function BookingFlow() {
         {step === 1 && (
           <StepDateTime
             plan={plan}
-            timeSlots={step1Config.timeSlots}
+            schedule={step1Config.schedule}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
             onSelect={(date, time) => {

@@ -9,9 +9,41 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { defaultContent, type SiteContent } from "./content";
+import { defaultContent, type BookingStep1Data, type SiteContent, type TimeSlot } from "./content";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Migrates old bookingStep1 format ({ timeSlots: [...] }) to the new per-day
+ * schedule format ({ schedule: [...] }).  Any content already using the new
+ * shape is passed through unchanged.
+ */
+function migrateStep1(raw: unknown): BookingStep1Data {
+  if (!raw || typeof raw !== "object") return defaultContent.bookingStep1;
+
+  const d = raw as Record<string, unknown>;
+
+  // New format — already has `schedule`
+  if (Array.isArray(d.schedule)) return raw as BookingStep1Data;
+
+  // Old format — has `timeSlots`; apply the same slots to Mon–Fri
+  if (Array.isArray(d.timeSlots)) {
+    const slots = d.timeSlots as TimeSlot[];
+    return {
+      schedule: [
+        { day: 0, enabled: false, slots: [] },
+        { day: 1, enabled: true,  slots: slots.map((s, i) => ({ ...s, id: `s1-${i}` })) },
+        { day: 2, enabled: true,  slots: slots.map((s, i) => ({ ...s, id: `s2-${i}` })) },
+        { day: 3, enabled: true,  slots: slots.map((s, i) => ({ ...s, id: `s3-${i}` })) },
+        { day: 4, enabled: true,  slots: slots.map((s, i) => ({ ...s, id: `s4-${i}` })) },
+        { day: 5, enabled: true,  slots: slots.map((s, i) => ({ ...s, id: `s5-${i}` })) },
+        { day: 6, enabled: false, slots: [] },
+      ],
+    };
+  }
+
+  return defaultContent.bookingStep1;
+}
 
 export function mergeContent(
   base: SiteContent,
@@ -27,7 +59,7 @@ export function mergeContent(
     footer:         { ...base.footer,         ...override.footer         },
     bookingSuccess: { ...base.bookingSuccess, ...override.bookingSuccess },
     bookingFailed:  { ...base.bookingFailed,  ...override.bookingFailed  },
-    bookingStep1:   override.bookingStep1   ?? base.bookingStep1,
+    bookingStep1:   migrateStep1(override.bookingStep1 ?? base.bookingStep1),
     bookingStep2:   override.bookingStep2   ?? base.bookingStep2,
   };
 }

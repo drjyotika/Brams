@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
-import type { TimeSlot } from "../../lib/content";
+import type { DaySchedule } from "../../lib/content";
 import { StickyFooter } from "./StickyFooter";
 import { AlternativeRequestModal } from "./AlternativeRequestModal";
 import styles from "./BookingFlow.module.scss";
@@ -31,9 +31,15 @@ function isoDate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+/** True when the weekday has slots and is marked enabled in the schedule. */
+function isDayAvailable(schedule: DaySchedule[], date: Date): boolean {
+  const ds = schedule.find((s) => s.day === date.getDay());
+  return !!(ds?.enabled && ds.slots.length > 0);
+}
+
 export function StepDateTime({
   plan,
-  timeSlots,
+  schedule,
   selectedDate,
   selectedTime,
   onSelect,
@@ -41,7 +47,7 @@ export function StepDateTime({
   onNext,
 }: {
   plan: PlanInfo;
-  timeSlots: TimeSlot[];
+  schedule: DaySchedule[];
   selectedDate: string | null;
   selectedTime: string | null;
   onSelect: (date: string, time: string) => void;
@@ -58,6 +64,15 @@ export function StepDateTime({
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+
+  // Slots available for the currently selected date's weekday
+  const slotsForDate = useMemo(() => {
+    if (!selectedDate) return [];
+    const [y, mo, d] = selectedDate.split("-").map(Number);
+    const date = new Date(y, mo - 1, d);
+    const ds = schedule.find((s) => s.day === date.getDay());
+    return ds?.enabled ? (ds.slots ?? []) : [];
+  }, [selectedDate, schedule]);
 
   // Auto-scroll to the slots card when a new date is picked (mobile only —
   // on desktop the two cards are side-by-side and already in view).
@@ -106,17 +121,24 @@ export function StepDateTime({
           <div className={dtStyles.grid}>
             {days.map((d, i) => {
               if (!d) return <span key={i} className={dtStyles.empty} />;
-              const iso = isoDate(d);
-              const isPast    = d < today;
-              const isActive  = iso === selectedDate;
-              const isToday   = iso === isoDate(today);
+              const iso         = isoDate(d);
+              const isPast      = d < today;
+              const isAvailable = isDayAvailable(schedule, d);
+              const isDisabled  = isPast || !isAvailable;
+              const isActive    = iso === selectedDate;
+              const isToday     = iso === isoDate(today);
               return (
                 <button
                   key={i}
                   type="button"
-                  className={`${dtStyles.day} ${isActive ? dtStyles.dayActive : ""} ${isPast ? dtStyles.dayDisabled : ""} ${isToday ? dtStyles.dayToday : ""}`}
-                  disabled={isPast}
-                  onClick={() => { scrollToSlots(iso); onSelect(iso, selectedTime ?? ""); }}
+                  className={[
+                    dtStyles.day,
+                    isActive    ? dtStyles.dayActive    : "",
+                    isPast      ? dtStyles.dayDisabled  : !isAvailable ? dtStyles.dayUnavailable : "",
+                    isToday     ? dtStyles.dayToday     : "",
+                  ].join(" ")}
+                  disabled={isDisabled}
+                  onClick={() => { scrollToSlots(iso); onSelect(iso, ""); }}
                 >
                   {d.getDate()}
                 </button>
@@ -130,7 +152,7 @@ export function StepDateTime({
           <h3 className={dtStyles.slotsTitle}>Available Slots</h3>
           {selectedDate ? (
             <p className={dtStyles.slotsDate}>
-              {new Date(selectedDate).toLocaleDateString("en-IN", {
+              {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", {
                 weekday: "long",
                 month:   "short",
                 day:     "numeric",
@@ -140,25 +162,29 @@ export function StepDateTime({
             <p className={dtStyles.slotsHint}>Pick a date to see slots</p>
           )}
 
-          <div className={dtStyles.slotsGrid}>
-            {timeSlots.map((slot) => {
-              const value  = toDbTime(slot.time);
-              const label  = formatTime12(slot.time);
-              const active = selectedTime === value;
-              return (
-                <button
-                  key={slot.id}
-                  type="button"
-                  className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
-                  disabled={!selectedDate}
-                  onClick={() => onSelect(selectedDate!, value)}
-                >
-                  <span className={dtStyles.slotTime}>{label}</span>
-                  <span className={dtStyles.slotDuration}>{plan.duration_minutes} min</span>
-                </button>
-              );
-            })}
-          </div>
+          {selectedDate && slotsForDate.length === 0 ? (
+            <p className={dtStyles.slotsHint}>No slots available on this day.</p>
+          ) : (
+            <div className={dtStyles.slotsGrid}>
+              {slotsForDate.map((slot) => {
+                const value  = toDbTime(slot.time);
+                const label  = formatTime12(slot.time);
+                const active = selectedTime === value;
+                return (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
+                    disabled={!selectedDate}
+                    onClick={() => onSelect(selectedDate!, value)}
+                  >
+                    <span className={dtStyles.slotTime}>{label}</span>
+                    <span className={dtStyles.slotDuration}>{plan.duration_minutes} min</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className={dtStyles.waitlistNote}>
             If you don&rsquo;t see availability that works for you,{" "}
