@@ -1,0 +1,490 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+// ─── Success Page ─────────────────────────────────────────────────────────────
+
+.successPage {
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at 110% -10%,
+    rgba(200, 162, 200, 0.9) 0%,
+    rgba(225, 206, 226, 0.6) 28%,
+    $color-bg 65%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 64px;
+  position: relative;
+  overflow: hidden;
+}
+
+// Decorative blobs
+.blobA {
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 640px;
+  height: 640px;
+  border-radius: $radius-pill;
+  background: rgba(189, 222, 254, 0.2);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.blobB {
+  position: absolute;
+  bottom: -5%;
+  left: -5%;
+  width: 480px;
+  height: 480px;
+  border-radius: $radius-pill;
+  background: rgba(200, 162, 200, 0.1);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.successLogo {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 32px;
+}
+
+.logoImg {
+  height: 40px;
+  width: auto;
+}
+
+// White card
+.successCard {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  border-radius: $radius-xl;
+  box-shadow: 0 12px 20px rgba(26, 28, 29, 0.06);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 672px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+
+  @include md {
+    padding: 48px;
+  }
+}
+
+// Icon + header
+.successHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.iconCircle {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-pill;
+  background: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.successTitle {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: $color-ink;
+  margin: 8px 0 0;
+
+  @include md {
+    font-size: 48px;
+  }
+}
+
+.successSubtitle {
+  font-size: 17px;
+  line-height: 1.65;
+  color: $color-ink-soft;
+  margin: 0;
+  max-width: 400px;
+}
+
+// Bento grid
+.bentoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bentoCard {
+  background: $color-bg-muted;
+  border-radius: $radius-sm;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bentoCardWide {
+  grid-column: 1 / -1;
+}
+
+.bentoCardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bentoLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #7e747c;
+  margin: 0;
+}
+
+.bentoValue {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 18px;
+  color: $color-ink;
+  margin: 0;
+
+  @include md {
+    font-size: 20px;
+  }
+}
+
+.bentoValueAccent {
+  color: $color-plum;
+}
+
+// Actions
+.actionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.joinBtn {
+  width: 100%;
+  height: 64px;
+  background: $color-lilac;
+  color: $color-plum-deep;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 17px;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 10px 15px -3px rgba(200, 162, 200, 0.2),
+    0 4px 6px -4px rgba(200, 162, 200, 0.2);
+  transition: opacity 120ms ease;
+
+  &:hover { opacity: 0.9; }
+}
+
+.secondaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.secondaryBtn {
+  height: 56px;
+  background: #e2e2e4;
+  border: none;
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-ink;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 120ms ease;
+
+  &:hover { background: #d4d4d6; }
+}
+
+.homeLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 8px;
+  font-family: $font-body;
+  font-size: 15px;
+  font-weight: 500;
+  color: #7e747c;
+  text-decoration: none;
+  transition: color 120ms ease;
+
+  &:hover { color: $color-ink; }
+}
+
+// Footer note
+.footerNote {
+  position: relative;
+  z-index: 1;
+  margin-top: 48px;
+  text-align: center;
+  max-width: 480px;
+}
+
+.footerNoteText {
+  font-size: 13px;
+  line-height: 1.65;
+  color: $color-ink-soft;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.supportEmail {
+  color: $color-plum;
+  font-weight: 600;
+}
+
+.copyright {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7e747c;
+  opacity: 0.6;
+  letter-spacing: -0.4px;
+}
+
+// ─── Failed Page ──────────────────────────────────────────────────────────────
+
+.failedPage {
+  min-height: 100vh;
+  background: $color-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.failedMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+}
+
+.failedLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  width: 100%;
+  max-width: 896px;
+  align-items: center;
+
+  @include lg {
+    grid-template-columns: 5fr 7fr;
+  }
+}
+
+// Left decorative card (desktop only)
+.decorativeCard {
+  display: none;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: $color-bg-muted;
+  box-shadow: 0 12px 40px rgba(26, 28, 29, 0.06);
+  position: relative;
+
+  @include lg {
+    display: block;
+  }
+}
+
+.decorativeImage {
+  position: absolute;
+  inset: 0;
+  width: 125%;
+  height: 100%;
+  margin-left: -12.5%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+.decorativeBlob {
+  position: absolute;
+  bottom: -24px;
+  right: -24px;
+  width: 128px;
+  height: 128px;
+  border-radius: $radius-pill;
+  background: radial-gradient(circle, $color-plum 0%, $color-lilac 100%);
+  filter: blur(32px);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+// Content side
+.failedContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.failedIconCircle {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-pill;
+  background: #ffdad6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  line-height: 1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.failedTextBlock {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.failedTitle {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: $color-ink;
+  margin: 0;
+
+  @include md {
+    font-size: 48px;
+  }
+}
+
+.failedBody {
+  font-size: 17px;
+  line-height: 1.65;
+  color: $color-ink-soft;
+  margin: 0;
+  max-width: 440px;
+}
+
+// Actions
+.failedActions {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.retryBtn {
+  width: 100%;
+  height: 68px;
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 17px;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 12px 20px rgba(26, 28, 29, 0.06);
+  text-decoration: none;
+  transition: opacity 120ms ease;
+
+  &:hover { opacity: 0.92; }
+}
+
+.retryBtnInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.failedSecondaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.failedSecondaryBtn {
+  height: 56px;
+  background: $color-bg-muted;
+  border: none;
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-weight: 500;
+  font-size: 14px;
+  color: $color-ink;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  text-decoration: none;
+  transition: background 120ms ease;
+
+  &:hover { background: #e8e8ea; }
+}
+
+// Troubleshooting box
+.troubleshootSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(207, 195, 204, 0.2);
+}
+
+.troubleshootBox {
+  background: rgba(255, 218, 214, 0.1);
+  border: 1px solid rgba(186, 26, 26, 0.12);
+  border-radius: $radius-md;
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.troubleshootIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.troubleshootHeading {
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #ba1a1a;
+  margin: 0 0 6px;
+}
+
+.troubleshootBody {
+  font-size: 14px;
+  line-height: 1.65;
+  color: $color-ink-soft;
+  margin: 0;
+}

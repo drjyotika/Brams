@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
+import { StickyFooter } from "./StickyFooter";
 import styles from "./BookingFlow.module.scss";
 import dtStyles from "./StepDateTime.module.scss";
 
@@ -53,10 +54,22 @@ export function StepDateTime({
   today.setHours(0, 0, 0, 0);
 
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const slotsRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+
+  // Auto-scroll to the slots card when a new date is picked (mobile only —
+  // on desktop the two cards are side-by-side and already in view).
+  function scrollToSlots(newIso: string) {
+    if (newIso === selectedDate) return;          // same date, no need to scroll
+    if (window.innerWidth >= 1024) return;        // desktop: slots already visible
+    const el = slotsRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
 
   return (
     <div>
@@ -104,7 +117,7 @@ export function StepDateTime({
                   type="button"
                   className={`${dtStyles.day} ${isActive ? dtStyles.dayActive : ""} ${isPast ? dtStyles.dayDisabled : ""} ${isToday ? dtStyles.dayToday : ""}`}
                   disabled={isPast}
-                  onClick={() => onSelect(iso, selectedTime ?? "")}
+                  onClick={() => { scrollToSlots(iso); onSelect(iso, selectedTime ?? ""); }}
                 >
                   {d.getDate()}
                 </button>
@@ -114,7 +127,7 @@ export function StepDateTime({
         </div>
 
         {/* Slots */}
-        <div className={dtStyles.slotsCard}>
+        <div ref={slotsRef} className={dtStyles.slotsCard}>
           <h3 className={dtStyles.slotsTitle}>Available Slots</h3>
           {selectedDate ? (
             <p className={dtStyles.slotsDate}>
@@ -154,19 +167,13 @@ export function StepDateTime({
         </div>
       </div>
 
-      <div className={styles.actions}>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
-          ← Back to consultations
-        </button>
-        <button
-          type="button"
-          className={styles.primaryBtn}
-          disabled={!selectedDate || !selectedTime}
-          onClick={onNext}
-        >
-          Continue →
-        </button>
-      </div>
+      <StickyFooter
+        onBack={onBack}
+        backLabel="← Back to consultations"
+        onNext={onNext}
+        nextLabel="Continue →"
+        nextDisabled={!selectedDate || !selectedTime}
+      />
     </div>
   );
 }

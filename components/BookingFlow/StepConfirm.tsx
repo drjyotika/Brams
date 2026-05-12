@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { PlanInfo } from "./index";
+import { StickyFooter } from "./StickyFooter";
 import styles from "./BookingFlow.module.scss";
 import cStyles from "./StepConfirm.module.scss";
 
@@ -28,11 +29,11 @@ export function StepConfirm({
   patientName: string;
   onBack: () => void;
 }) {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploads, setUploads]     = useState<Upload[]>([]);
   const [uploading, setUploading] = useState(false);
   const [paying, setPaying]       = useState(false);
-  const [paid, setPaid]           = useState(false);
   const [error, setError]         = useState<string | null>(null);
 
   const consultationFee = plan.price_paise;
@@ -85,9 +86,20 @@ export function StepConfirm({
         body:    JSON.stringify({ gateway: "manual", status: "initiated" }),
       });
       if (!res.ok) throw new Error("Failed to start payment");
-      setPaid(true);
+
+      // Navigate to the success page with booking details in the URL
+      const params = new URLSearchParams({
+        id:   bookingId,
+        plan: plan.title,
+        date: scheduledDate,
+        time: scheduledTime,
+        name: patientName,
+      });
+      router.push(`/book/success?${params.toString()}`);
     } catch (e) {
-      setError((e as Error).message);
+      // Navigate to the failure page so the user can retry
+      const params = new URLSearchParams({ plan: plan.id });
+      router.push(`/book/failed?${params.toString()}`);
     } finally {
       setPaying(false);
     }
@@ -172,39 +184,16 @@ export function StepConfirm({
           <Row label="Total" value={formatINR(total)} strong />
 
           {error && <p className={cStyles.error}>{error}</p>}
-
-          {paid ? (
-            <div className={cStyles.successBox}>
-              <h4>✓ Booking submitted</h4>
-              <p>
-                Your booking reference is{" "}
-                <code>{bookingId.slice(0, 8)}</code>. We&rsquo;ll reach out shortly
-                to confirm and share the video call link.
-              </p>
-              <Link href="/" className={cStyles.homeLink}>Return to home</Link>
-            </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                className={cStyles.payBtn}
-                onClick={pay}
-                disabled={paying}
-              >
-                {paying ? "Processing…" : `Pay ${formatINR(total)} →`}
-              </button>
-              <button
-                type="button"
-                className={cStyles.backInline}
-                onClick={onBack}
-                disabled={paying}
-              >
-                ← Back to details
-              </button>
-            </>
-          )}
         </div>
       </div>
+
+      <StickyFooter
+        onBack={onBack}
+        backLabel="← Back to details"
+        onNext={pay}
+        nextLabel={`Pay ${formatINR(total)} →`}
+        nextLoading={paying}
+      />
     </div>
   );
 }

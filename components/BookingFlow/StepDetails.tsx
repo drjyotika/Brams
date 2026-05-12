@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PatientDetails, PlanInfo } from "./index";
 import { ConsultationSummary } from "./ConsultationSummary";
+import { StickyFooter } from "./StickyFooter";
 import styles from "./BookingFlow.module.scss";
 import dStyles from "./StepDetails.module.scss";
 
@@ -136,20 +137,6 @@ export function StepDetails({
           </p>
 
           {error && <p className={dStyles.error}>{error}</p>}
-
-          <div className={styles.actions}>
-            <button type="button" className={styles.backBtn} onClick={onBack}>
-              ← Back
-            </button>
-            <button
-              type="button"
-              className={styles.primaryBtn}
-              disabled={!canSubmit || submitting}
-              onClick={submit}
-            >
-              {submitting ? "Saving…" : "Proceed to Payment →"}
-            </button>
-          </div>
         </div>
 
         {/* Summary sidebar */}
@@ -161,6 +148,15 @@ export function StepDetails({
           />
         </div>
       </div>
+
+      <StickyFooter
+        onBack={onBack}
+        backLabel="← Back"
+        onNext={submit}
+        nextLabel="Proceed to Payment →"
+        nextDisabled={!canSubmit}
+        nextLoading={submitting}
+      />
     </div>
   );
 }
