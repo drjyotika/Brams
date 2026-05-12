@@ -18,28 +18,32 @@
 
 // ─── Logo icon (left icon portion of the wide logo PNG) ──────────────────────
 //
-// The logo file is 1662 × 512 px — brain icon on the left, text on the right.
-// At height: 52px the rendered width ≈ 169px; the icon occupies the leftmost
-// ~52px, so an overflow:hidden wrapper at 52×52 clips the text out cleanly.
+// Logo file: 1662 × 512 px — brain icon on left, "BRAMS MIND CARE" on right.
+// At height 56px → rendered width ≈ 182px.
+// The icon occupies ~31% of the image ≈ 56px, text starts at ~34% ≈ 62px.
+// Wrapper clips at 58px: icon fully visible, text stays hidden.
+//
+// Animation is on the <img>, NOT the wrapper — keeping it off the element that
+// has overflow:hidden prevents the scale transform from shifting the crop point.
 
 .logoWrap {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 56px;
   overflow: hidden;
   flex-shrink: 0;
-  animation: logoPulse 1.8s ease-in-out infinite;
 }
 
 .logo {
   display: block;
-  height: 52px;
-  width: auto;       // natural width ≈ 169px — right side clips off
+  height: 56px;
+  width: auto;
   max-width: none;
+  animation: logoPulse 1.8s ease-in-out infinite;
 }
 
 @keyframes logoPulse {
-  0%, 100% { opacity: 1;   transform: scale(1);    }
-  50%       { opacity: 0.5; transform: scale(0.88); }
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
 }
 
 // ─── Bouncing dots ────────────────────────────────────────────────────────────

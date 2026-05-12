@@ -171,9 +171,12 @@ export type AppointmentWithPatient = Appointment & { patient: Patient };
 
 export async function getAllAppointments(): Promise<AppointmentWithPatient[]> {
   const rows = await sql`
-    SELECT a.*, row_to_json(p.*) AS patient
+    SELECT a.*, row_to_json(p.*) AS patient,
+           COUNT(au.id)::int AS upload_count
     FROM appointments a
     JOIN patients p ON p.id = a.patient_id
+    LEFT JOIN appointment_uploads au ON au.appointment_id = a.id
+    GROUP BY a.id, p.id
     ORDER BY a.scheduled_date DESC, a.scheduled_time DESC
   `;
   return rows as AppointmentWithPatient[];

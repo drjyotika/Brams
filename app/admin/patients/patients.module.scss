@@ -58,6 +58,51 @@
   &:hover { opacity: 0.88; }
 }
 
+// ─── Per-appointment report rows ─────────────────────────────────────────────
+
+.apptReports {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(207, 195, 204, 0.2);
+}
+
+.apptReportsLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: $color-ink-soft;
+  margin-bottom: 8px;
+}
+
+.apptReportRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+
+  & + & {
+    border-top: 1px solid rgba(207, 195, 204, 0.12);
+  }
+}
+
+.apptReportName {
+  font-size: 13px;
+  color: $color-ink;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.apptReportActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 // ─── Prescriptions table ──────────────────────────────────────────────────────
 
 .rxSection {

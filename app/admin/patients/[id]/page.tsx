@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
@@ -53,8 +53,10 @@ type Prescription = {
   plan_title: string;
 };
 
-const RX_PAGE_SIZE = 5;
-const RX_PAGE_SIZES = [5, 10, 20, 50];
+// ─── Pagination constants ─────────────────────────────────────────────────────
+
+const APPT_PAGE_SIZE  = 10;
+const APPT_PAGE_SIZES = [10, 20, 50];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -67,18 +69,22 @@ export default function PatientDetailPage() {
   const [loading,       setLoading]       = useState(true);
   const [rxLoading,     setRxLoading]     = useState(true);
 
-  // Prescription pagination
-  const [rxPageSize, setRxPageSize] = useState(RX_PAGE_SIZE);
-  const [rxVisible,  setRxVisible]  = useState(RX_PAGE_SIZE);
+  // Appointment pagination
+  const [apptPageSize, setApptPageSize] = useState(APPT_PAGE_SIZE);
+  const [apptVisible,  setApptVisible]  = useState(APPT_PAGE_SIZE);
 
-  // Viewer modal
+  // Image viewer modal (PDFs open in a new tab)
   const [viewing, setViewing] = useState<Prescription | null>(null);
 
   useEffect(() => {
     if (!id) return;
     fetch(`/api/patients/${id}`)
       .then((r) => r.json())
-      .then((d) => { setPatient(d.patient); setAppointments(d.appointments); setLoading(false); });
+      .then((d) => {
+        setPatient(d.patient);
+        setAppointments(d.appointments);
+        setLoading(false);
+      });
   }, [id]);
 
   useEffect(() => {
@@ -91,13 +97,21 @@ export default function PatientDetailPage() {
   if (loading) return <BramsLoader />;
   if (!patient) return <p>Patient not found. <Link href="/admin/patients">← Back</Link></p>;
 
-  const rxShown     = prescriptions.slice(0, rxVisible);
-  const rxHasMore   = rxVisible < prescriptions.length;
-  const rxRemaining = prescriptions.length - rxVisible;
+  // Appointment pagination
+  const apptShown     = appointments.slice(0, apptVisible);
+  const apptHasMore   = apptVisible < appointments.length;
+  const apptRemaining = appointments.length - apptVisible;
 
-  function handleRxPageSize(n: number) {
-    setRxPageSize(n);
-    setRxVisible(n);
+  // Helper: open a file — PDFs go to a new tab, images open in the modal
+  function openFile(rx: Prescription) {
+    if (!rx.signed_url) return;
+    const isPdf = (rx.mime_type === "application/pdf") ||
+                  rx.file_name.toLowerCase().endsWith(".pdf");
+    if (isPdf) {
+      window.open(rx.signed_url, "_blank", "noopener,noreferrer");
+    } else {
+      setViewing(rx);
+    }
   }
 
   return (
@@ -107,7 +121,7 @@ export default function PatientDetailPage() {
         <h1 className={styles.pageTitle} style={{ marginTop: 8 }}>{patient.full_name}</h1>
       </div>
 
-      {/* Patient details */}
+      {/* ── Patient details ─────────────────────────────────────────────────── */}
       <div className={styles.panel} style={{ marginBottom: 24 }}>
         <h2 className={styles.panelTitle}>Patient Details</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 12 }}>
@@ -120,158 +134,135 @@ export default function PatientDetailPage() {
         </div>
       </div>
 
-      {/* Appointments */}
+      {/* ── Appointments ────────────────────────────────────────────────────── */}
       <div className={styles.panel} style={{ marginBottom: 24 }}>
-        <h2 className={styles.panelTitle}>Appointments ({appointments.length})</h2>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <h2 className={styles.panelTitle} style={{ margin: 0 }}>
+            Appointments ({appointments.length})
+          </h2>
+          {appointments.length > APPT_PAGE_SIZE && (
+            <select
+              className={pStyles.pageSizeSelect}
+              value={apptPageSize}
+              onChange={(e) => { const n = Number(e.target.value); setApptPageSize(n); setApptVisible(n); }}
+              aria-label="Appointments per page"
+            >
+              {APPT_PAGE_SIZES.map((n) => (
+                <option key={n} value={n}>{n} per page</option>
+              ))}
+            </select>
+          )}
+        </div>
+
         {appointments.length === 0 ? (
           <p className={styles.panelHint}>No appointments yet.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
-            {appointments.map((a) => (
-              <div key={a.id} className={styles.cardArrayItem}>
-                <div className={styles.cardArrayHead}>
-                  <span>{a.plan_title}</span>
-                  <span style={{ display: "flex", gap: 8 }}>
-                    <StatusChip label={a.status}         tone={statusTone(a.status)} />
-                    <StatusChip label={a.payment_status} tone={paymentTone(a.payment_status)} />
-                  </span>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 13, color: "#6b7280" }}>
-                  <KV k="Date"  v={new Date(a.scheduled_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} />
-                  <KV k="Time"  v={a.scheduled_time.slice(0, 5)} />
-                  <KV k="Total" v={`₹${(a.total_paise / 100).toLocaleString("en-IN")}`} />
-                </div>
-                {a.reason_for_consultation && (
-                  <p style={{ marginTop: 12, fontSize: 13, color: "#6b7280" }}>
-                    <strong style={{ color: "#1e1b24" }}>Reason: </strong>
-                    {a.reason_for_consultation}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
+              {apptShown.map((a) => {
+                // Reports uploaded for this specific appointment
+                const apptRx = rxLoading ? [] : prescriptions.filter((rx) => rx.appointment_id === a.id);
 
-      {/* Prescriptions / uploads */}
-      <div className={styles.panel}>
-        <h2 className={styles.panelTitle}>
-          Prescriptions &amp; Reports
-          {!rxLoading && prescriptions.length > 0 && (
-            <span style={{ fontSize: 14, fontWeight: 400, color: "#9b8fa0", marginLeft: 8 }}>
-              ({prescriptions.length} file{prescriptions.length !== 1 ? "s" : ""})
-            </span>
-          )}
-        </h2>
+                return (
+                  <div key={a.id} className={styles.cardArrayItem}>
+                    {/* Header row */}
+                    <div className={styles.cardArrayHead}>
+                      <span>{a.plan_title}</span>
+                      <span style={{ display: "flex", gap: 8 }}>
+                        <StatusChip label={a.status}         tone={statusTone(a.status)} />
+                        <StatusChip label={a.payment_status} tone={paymentTone(a.payment_status)} />
+                      </span>
+                    </div>
 
-        {rxLoading ? (
-          <BramsLoader />
-        ) : prescriptions.length === 0 ? (
-          <p className={styles.panelHint} style={{ marginTop: 12 }}>
-            No files uploaded yet.
-          </p>
-        ) : (
-          <div className={pStyles.rxSection}>
-            <table className={pStyles.rxTable}>
-              <thead>
-                <tr>
-                  <th>File</th>
-                  <th>Appointment</th>
-                  <th>Uploaded</th>
-                  <th>Size</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rxShown.map((rx) => (
-                  <tr key={rx.id}>
-                    <td>
-                      <div className={pStyles.rxFileName} title={rx.file_name}>
-                        {fileIcon(rx.mime_type)} {rx.file_name}
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 12 }}>
-                      <div style={{ fontWeight: 600, color: "#1e1b24" }}>{rx.plan_title}</div>
-                      <div style={{ color: "#9b8fa0" }}>
-                        {new Date(rx.appointment_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                        {" · "}{rx.appointment_time.slice(0, 5)}
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>
-                      {new Date(rx.uploaded_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </td>
-                    <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>
-                      {rx.file_size ? formatSize(rx.file_size) : "—"}
-                    </td>
-                    <td>
-                      <div className={pStyles.rxActions}>
-                        <button
-                          className={pStyles.rxViewBtn}
-                          onClick={() => setViewing(rx)}
-                          disabled={!rx.signed_url}
-                        >
-                          View
-                        </button>
-                        {rx.signed_url && (
-                          <a
-                            href={rx.signed_url}
-                            download={rx.file_name}
-                            className={pStyles.rxDownloadBtn}
-                          >
-                            ↓ Download
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    {/* Date / time / fee */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 13, color: "#6b7280" }}>
+                      <KV k="Date"  v={new Date(a.scheduled_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} />
+                      <KV k="Time"  v={a.scheduled_time.slice(0, 5)} />
+                      <KV k="Total" v={`₹${(a.total_paise / 100).toLocaleString("en-IN")}`} />
+                    </div>
 
-            {/* Pagination bar */}
-            <div className={pStyles.paginationBar}>
-              <span className={pStyles.paginationCount}>
-                Showing <strong>{rxShown.length}</strong> of <strong>{prescriptions.length}</strong> files
-              </span>
-              <div className={pStyles.paginationRight}>
-                <select
-                  className={pStyles.pageSizeSelect}
-                  value={rxPageSize}
-                  onChange={(e) => handleRxPageSize(Number(e.target.value))}
-                  aria-label="Files per page"
-                >
-                  {RX_PAGE_SIZES.map((n) => (
-                    <option key={n} value={n}>{n} per page</option>
-                  ))}
-                </select>
-                {rxHasMore && (
-                  <button
-                    className={pStyles.loadMoreBtn}
-                    onClick={() => setRxVisible((v) => Math.min(v + rxPageSize, prescriptions.length))}
-                  >
-                    Load {Math.min(rxPageSize, rxRemaining)} more
-                  </button>
-                )}
-              </div>
+                    {a.reason_for_consultation && (
+                      <p style={{ marginTop: 10, fontSize: 13, color: "#6b7280" }}>
+                        <strong style={{ color: "#1e1b24" }}>Reason: </strong>
+                        {a.reason_for_consultation}
+                      </p>
+                    )}
+
+                    {/* Reports for this appointment */}
+                    {!rxLoading && apptRx.length > 0 && (
+                      <div className={pStyles.apptReports}>
+                        <div className={pStyles.apptReportsLabel}>
+                          Reports / Prescriptions ({apptRx.length})
+                        </div>
+                        {apptRx.map((rx) => (
+                          <div key={rx.id} className={pStyles.apptReportRow}>
+                            <span className={pStyles.apptReportName} title={rx.file_name}>
+                              {fileIcon(rx.mime_type)} {rx.file_name}
+                              {rx.file_size && (
+                                <span style={{ color: "#9b8fa0", marginLeft: 6, fontSize: 11 }}>
+                                  {formatSize(rx.file_size)}
+                                </span>
+                              )}
+                            </span>
+                            <span className={pStyles.apptReportActions}>
+                              <button
+                                className={pStyles.rxViewBtn}
+                                onClick={() => openFile(rx)}
+                                disabled={!rx.signed_url}
+                                title={(rx.mime_type === "application/pdf" || rx.file_name.toLowerCase().endsWith(".pdf"))
+                                  ? "Opens in new tab"
+                                  : "Preview"}
+                              >
+                                View
+                              </button>
+                              {rx.signed_url && (
+                                <a
+                                  href={rx.signed_url}
+                                  download={rx.file_name}
+                                  className={pStyles.rxDownloadBtn}
+                                >
+                                  ↓ Download
+                                </a>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+
+            {/* Load more */}
+            {apptHasMore && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+                <span className={pStyles.paginationCount}>
+                  Showing <strong>{apptShown.length}</strong> of <strong>{appointments.length}</strong> appointments
+                </span>
+                <button
+                  className={pStyles.loadMoreBtn}
+                  onClick={() => setApptVisible((v) => Math.min(v + apptPageSize, appointments.length))}
+                >
+                  Load {Math.min(apptPageSize, apptRemaining)} more
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Prescription viewer modal */}
+      {/* Image viewer modal (PDFs skip this and open in a new tab) */}
       {viewing && (
-        <PrescriptionModal
-          prescription={viewing}
-          onClose={() => setViewing(null)}
-        />
+        <ImageModal prescription={viewing} onClose={() => setViewing(null)} />
       )}
     </div>
   );
 }
 
-// ─── Prescription viewer modal ────────────────────────────────────────────────
+// ─── Image preview modal (images only — PDFs open in new tab) ────────────────
 
-function PrescriptionModal({
+function ImageModal({
   prescription: rx,
   onClose,
 }: {
@@ -281,7 +272,6 @@ function PrescriptionModal({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Body scroll lock + Esc to close
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -295,9 +285,7 @@ function PrescriptionModal({
 
   if (!mounted) return null;
 
-  const mime = rx.mime_type ?? "";
-  const isPdf   = mime === "application/pdf" || rx.file_name.toLowerCase().endsWith(".pdf");
-  const isImage = mime.startsWith("image/");
+  const isImage = rx.mime_type?.startsWith("image/");
 
   return createPortal(
     <div
@@ -320,26 +308,16 @@ function PrescriptionModal({
           <button className={pStyles.modalClose} onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        {/* Body — preview */}
+        {/* Body */}
         <div className={pStyles.modalBody}>
-          {isPdf && rx.signed_url ? (
-            <iframe
-              src={rx.signed_url}
-              className={pStyles.pdfFrame}
-              title={rx.file_name}
-            />
-          ) : isImage && rx.signed_url ? (
+          {isImage && rx.signed_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={rx.signed_url}
-              alt={rx.file_name}
-              className={pStyles.imagePreview}
-            />
+            <img src={rx.signed_url} alt={rx.file_name} className={pStyles.imagePreview} />
           ) : (
             <div className={pStyles.noPreview}>
               <div className={pStyles.noPreviewIcon}>📄</div>
               <strong>{rx.file_name}</strong>
-              <p>Preview not available for this file type.<br />Use the download button below.</p>
+              <p>Preview not available for this file type. Use the download button below.</p>
             </div>
           )}
         </div>
@@ -348,11 +326,7 @@ function PrescriptionModal({
         <div className={pStyles.modalFooter}>
           <button className={pStyles.modalCancelBtn} onClick={onClose}>Close</button>
           {rx.signed_url && (
-            <a
-              href={rx.signed_url}
-              download={rx.file_name}
-              className={pStyles.modalDownloadBtn}
-            >
+            <a href={rx.signed_url} download={rx.file_name} className={pStyles.modalDownloadBtn}>
               ↓ Download
             </a>
           )}
@@ -367,16 +341,16 @@ function PrescriptionModal({
 
 function fileIcon(mime: string | null): string {
   if (!mime) return "📄";
-  if (mime === "application/pdf")              return "📋";
-  if (mime.startsWith("image/"))              return "🖼️";
-  if (mime.includes("word") || mime.includes("document")) return "📝";
-  if (mime.includes("sheet") || mime.includes("excel"))   return "📊";
+  if (mime === "application/pdf")                          return "📋";
+  if (mime.startsWith("image/"))                           return "🖼️";
+  if (mime.includes("word") || mime.includes("document"))  return "📝";
+  if (mime.includes("sheet") || mime.includes("excel"))    return "📊";
   return "📄";
 }
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024)        return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024)         return `${bytes} B`;
+  if (bytes < 1024 * 1024)  return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 

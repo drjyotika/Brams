@@ -19,8 +19,8 @@ type Patient = {
   created_at: string;
 };
 
-const PAGE_SIZES = [5, 10, 20, 50];
-const DEFAULT_PAGE_SIZE = 5;
+const PAGE_SIZES = [10, 20, 50];
+const DEFAULT_PAGE_SIZE = 10;
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -47,6 +47,18 @@ export default function PatientsPage() {
     <div>
       <div className={tStyles.header}>
         <h1 className={tStyles.title}>Patients</h1>
+        {patients.length > 0 && (
+          <select
+            className={pStyles.pageSizeSelect}
+            value={pageSize}
+            onChange={(e) => handlePageSize(Number(e.target.value))}
+            aria-label="Records per page"
+          >
+            {PAGE_SIZES.map((n) => (
+              <option key={n} value={n}>{n} per page</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {loading ? (
@@ -103,31 +115,17 @@ export default function PatientsPage() {
           </table>
 
           {/* Pagination bar */}
-          {patients.length > 0 && (
+          {hasMore && (
             <div className={pStyles.paginationBar}>
               <span className={pStyles.paginationCount}>
                 Showing <strong>{shown.length}</strong> of <strong>{patients.length}</strong> patients
               </span>
-              <div className={pStyles.paginationRight}>
-                <select
-                  className={pStyles.pageSizeSelect}
-                  value={pageSize}
-                  onChange={(e) => handlePageSize(Number(e.target.value))}
-                  aria-label="Records per page"
-                >
-                  {PAGE_SIZES.map((n) => (
-                    <option key={n} value={n}>{n} per page</option>
-                  ))}
-                </select>
-                {hasMore && (
-                  <button
-                    className={pStyles.loadMoreBtn}
-                    onClick={() => setVisible((v) => Math.min(v + pageSize, patients.length))}
-                  >
-                    Load {Math.min(pageSize, remaining)} more
-                  </button>
-                )}
-              </div>
+              <button
+                className={pStyles.loadMoreBtn}
+                onClick={() => setVisible((v) => Math.min(v + pageSize, patients.length))}
+              >
+                Load {Math.min(pageSize, remaining)} more
+              </button>
             </div>
           )}
         </div>

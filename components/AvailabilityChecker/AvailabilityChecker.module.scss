@@ -1,0 +1,402 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+// ─── Page shell ───────────────────────────────────────────────────────────────
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+.main {
+  @include container;
+  padding-top: 32px;
+  padding-bottom: 140px; // room for sticky bar
+}
+
+// ─── Page header ─────────────────────────────────────────────────────────────
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-ink-soft;
+  text-decoration: none;
+  margin-bottom: 24px;
+
+  &:hover { color: $color-plum; }
+}
+
+.heading {
+  margin: 0 0 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 32px;
+  color: $color-ink;
+
+  @include md {
+    font-size: 40px;
+  }
+}
+
+.subheading {
+  margin: 0 0 32px;
+  font-size: 15px;
+  color: $color-ink-soft;
+  line-height: 1.6;
+}
+
+.planChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(116, 84, 117, 0.08);
+  border: 1px solid rgba(116, 84, 117, 0.18);
+  border-radius: $radius-pill;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-plum-deep;
+  margin-bottom: 24px;
+}
+
+// ─── Calendar + slots grid ────────────────────────────────────────────────────
+
+.calendarLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include lg {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.calendarCard,
+.slotsCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────────────
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.monthLabel {
+  margin: 0;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.monthNav {
+  display: flex;
+  gap: 4px;
+}
+
+.navBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid $color-lilac-soft;
+  color: $color-ink;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: $color-bg-muted; }
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: $color-ink-muted;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-family: $font-body;
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-ink;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+
+  &:hover:not(:disabled):not(.dayActive) {
+    background: $color-bg-muted;
+  }
+}
+
+.dayActive {
+  background: $color-plum;
+  color: #fff;
+  font-weight: 700;
+}
+
+.dayToday:not(.dayActive) {
+  border: 1px solid $color-plum;
+}
+
+.dayDisabled {
+  color: $color-ink-muted;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.empty { /* placeholder cell */ }
+
+// ─── Slots panel ─────────────────────────────────────────────────────────────
+
+.slotsTitle {
+  margin: 0 0 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.slotsDate {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: $color-ink-soft;
+  font-weight: 500;
+}
+
+.slotsHint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: $color-ink-muted;
+  font-style: italic;
+}
+
+.slotsWrap {
+  position: relative;
+}
+
+.slotsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// ─── Individual slot button ───────────────────────────────────────────────────
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid $color-lilac-soft;
+  border-radius: $radius-sm;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+
+  &:hover:not(:disabled):not(.slotBooked):not(.slotSelected) {
+    border-color: $color-plum;
+    box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.08);
+  }
+}
+
+.slotSelected {
+  border-color: $color-plum;
+  background: rgba(116, 84, 117, 0.06);
+  box-shadow: 0 0 0 3px rgba(116, 84, 117, 0.12);
+}
+
+.slotBooked {
+  background: $color-bg-muted;
+  border-color: rgba(207, 195, 204, 0.2);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.slotTime {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  color: $color-ink;
+
+  .slotBooked & { color: $color-ink-muted; }
+}
+
+.slotDuration {
+  font-size: 11px;
+  color: $color-ink-muted;
+}
+
+.slotBadge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: $radius-pill;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.badgeAvailable {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badgeBooked {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+// ─── Fetching overlay ─────────────────────────────────────────────────────────
+
+.slotsOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: $color-ink-soft;
+  font-style: italic;
+  backdrop-filter: blur(2px);
+}
+
+// ─── Waitlist note ────────────────────────────────────────────────────────────
+
+.waitlistNote {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: $color-bg-muted;
+  border-radius: 8px;
+  font-size: 12px;
+  color: $color-ink-soft;
+  line-height: 1.6;
+
+  a, button {
+    color: $color-plum;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+}
+
+// ─── Sticky booking bar ───────────────────────────────────────────────────────
+
+.stickyBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(207, 195, 204, 0.4);
+  box-shadow: 0 -4px 24px rgba(116, 84, 117, 0.1);
+  animation: slideUp 200ms ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.stickyInner {
+  @include container;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  flex-wrap: wrap;
+
+  @include md {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+}
+
+.stickyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stickyPlan {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 15px;
+  color: $color-ink;
+}
+
+.stickyWhen {
+  font-size: 13px;
+  color: $color-ink-soft;
+  font-weight: 500;
+}
+
+.stickyPrice {
+  font-size: 13px;
+  color: $color-plum;
+  font-weight: 700;
+}
+
+.bookBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 120ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover { opacity: 0.92; }
+}
