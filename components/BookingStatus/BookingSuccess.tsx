@@ -79,28 +79,39 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions — driven by data.ctas array (admin-editable) */}
         <div className={styles.actionSection}>
-          <a
-            href={data.primaryCta.href || "#"}
-            className={styles.joinBtn}
-          >
-            <span>🎥</span>
-            {data.primaryCta.label}
-          </a>
+          {/* Primary CTAs */}
+          {data.ctas.filter((c) => c.variant === "primary").map((cta) => (
+            <a key={cta.id} href={cta.href || "#"} className={styles.joinBtn}>
+              {cta.emoji && <span aria-hidden>{cta.emoji}</span>}
+              {cta.label}
+            </a>
+          ))}
 
-          <div className={styles.secondaryRow}>
-            <button type="button" className={styles.secondaryBtn}>
-              📅 {data.calendarLabel}
-            </button>
-            <button type="button" className={styles.secondaryBtn}>
-              🧾 {data.receiptLabel}
-            </button>
-          </div>
+          {/* Secondary CTAs — shown in a flex row */}
+          {data.ctas.some((c) => c.variant === "secondary") && (
+            <div className={styles.secondaryRow}>
+              {data.ctas.filter((c) => c.variant === "secondary").map((cta) =>
+                cta.href && cta.href !== "#" ? (
+                  <a key={cta.id} href={cta.href} className={styles.secondaryBtn}>
+                    {cta.emoji && `${cta.emoji} `}{cta.label}
+                  </a>
+                ) : (
+                  <button key={cta.id} type="button" className={styles.secondaryBtn}>
+                    {cta.emoji && `${cta.emoji} `}{cta.label}
+                  </button>
+                )
+              )}
+            </div>
+          )}
 
-          <Link href="/" className={styles.homeLink}>
-            ← {data.homeLabel}
-          </Link>
+          {/* Text / link CTAs */}
+          {data.ctas.filter((c) => c.variant === "text").map((cta) => (
+            <Link key={cta.id} href={cta.href || "/"} className={styles.homeLink}>
+              {cta.label}
+            </Link>
+          ))}
         </div>
       </div>
 

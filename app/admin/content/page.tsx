@@ -11,6 +11,7 @@ import type {
   PricingData,
   PricingPlan,
   SiteContent,
+  StatusCta,
   SupportCard,
   SupportData,
   FooterData,
@@ -391,6 +392,91 @@ function FooterEditor({ data, onChange }: { data: FooterData; onChange: (v: Foot
   );
 }
 
+// ─── Shared CTA array editor ──────────────────────────────────────────────────
+
+const CTA_VARIANTS: StatusCta["variant"][] = ["primary", "secondary", "text"];
+
+function CtaArrayEditor({
+  ctas,
+  onChange,
+  hint,
+}: {
+  ctas: StatusCta[];
+  onChange: (v: StatusCta[]) => void;
+  hint?: string;
+}) {
+  const update = (id: string, patch: Partial<StatusCta>) =>
+    onChange(ctas.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const remove = (id: string) => onChange(ctas.filter((c) => c.id !== id));
+  const add = () =>
+    onChange([
+      ...ctas,
+      { id: `cta-${Date.now()}`, label: "New CTA", href: "#", variant: "secondary" },
+    ]);
+
+  return (
+    <div className={styles.cardArrayItem}>
+      <div className={styles.cardArrayHead}>
+        Action CTAs
+        {hint && <span style={{ fontWeight: 400, marginLeft: 8, fontSize: 12, color: "#9b8fa0" }}>{hint}</span>}
+      </div>
+
+      {ctas.map((cta, i) => (
+        <div key={cta.id} style={{ borderTop: i > 0 ? "1px solid rgba(207,195,204,.3)" : undefined, paddingTop: i > 0 ? 14 : 0, marginTop: i > 0 ? 14 : 0 }}>
+          <div className={styles.cardArrayHead} style={{ marginBottom: 10 }}>
+            <span>CTA #{i + 1}</span>
+            <button type="button" className={styles.danger} onClick={() => remove(cta.id)}>Remove</button>
+          </div>
+          <div className={styles.row}>
+            <Field label="Label">
+              <input
+                className={styles.input}
+                value={cta.label}
+                onChange={(e) => update(cta.id, { label: e.target.value })}
+              />
+            </Field>
+            <Field label="Emoji (optional)">
+              <input
+                className={styles.input}
+                value={cta.emoji ?? ""}
+                placeholder="e.g. 🎥"
+                onChange={(e) => update(cta.id, { emoji: e.target.value || undefined })}
+              />
+            </Field>
+          </div>
+          <div className={styles.row}>
+            <Field label="Link (href)">
+              <input
+                className={styles.input}
+                value={cta.href}
+                placeholder="https://… or /path or # or {planId}"
+                onChange={(e) => update(cta.id, { href: e.target.value })}
+              />
+            </Field>
+            <Field label="Variant">
+              <select
+                className={styles.select}
+                value={cta.variant}
+                onChange={(e) => update(cta.id, { variant: e.target.value as StatusCta["variant"] })}
+              >
+                {CTA_VARIANTS.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ marginTop: 12 }}>
+        <button type="button" className={styles.secondary} onClick={add}>+ Add CTA</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Booking — Success ────────────────────────────────────────────────────────
+
 function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; onChange: (v: BookingSuccessData) => void }) {
   const { status, save } = useSaver("bookingSuccess");
   const set = <K extends keyof BookingSuccessData>(k: K, v: BookingSuccessData[K]) =>
@@ -403,22 +489,11 @@ function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; on
       <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
       <Field label="Subtitle"><textarea className={styles.textarea} value={data.subtitle} onChange={(e) => set("subtitle", e.target.value)} /></Field>
 
-      <div className={styles.cardArrayItem}>
-        <div className={styles.cardArrayHead}>Primary CTA — Join Consultation</div>
-        <div className={styles.row}>
-          <Field label="Label"><input className={styles.input} value={data.primaryCta.label} onChange={(e) => set("primaryCta", { ...data.primaryCta, label: e.target.value })} /></Field>
-          <Field label="Link (href)"><input className={styles.input} value={data.primaryCta.href} placeholder="https://…" onChange={(e) => set("primaryCta", { ...data.primaryCta, href: e.target.value })} /></Field>
-        </div>
-      </div>
-
-      <div className={styles.cardArrayItem}>
-        <div className={styles.cardArrayHead}>Secondary CTAs</div>
-        <div className={styles.row}>
-          <Field label="Add to Calendar label"><input className={styles.input} value={data.calendarLabel} onChange={(e) => set("calendarLabel", e.target.value)} /></Field>
-          <Field label="Download Receipt label"><input className={styles.input} value={data.receiptLabel} onChange={(e) => set("receiptLabel", e.target.value)} /></Field>
-        </div>
-        <Field label="Back to Home label"><input className={styles.input} value={data.homeLabel} onChange={(e) => set("homeLabel", e.target.value)} /></Field>
-      </div>
+      <CtaArrayEditor
+        ctas={data.ctas}
+        onChange={(v) => set("ctas", v)}
+        hint="primary = large button · secondary = row of outline buttons · text = plain link"
+      />
 
       <div className={styles.cardArrayItem}>
         <div className={styles.cardArrayHead}>Footer Note</div>
@@ -437,6 +512,8 @@ function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; on
   );
 }
 
+// ─── Booking — Failed ─────────────────────────────────────────────────────────
+
 function BookingFailedEditor({ data, onChange }: { data: BookingFailedData; onChange: (v: BookingFailedData) => void }) {
   const { status, save } = useSaver("bookingFailed");
   const set = <K extends keyof BookingFailedData>(k: K, v: BookingFailedData[K]) =>
@@ -444,22 +521,16 @@ function BookingFailedEditor({ data, onChange }: { data: BookingFailedData; onCh
   return (
     <section className={styles.panel}>
       <h2 className={styles.panelTitle}>Booking — Failed Page</h2>
-      <p className={styles.panelHint}>Shown at <code>/book/failed</code> when payment is unsuccessful.</p>
+      <p className={styles.panelHint}>Shown at <code>/book/failed</code> when payment is unsuccessful. Use <code>{"{planId}"}</code> in any href to insert the plan from the URL.</p>
 
       <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
       <Field label="Body text"><textarea className={styles.textarea} value={data.body} onChange={(e) => set("body", e.target.value)} /></Field>
 
-      <div className={styles.cardArrayItem}>
-        <div className={styles.cardArrayHead}>Action Buttons</div>
-        <div className={styles.row}>
-          <Field label="Retry Payment label"><input className={styles.input} value={data.retryLabel} onChange={(e) => set("retryLabel", e.target.value)} /></Field>
-          <Field label="Change Method label"><input className={styles.input} value={data.changeMethodLabel} onChange={(e) => set("changeMethodLabel", e.target.value)} /></Field>
-        </div>
-        <div className={styles.row}>
-          <Field label="Contact Support label"><input className={styles.input} value={data.supportLabel} onChange={(e) => set("supportLabel", e.target.value)} /></Field>
-          <Field label="Support email"><input className={styles.input} type="email" value={data.supportEmail} onChange={(e) => set("supportEmail", e.target.value)} /></Field>
-        </div>
-      </div>
+      <CtaArrayEditor
+        ctas={data.ctas}
+        onChange={(v) => set("ctas", v)}
+        hint="primary = large retry button · secondary = outline row · use {planId} in href to append plan"
+      />
 
       <div className={styles.cardArrayItem}>
         <div className={styles.cardArrayHead}>Troubleshooting Box</div>

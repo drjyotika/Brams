@@ -8,6 +8,9 @@ export function BookingFailed({ data }: { data: BookingFailedData }) {
   const params = useSearchParams();
   const planId = params.get("plan") ?? "initial";
 
+  // Replace {planId} token in href strings with the actual plan from the URL
+  const resolveHref = (href: string) => href.replace(/\{planId\}/g, planId);
+
   return (
     <div className={styles.failedPage}>
       <main className={styles.failedMain}>
@@ -32,28 +35,28 @@ export function BookingFailed({ data }: { data: BookingFailedData }) {
               <p className={styles.failedBody}>{data.body}</p>
             </div>
 
+            {/* Actions — driven by data.ctas array (admin-editable) */}
             <div className={styles.failedActions}>
-              {/* Primary — Retry */}
-              <a
-                href={`/book?plan=${planId}`}
-                className={styles.retryBtn}
-              >
-                <span className={styles.retryBtnInner}>🔄 {data.retryLabel}</span>
-                <span>→</span>
-              </a>
+              {/* Primary CTAs */}
+              {data.ctas.filter((c) => c.variant === "primary").map((cta) => (
+                <a key={cta.id} href={resolveHref(cta.href)} className={styles.retryBtn}>
+                  <span className={styles.retryBtnInner}>
+                    {cta.emoji && `${cta.emoji} `}{cta.label}
+                  </span>
+                  <span>→</span>
+                </a>
+              ))}
 
-              {/* Secondary row */}
-              <div className={styles.failedSecondaryRow}>
-                <a href={`/book?plan=${planId}`} className={styles.failedSecondaryBtn}>
-                  💳 {data.changeMethodLabel}
-                </a>
-                <a
-                  href={`mailto:${data.supportEmail}`}
-                  className={styles.failedSecondaryBtn}
-                >
-                  💬 {data.supportLabel}
-                </a>
-              </div>
+              {/* Secondary CTAs row */}
+              {data.ctas.some((c) => c.variant === "secondary") && (
+                <div className={styles.failedSecondaryRow}>
+                  {data.ctas.filter((c) => c.variant === "secondary").map((cta) => (
+                    <a key={cta.id} href={resolveHref(cta.href)} className={styles.failedSecondaryBtn}>
+                      {cta.emoji && `${cta.emoji} `}{cta.label}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Troubleshooting */}

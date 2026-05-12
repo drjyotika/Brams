@@ -4,14 +4,14 @@
 // ─── Trigger button (matches the look of the homepage CTA) ───────────────────
 
 .trigger {
-  background: $color-plum;
-  color: #fff;
+  background: $color-lilac;
+  color: $color-plum-deep;
   font-family: $font-display;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 10px 22px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 24px;
   border: none;
-  border-radius: $radius-pill;
+  border-radius: $radius-sm;
   cursor: pointer;
   transition: opacity 120ms ease, transform 120ms ease;
 

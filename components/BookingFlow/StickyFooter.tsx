@@ -29,7 +29,8 @@ export function StickyFooter({
     <div className={styles.stickyFooter}>
       <div className={styles.stickyInner}>
         <button type="button" className={styles.backBtn} onClick={onBack}>
-          {backLabel}
+          <span aria-hidden>←</span>
+          <span>{backLabel.replace(/^←\s*/, "")}</span>
         </button>
         <button
           type="button"

@@ -40,8 +40,11 @@ export function BookingFlow() {
   const [planError, setPlanError] = useState<string | null>(null);
   const [step, setStep]           = useState<Step>(1);
 
-  // Step 1 state
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Step 1 state — pre-select today so the calendar is never blank on load
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   // Step 2 state

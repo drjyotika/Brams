@@ -94,13 +94,20 @@ export type FooterData = {
   columns: FooterColumn[];
 };
 
+export type StatusCta = {
+  id: string;
+  /** Optional emoji prefix shown before the label */
+  emoji?: string;
+  label: string;
+  /** Supports the token {planId} which is replaced at render time on the failed page */
+  href: string;
+  variant: "primary" | "secondary" | "text";
+};
+
 export type BookingSuccessData = {
   title: string;
   subtitle: string;
-  primaryCta: { label: string; href: string };
-  calendarLabel: string;
-  receiptLabel: string;
-  homeLabel: string;
+  ctas: StatusCta[];
   footerNote: string;
   supportEmail: string;
   copyright: string;
@@ -109,9 +116,7 @@ export type BookingSuccessData = {
 export type BookingFailedData = {
   title: string;
   body: string;
-  retryLabel: string;
-  changeMethodLabel: string;
-  supportLabel: string;
+  ctas: StatusCta[];
   supportEmail: string;
   troubleshootTitle: string;
   troubleshootBody: string;
@@ -311,10 +316,12 @@ export const defaultContent: SiteContent = {
     title: "Booking Confirmed",
     subtitle:
       "Your consultation has been successfully booked. You will receive the meeting link via email / WhatsApp.",
-    primaryCta: { label: "Join Consultation", href: "#" },
-    calendarLabel: "Add to Calendar",
-    receiptLabel: "Download Receipt",
-    homeLabel: "Back to Home",
+    ctas: [
+      { id: "join",     emoji: "🎥", label: "Join Consultation",  href: "#",  variant: "primary"   },
+      { id: "calendar", emoji: "📅", label: "Add to Calendar",    href: "#",  variant: "secondary" },
+      { id: "receipt",  emoji: "🧾", label: "Download Receipt",   href: "#",  variant: "secondary" },
+      { id: "home",                  label: "← Back to Home",     href: "/",  variant: "text"      },
+    ],
     footerNote:
       "If you have any urgent concerns prior to your session, please contact our support desk directly at",
     supportEmail: "support@bramsmindcare.com",
@@ -323,9 +330,11 @@ export const defaultContent: SiteContent = {
   bookingFailed: {
     title: "Payment Failed",
     body: "Your payment could not be completed. Don't worry — your appointment slot is still temporarily held.",
-    retryLabel: "Retry Payment",
-    changeMethodLabel: "Change Method",
-    supportLabel: "Contact Support",
+    ctas: [
+      { id: "retry",   emoji: "🔄", label: "Retry Payment",    href: "/book?plan={planId}", variant: "primary"   },
+      { id: "change",  emoji: "💳", label: "Change Method",    href: "/book?plan={planId}", variant: "secondary" },
+      { id: "support", emoji: "💬", label: "Contact Support",  href: "mailto:support@bramsmindcare.com", variant: "secondary" },
+    ],
     supportEmail: "support@bramsmindcare.com",
     troubleshootTitle: "Troubleshooting",
     troubleshootBody:

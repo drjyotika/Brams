@@ -158,6 +158,9 @@
   border: none;
   cursor: pointer;
 
+  // Arrow character has different font metrics — force it to match text baseline
+  span:first-child { line-height: 1; }
+
   &:hover { color: $color-ink; }
 }
 
