@@ -58,9 +58,15 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     // ── Upload to S3 ─────────────────────────────────────────────────────────
     const body = new Uint8Array(await file.arrayBuffer());
 
+    // Neon returns date columns as JS Date objects at runtime despite the
+    // TypeScript type saying `string` — normalise to YYYY-MM-DD either way.
+    const isoDate = new Date(appointment.scheduled_date)
+      .toISOString()
+      .slice(0, 10);
+
     const s3Key = await uploadPrescription({
       patientId:   appointment.patient_id,
-      date:        appointment.scheduled_date,   // YYYY-MM-DD
+      date:        isoDate,
       fileName:    file.name,
       body,
       contentType: file.type || "application/octet-stream",
