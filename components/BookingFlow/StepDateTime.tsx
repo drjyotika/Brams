@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
 import { StickyFooter } from "./StickyFooter";
+import { AlternativeRequestModal } from "./AlternativeRequestModal";
 import styles from "./BookingFlow.module.scss";
 import dtStyles from "./StepDateTime.module.scss";
 
@@ -54,6 +55,7 @@ export function StepDateTime({
   today.setHours(0, 0, 0, 0);
 
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [altModalOpen, setAltModalOpen] = useState(false);
   const slotsRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
@@ -162,8 +164,30 @@ export function StepDateTime({
 
           <div className={dtStyles.waitlistNote}>
             If you don&rsquo;t see availability that works for you,{" "}
-            <a href="#contact">request an alternative appointment</a>.
+            <button
+              type="button"
+              onClick={() => setAltModalOpen(true)}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                color: "inherit",
+                fontWeight: 600,
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontSize: "inherit",
+              }}
+            >
+              request an alternative appointment
+            </button>.
           </div>
+
+          {altModalOpen && (
+            <AlternativeRequestModal
+              plan={plan}
+              onClose={() => setAltModalOpen(false)}
+            />
+          )}
         </div>
       </div>
 

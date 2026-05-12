@@ -12,9 +12,10 @@ const NAV = [
   {
     group: "Bookings",
     items: [
-      { label: "Patients",      href: "/admin/patients"      },
-      { label: "Appointments",  href: "/admin/appointments"  },
-      { label: "Help Requests", href: "/admin/help-requests" },
+      { label: "Patients",               href: "/admin/patients"               },
+      { label: "Appointments",           href: "/admin/appointments"           },
+      { label: "Help Requests",          href: "/admin/help-requests"          },
+      { label: "Alt. Slot Requests",     href: "/admin/alternative-requests"   },
     ],
   },
   {
