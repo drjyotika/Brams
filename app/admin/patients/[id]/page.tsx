@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import styles from "../../admin.module.scss";
+import { BramsLoader } from "../../../../components/BramsLoader";
 
 type Patient = {
   id: string;
@@ -47,7 +48,7 @@ export default function PatientDetailPage() {
       .then((d) => { setPatient(d.patient); setAppointments(d.appointments); setLoading(false); });
   }, [id]);
 
-  if (loading)  return <p style={{ color: "#71717a" }}>Loading…</p>;
+  if (loading) return <BramsLoader />;
   if (!patient) return <p>Patient not found. <Link href="/admin/patients">← Back</Link></p>;
 
   return (

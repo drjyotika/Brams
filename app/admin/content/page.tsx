@@ -18,6 +18,7 @@ import type {
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
+import { BramsLoader } from "../../../components/BramsLoader";
 import styles from "../admin.module.scss";
 
 const SUPPORT_TONES: SupportCard["tone"][] = [
@@ -48,13 +49,7 @@ export default function ContentPage() {
       .then((data: SiteContent) => setContent(data));
   }, []);
 
-  if (!content) {
-    return (
-      <div className={styles.layout}>
-        <div className={styles.panel}>Loading…</div>
-      </div>
-    );
-  }
+  if (!content) return <BramsLoader />;
 
   const update = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) =>
     setContent((c) => (c ? { ...c, [key]: value } : c));

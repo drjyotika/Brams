@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "../users/users.module.scss";
+import { BramsLoader } from "../../../components/BramsLoader";
 
 type AltRequest = {
   id:              string;
@@ -47,7 +48,7 @@ export default function AlternativeRequestsPage() {
       </div>
 
       {loading ? (
-        <p className={styles.loading}>Loading…</p>
+        <BramsLoader />
       ) : (
         <div className={styles.card}>
           <table className={styles.table}>

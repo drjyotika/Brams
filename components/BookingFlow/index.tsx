@@ -7,6 +7,7 @@ import { StepDateTime } from "./StepDateTime";
 import { StepDetails }  from "./StepDetails";
 import { StepConfirm }  from "./StepConfirm";
 import { StepHeader }   from "./StepHeader";
+import { BramsLoader }  from "../BramsLoader";
 import styles from "./BookingFlow.module.scss";
 
 export type PlanInfo = {
@@ -87,7 +88,7 @@ export function BookingFlow() {
   }
 
   if (!plan) {
-    return <div className={styles.loadingShell}>Loading plan details…</div>;
+    return <BramsLoader fullPage />;
   }
 
   return (

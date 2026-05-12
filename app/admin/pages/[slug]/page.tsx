@@ -15,6 +15,7 @@ import {
 } from "../../../../lib/page-types";
 import styles from "../../../admin/admin.module.scss";
 import edStyles from "./slug.module.scss";
+import { BramsLoader } from "../../../../components/BramsLoader";
 
 // ─── Page meta ─────────────────────────────────────────────────────────────────
 
@@ -398,7 +399,7 @@ export default function PageEditorPage() {
       </div>
 
       {!content ? (
-        <p style={{ color: "#71717a", fontSize: 14 }}>Loading…</p>
+        <BramsLoader />
       ) : content.kind === "legal" ? (
         <LegalEditor
           slug={slug}
