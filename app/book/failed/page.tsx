@@ -12,7 +12,7 @@ export default async function BookingFailedPage() {
     <>
       <TopNavBar data={content.nav} hideLinks />
       <Suspense fallback={null}>
-        <BookingFailed />
+        <BookingFailed data={content.bookingFailed} />
       </Suspense>
       <Footer data={content.footer} />
     </>

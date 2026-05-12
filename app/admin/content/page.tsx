@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type {
+  BookingFailedData,
+  BookingSuccessData,
   HeroData,
   HowItWorksData,
   NavData,
@@ -21,16 +23,18 @@ const SUPPORT_TONES: SupportCard["tone"][] = [
   "sky", "lilac", "muted", "lime", "sand", "mint", "dark",
 ];
 
-type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer";
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "hero",        label: "Hero"              },
-  { id: "support",     label: "Specialized Support"},
-  { id: "howItWorks",  label: "How it Works"       },
-  { id: "pricing",     label: "Pricing Plans"      },
-  { id: "newsletter",  label: "Newsletter CTA"     },
-  { id: "nav",         label: "Navigation"         },
-  { id: "footer",      label: "Footer"             },
+  { id: "hero",           label: "Hero"               },
+  { id: "support",        label: "Specialized Support" },
+  { id: "howItWorks",     label: "How it Works"        },
+  { id: "pricing",        label: "Pricing Plans"       },
+  { id: "newsletter",     label: "Newsletter CTA"      },
+  { id: "nav",            label: "Navigation"          },
+  { id: "footer",         label: "Footer"              },
+  { id: "bookingSuccess", label: "Booking — Success"   },
+  { id: "bookingFailed",  label: "Booking — Failed"    },
 ];
 
 export default function ContentPage() {
@@ -75,13 +79,15 @@ export default function ContentPage() {
         </nav>
 
         <div>
-          {tab === "hero"       && <HeroEditor       data={content.hero}        onChange={(v) => update("hero",        v)} />}
-          {tab === "support"    && <SupportEditor    data={content.support}     onChange={(v) => update("support",     v)} />}
-          {tab === "howItWorks" && <HowEditor        data={content.howItWorks}  onChange={(v) => update("howItWorks",  v)} />}
-          {tab === "pricing"    && <PricingEditor    data={content.pricing}     onChange={(v) => update("pricing",     v)} />}
-          {tab === "newsletter" && <NewsletterEditor data={content.newsletter}  onChange={(v) => update("newsletter",  v)} />}
-          {tab === "nav"        && <NavEditor        data={content.nav}         onChange={(v) => update("nav",         v)} />}
-          {tab === "footer"     && <FooterEditor     data={content.footer}      onChange={(v) => update("footer",      v)} />}
+          {tab === "hero"           && <HeroEditor           data={content.hero}           onChange={(v) => update("hero",           v)} />}
+          {tab === "support"        && <SupportEditor        data={content.support}        onChange={(v) => update("support",        v)} />}
+          {tab === "howItWorks"     && <HowEditor            data={content.howItWorks}     onChange={(v) => update("howItWorks",     v)} />}
+          {tab === "pricing"        && <PricingEditor        data={content.pricing}        onChange={(v) => update("pricing",        v)} />}
+          {tab === "newsletter"     && <NewsletterEditor     data={content.newsletter}     onChange={(v) => update("newsletter",     v)} />}
+          {tab === "nav"            && <NavEditor            data={content.nav}            onChange={(v) => update("nav",            v)} />}
+          {tab === "footer"         && <FooterEditor         data={content.footer}         onChange={(v) => update("footer",         v)} />}
+          {tab === "bookingSuccess" && <BookingSuccessEditor data={content.bookingSuccess} onChange={(v) => update("bookingSuccess", v)} />}
+          {tab === "bookingFailed"  && <BookingFailedEditor  data={content.bookingFailed}  onChange={(v) => update("bookingFailed",  v)} />}
         </div>
       </div>
     </div>
@@ -379,6 +385,90 @@ function FooterEditor({ data, onChange }: { data: FooterData; onChange: (v: Foot
       ))}
       <div className={styles.actions}>
         <button className={styles.primary} onClick={() => save(data)}>Save Footer</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; onChange: (v: BookingSuccessData) => void }) {
+  const { status, save } = useSaver("bookingSuccess");
+  const set = <K extends keyof BookingSuccessData>(k: K, v: BookingSuccessData[K]) =>
+    onChange({ ...data, [k]: v });
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Success Page</h2>
+      <p className={styles.panelHint}>Shown at <code>/book/success</code> after payment is confirmed.</p>
+
+      <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
+      <Field label="Subtitle"><textarea className={styles.textarea} value={data.subtitle} onChange={(e) => set("subtitle", e.target.value)} /></Field>
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Primary CTA — Join Consultation</div>
+        <div className={styles.row}>
+          <Field label="Label"><input className={styles.input} value={data.primaryCta.label} onChange={(e) => set("primaryCta", { ...data.primaryCta, label: e.target.value })} /></Field>
+          <Field label="Link (href)"><input className={styles.input} value={data.primaryCta.href} placeholder="https://…" onChange={(e) => set("primaryCta", { ...data.primaryCta, href: e.target.value })} /></Field>
+        </div>
+      </div>
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Secondary CTAs</div>
+        <div className={styles.row}>
+          <Field label="Add to Calendar label"><input className={styles.input} value={data.calendarLabel} onChange={(e) => set("calendarLabel", e.target.value)} /></Field>
+          <Field label="Download Receipt label"><input className={styles.input} value={data.receiptLabel} onChange={(e) => set("receiptLabel", e.target.value)} /></Field>
+        </div>
+        <Field label="Back to Home label"><input className={styles.input} value={data.homeLabel} onChange={(e) => set("homeLabel", e.target.value)} /></Field>
+      </div>
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Footer Note</div>
+        <Field label="Note text (before email)"><textarea className={styles.textarea} value={data.footerNote} onChange={(e) => set("footerNote", e.target.value)} /></Field>
+        <div className={styles.row}>
+          <Field label="Support email"><input className={styles.input} type="email" value={data.supportEmail} onChange={(e) => set("supportEmail", e.target.value)} /></Field>
+          <Field label="Copyright"><input className={styles.input} value={data.copyright} onChange={(e) => set("copyright", e.target.value)} /></Field>
+        </div>
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Success Page</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+function BookingFailedEditor({ data, onChange }: { data: BookingFailedData; onChange: (v: BookingFailedData) => void }) {
+  const { status, save } = useSaver("bookingFailed");
+  const set = <K extends keyof BookingFailedData>(k: K, v: BookingFailedData[K]) =>
+    onChange({ ...data, [k]: v });
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Failed Page</h2>
+      <p className={styles.panelHint}>Shown at <code>/book/failed</code> when payment is unsuccessful.</p>
+
+      <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
+      <Field label="Body text"><textarea className={styles.textarea} value={data.body} onChange={(e) => set("body", e.target.value)} /></Field>
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Action Buttons</div>
+        <div className={styles.row}>
+          <Field label="Retry Payment label"><input className={styles.input} value={data.retryLabel} onChange={(e) => set("retryLabel", e.target.value)} /></Field>
+          <Field label="Change Method label"><input className={styles.input} value={data.changeMethodLabel} onChange={(e) => set("changeMethodLabel", e.target.value)} /></Field>
+        </div>
+        <div className={styles.row}>
+          <Field label="Contact Support label"><input className={styles.input} value={data.supportLabel} onChange={(e) => set("supportLabel", e.target.value)} /></Field>
+          <Field label="Support email"><input className={styles.input} type="email" value={data.supportEmail} onChange={(e) => set("supportEmail", e.target.value)} /></Field>
+        </div>
+      </div>
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Troubleshooting Box</div>
+        <Field label="Heading"><input className={styles.input} value={data.troubleshootTitle} onChange={(e) => set("troubleshootTitle", e.target.value)} /></Field>
+        <Field label="Body"><textarea className={styles.textarea} value={data.troubleshootBody} onChange={(e) => set("troubleshootBody", e.target.value)} /></Field>
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Failed Page</button>
         <StatusBadge status={status} />
       </div>
     </section>

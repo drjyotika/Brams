@@ -1,18 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import type { BookingFailedData } from "../../lib/content";
 import styles from "./BookingStatus.module.scss";
 
-export function BookingFailed() {
-  const params   = useSearchParams();
-  const planId   = params.get("plan") ?? "initial";
+export function BookingFailed({ data }: { data: BookingFailedData }) {
+  const params = useSearchParams();
+  const planId = params.get("plan") ?? "initial";
 
   return (
     <div className={styles.failedPage}>
       <main className={styles.failedMain}>
         <div className={styles.failedLayout}>
-          {/* ── Left: decorative image card (desktop only) ────────────────── */}
+          {/* ── Left: decorative image card (desktop only) ─────────────── */}
           <div className={styles.decorativeCard} aria-hidden>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -23,57 +23,46 @@ export function BookingFailed() {
             <div className={styles.decorativeBlob} />
           </div>
 
-          {/* ── Right: content ────────────────────────────────────────────── */}
+          {/* ── Right: content ─────────────────────────────────────────── */}
           <div className={styles.failedContent}>
-            {/* Status icon */}
             <div className={styles.failedIconCircle} aria-hidden>❌</div>
 
-            {/* Heading + body */}
             <div className={styles.failedTextBlock}>
-              <h1 className={styles.failedTitle}>Payment Failed</h1>
-              <p className={styles.failedBody}>
-                Your payment could not be completed. Don&rsquo;t worry — your
-                appointment slot is still temporarily held.
-              </p>
+              <h1 className={styles.failedTitle}>{data.title}</h1>
+              <p className={styles.failedBody}>{data.body}</p>
             </div>
 
-            {/* Actions */}
             <div className={styles.failedActions}>
               {/* Primary — Retry */}
-              <Link
+              <a
                 href={`/book?plan=${planId}`}
                 className={styles.retryBtn}
               >
-                <span className={styles.retryBtnInner}>
-                  🔄 Retry Payment
-                </span>
+                <span className={styles.retryBtnInner}>🔄 {data.retryLabel}</span>
                 <span>→</span>
-              </Link>
+              </a>
 
               {/* Secondary row */}
               <div className={styles.failedSecondaryRow}>
-                <Link href={`/book?plan=${planId}`} className={styles.failedSecondaryBtn}>
-                  💳 Change Method
-                </Link>
+                <a href={`/book?plan=${planId}`} className={styles.failedSecondaryBtn}>
+                  💳 {data.changeMethodLabel}
+                </a>
                 <a
-                  href="mailto:support@bramsmindcare.com"
+                  href={`mailto:${data.supportEmail}`}
                   className={styles.failedSecondaryBtn}
                 >
-                  💬 Contact Support
+                  💬 {data.supportLabel}
                 </a>
               </div>
             </div>
 
-            {/* Troubleshooting info */}
+            {/* Troubleshooting */}
             <div className={styles.troubleshootSection}>
               <div className={styles.troubleshootBox}>
                 <span className={styles.troubleshootIcon} aria-hidden>⚠️</span>
                 <div>
-                  <p className={styles.troubleshootHeading}>Troubleshooting</p>
-                  <p className={styles.troubleshootBody}>
-                    Please check your internet connection or contact your bank if
-                    the issue persists. No charges have been made to your account.
-                  </p>
+                  <p className={styles.troubleshootHeading}>{data.troubleshootTitle}</p>
+                  <p className={styles.troubleshootBody}>{data.troubleshootBody}</p>
                 </div>
               </div>
             </div>

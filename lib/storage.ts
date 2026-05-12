@@ -18,13 +18,15 @@ export function mergeContent(
   override: Partial<SiteContent>
 ): SiteContent {
   return {
-    nav:        { ...base.nav,        ...override.nav        },
-    hero:       { ...base.hero,       ...override.hero       },
-    support:    { ...base.support,    ...override.support    },
-    howItWorks: { ...base.howItWorks, ...override.howItWorks },
-    pricing:    { ...base.pricing,    ...override.pricing    },
-    newsletter: { ...base.newsletter, ...override.newsletter },
-    footer:     { ...base.footer,     ...override.footer     },
+    nav:            { ...base.nav,            ...override.nav            },
+    hero:           { ...base.hero,           ...override.hero           },
+    support:        { ...base.support,        ...override.support        },
+    howItWorks:     { ...base.howItWorks,     ...override.howItWorks     },
+    pricing:        { ...base.pricing,        ...override.pricing        },
+    newsletter:     { ...base.newsletter,     ...override.newsletter     },
+    footer:         { ...base.footer,         ...override.footer         },
+    bookingSuccess: { ...base.bookingSuccess, ...override.bookingSuccess },
+    bookingFailed:  { ...base.bookingFailed,  ...override.bookingFailed  },
   };
 }
 

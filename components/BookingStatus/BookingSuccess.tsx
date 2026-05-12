@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import type { BookingSuccessData } from "../../lib/content";
 import styles from "./BookingStatus.module.scss";
 
 function formatDate(iso: string): string {
@@ -23,17 +24,17 @@ function formatTime(t: string): string {
   return `${hh}:${String(m).padStart(2, "0")} ${ampm}`;
 }
 
-export function BookingSuccess() {
-  const params     = useSearchParams();
-  const bookingId  = params.get("id") ?? "";
-  const planTitle  = params.get("plan") ?? "Consultation";
-  const date       = params.get("date") ?? "";
-  const time       = params.get("time") ?? "";
-  const name       = params.get("name") ?? "";
+export function BookingSuccess({ data }: { data: BookingSuccessData }) {
+  const params    = useSearchParams();
+  const bookingId = params.get("id") ?? "";
+  const planTitle = params.get("plan") ?? "Consultation";
+  const date      = params.get("date") ?? "";
+  const time      = params.get("time") ?? "";
+  const name      = params.get("name") ?? "";
 
-  const displayId  = bookingId ? bookingId.slice(0, 8).toUpperCase() : "—";
-  const dateLabel  = formatDate(date);
-  const timeLabel  = formatTime(time);
+  const displayId = bookingId ? bookingId.slice(0, 8).toUpperCase() : "—";
+  const dateLabel = formatDate(date);
+  const timeLabel = formatTime(time);
 
   return (
     <div className={styles.successPage}>
@@ -52,30 +53,25 @@ export function BookingSuccess() {
         {/* Icon + heading */}
         <div className={styles.successHeader}>
           <div className={styles.iconCircle} aria-hidden>✅</div>
-          <h1 className={styles.successTitle}>Booking Confirmed</h1>
+          <h1 className={styles.successTitle}>{data.title}</h1>
           <p className={styles.successSubtitle}>
-            {name ? `${name}, your` : "Your"} consultation has been successfully
-            booked. You will receive the meeting link via email / WhatsApp.
+            {name ? `${name}, your` : "Your"}{" "}
+            {data.subtitle.replace(/^your/i, "").trimStart()}
           </p>
         </div>
 
         {/* Bento grid */}
         <div className={styles.bentoGrid}>
-          {/* Booking ID */}
           <div className={styles.bentoCard}>
             <p className={styles.bentoLabel}>Booking ID</p>
-            <p className={`${styles.bentoValue} ${styles.bentoValueAccent}`}>
-              {displayId}
-            </p>
+            <p className={`${styles.bentoValue} ${styles.bentoValueAccent}`}>{displayId}</p>
           </div>
 
-          {/* Consultation type */}
           <div className={styles.bentoCard}>
             <p className={styles.bentoLabel}>Consultation Type</p>
             <p className={styles.bentoValue}>{planTitle}</p>
           </div>
 
-          {/* Date & time — full width */}
           <div className={`${styles.bentoCard} ${styles.bentoCardWide}`}>
             <div className={styles.bentoCardRow}>
               <div>
@@ -91,25 +87,25 @@ export function BookingSuccess() {
 
         {/* Actions */}
         <div className={styles.actionSection}>
-          {/* Primary — Join Consultation (stub link, can wire to video URL later) */}
-          <button type="button" className={styles.joinBtn}>
+          <a
+            href={data.primaryCta.href || "#"}
+            className={styles.joinBtn}
+          >
             <span>🎥</span>
-            Join Consultation
-          </button>
+            {data.primaryCta.label}
+          </a>
 
-          {/* Secondary row */}
           <div className={styles.secondaryRow}>
             <button type="button" className={styles.secondaryBtn}>
-              📅 Add to Calendar
+              📅 {data.calendarLabel}
             </button>
             <button type="button" className={styles.secondaryBtn}>
-              🧾 Download Receipt
+              🧾 {data.receiptLabel}
             </button>
           </div>
 
-          {/* Home link */}
           <Link href="/" className={styles.homeLink}>
-            ← Back to Home
+            ← {data.homeLabel}
           </Link>
         </div>
       </div>
@@ -117,15 +113,15 @@ export function BookingSuccess() {
       {/* Footer note */}
       <div className={styles.footerNote}>
         <p className={styles.footerNoteText}>
-          If you have any urgent concerns prior to your session, please contact
-          our support desk directly at{" "}
-          <a href="mailto:support@bramsmindcare.com" className={styles.supportEmail}>
-            support@bramsmindcare.com
+          {data.footerNote}{" "}
+          <a
+            href={`mailto:${data.supportEmail}`}
+            className={styles.supportEmail}
+          >
+            {data.supportEmail}
           </a>.
         </p>
-        <p className={styles.copyright}>
-          © 2024 Brams Mind Care. Professional Psychiatric Care.
-        </p>
+        <p className={styles.copyright}>{data.copyright}</p>
       </div>
     </div>
   );

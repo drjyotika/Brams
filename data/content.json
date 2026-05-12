@@ -226,5 +226,26 @@
         ]
       }
     ]
+  },
+  "bookingSuccess": {
+    "title": "Booking Confirmed",
+    "subtitle": "Your consultation has been successfully booked. You will receive the meeting link via email / WhatsApp.",
+    "primaryCta": { "label": "Join Consultation", "href": "#" },
+    "calendarLabel": "Add to Calendar",
+    "receiptLabel": "Download Receipt",
+    "homeLabel": "Back to Home",
+    "footerNote": "If you have any urgent concerns prior to your session, please contact our support desk directly at",
+    "supportEmail": "support@bramsmindcare.com",
+    "copyright": "© 2024 Brams Mind Care. Professional Psychiatric Care."
+  },
+  "bookingFailed": {
+    "title": "Payment Failed",
+    "body": "Your payment could not be completed. Don't worry — your appointment slot is still temporarily held.",
+    "retryLabel": "Retry Payment",
+    "changeMethodLabel": "Change Method",
+    "supportLabel": "Contact Support",
+    "supportEmail": "support@bramsmindcare.com",
+    "troubleshootTitle": "Troubleshooting",
+    "troubleshootBody": "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account."
   }
 }
