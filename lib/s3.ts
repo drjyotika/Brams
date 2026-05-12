@@ -94,8 +94,6 @@ export async function uploadPrescription(opts: {
       Body:                 opts.body,
       ContentType:          opts.contentType || "application/octet-stream",
       ServerSideEncryption: "AES256",
-      // Content-Disposition makes browsers download the file with the original name
-      ContentDisposition: `attachment; filename="${opts.fileName.replace(/"/g, "")}"`,
     }),
   );
 

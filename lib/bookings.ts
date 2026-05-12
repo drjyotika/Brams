@@ -225,6 +225,31 @@ export async function getUploadsForAppointment(
   return rows as AppointmentUpload[];
 }
 
+export type UploadWithAppointment = AppointmentUpload & {
+  appointment_date: string;
+  appointment_time: string;
+  plan_title: string;
+};
+
+/** All uploads across every appointment for a patient, newest first. */
+export async function getUploadsForPatient(
+  patient_id: string,
+): Promise<UploadWithAppointment[]> {
+  const rows = await sql`
+    SELECT
+      au.id, au.appointment_id, au.file_name, au.file_url,
+      au.file_size, au.mime_type, au.uploaded_at,
+      a.scheduled_date AS appointment_date,
+      a.scheduled_time AS appointment_time,
+      a.plan_title
+    FROM appointment_uploads au
+    JOIN appointments a ON a.id = au.appointment_id
+    WHERE a.patient_id = ${patient_id}
+    ORDER BY au.uploaded_at DESC
+  `;
+  return rows as UploadWithAppointment[];
+}
+
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function recordPayment(input: {
