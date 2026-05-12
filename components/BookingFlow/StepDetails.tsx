@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PatientDetails, PlanInfo } from "./index";
+import type { BookingField } from "../../lib/content";
 import { ConsultationSummary } from "./ConsultationSummary";
 import { StickyFooter } from "./StickyFooter";
 import styles from "./BookingFlow.module.scss";
@@ -11,6 +12,7 @@ export function StepDetails({
   plan,
   scheduledDate,
   scheduledTime,
+  fields,
   details,
   onChange,
   onBack,
@@ -19,6 +21,7 @@ export function StepDetails({
   plan: PlanInfo;
   scheduledDate: string;
   scheduledTime: string;
+  fields: BookingField[];
   details: PatientDetails;
   onChange: (v: PatientDetails) => void;
   onBack: () => void;
@@ -27,12 +30,15 @@ export function StepDetails({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState<string | null>(null);
 
-  const set = <K extends keyof PatientDetails>(k: K, v: PatientDetails[K]) =>
-    onChange({ ...details, [k]: v });
+  const set = (key: BookingField["key"], val: string) =>
+    onChange({ ...details, [key]: val });
 
-  const canSubmit =
-    details.full_name.trim().length > 1 &&
-    details.phone.trim().length >= 7;
+  // Validate only visible + required fields
+  const visibleRequired = fields.filter((f) => f.visible && f.required);
+  const canSubmit = visibleRequired.every((f) => {
+    const val = details[f.key] ?? "";
+    return val.trim().length >= (f.key === "phone" ? 7 : 2);
+  });
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -50,87 +56,56 @@ export function StepDetails({
   return (
     <div>
       <div className={styles.layout}>
-        {/* Form */}
+        {/* Dynamic form */}
         <div className={styles.card}>
-          <div className={dStyles.row}>
-            <Field label="Full name *">
-              <input
-                className={dStyles.input}
-                value={details.full_name}
-                onChange={(e) => set("full_name", e.target.value)}
-                placeholder="Enter your full legal name"
-                required
-              />
-            </Field>
-          </div>
-
-          <div className={dStyles.row2}>
-            <Field label="Age">
-              <input
-                className={dStyles.input}
-                type="number"
-                min={1}
-                max={120}
-                value={details.age}
-                onChange={(e) => set("age", e.target.value)}
-                placeholder="28"
-              />
-            </Field>
-            <Field label="Gender">
-              <select
-                className={dStyles.input}
-                value={details.gender}
-                onChange={(e) => set("gender", e.target.value)}
+          <div className={dStyles.fieldsGrid}>
+            {fields.filter((f) => f.visible).map((f) => (
+              <div
+                key={f.id}
+                className={f.width === "full" ? dStyles.colFull : dStyles.colHalf}
               >
-                <option value="">Select…</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="other">Other</option>
-                <option value="prefer-not-to-say">Prefer not to say</option>
-              </select>
-            </Field>
+                <label className={dStyles.field}>
+                  <span className={dStyles.label}>
+                    {f.label}{f.required ? " *" : ""}
+                  </span>
+
+                  {f.type === "select" ? (
+                    <select
+                      className={dStyles.input}
+                      value={details[f.key]}
+                      onChange={(e) => set(f.key, e.target.value)}
+                    >
+                      <option value="">Select…</option>
+                      {(f.options ?? []).map((opt) => (
+                        <option key={opt} value={opt.toLowerCase().replace(/\s+/g, "-")}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : f.type === "textarea" ? (
+                    <textarea
+                      className={dStyles.textarea}
+                      value={details[f.key]}
+                      onChange={(e) => set(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      rows={4}
+                    />
+                  ) : (
+                    <input
+                      className={dStyles.input}
+                      type={f.type}
+                      value={details[f.key]}
+                      onChange={(e) => set(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      required={f.required}
+                      min={f.type === "number" ? 1 : undefined}
+                      max={f.type === "number" ? 120 : undefined}
+                    />
+                  )}
+                </label>
+              </div>
+            ))}
           </div>
-
-          <div className={dStyles.row2}>
-            <Field label="Phone number *">
-              <input
-                className={dStyles.input}
-                type="tel"
-                value={details.phone}
-                onChange={(e) => set("phone", e.target.value)}
-                placeholder="+91 9876 543 210"
-                required
-              />
-            </Field>
-            <Field label="Email">
-              <input
-                className={dStyles.input}
-                type="email"
-                value={details.email}
-                onChange={(e) => set("email", e.target.value)}
-                placeholder="name@example.com"
-              />
-            </Field>
-          </div>
-
-          <Field label="City">
-            <input
-              className={dStyles.input}
-              value={details.city}
-              onChange={(e) => set("city", e.target.value)}
-              placeholder="Current city of residence"
-            />
-          </Field>
-
-          <Field label="Reason for consultation">
-            <textarea
-              className={dStyles.textarea}
-              value={details.reason}
-              onChange={(e) => set("reason", e.target.value)}
-              placeholder="Briefly describe what you'd like to discuss during the session…"
-              rows={4}
-            />
-          </Field>
 
           <p className={dStyles.uploadNote}>
             Reports can be uploaded after booking is confirmed.
@@ -158,14 +133,5 @@ export function StepDetails({
         nextLoading={submitting}
       />
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className={dStyles.field}>
-      <span className={dStyles.label}>{label}</span>
-      {children}
-    </label>
   );
 }

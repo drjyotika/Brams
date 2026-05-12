@@ -122,6 +122,53 @@ export type BookingFailedData = {
   troubleshootBody: string;
 };
 
+// ─── Booking flow config ───────────────────────────────────────────────────────
+
+/** A single bookable time slot, stored in 24-hour "HH:MM" format. */
+export type TimeSlot = {
+  id: string;
+  time: string; // "HH:MM" 24-hour e.g. "10:00", "17:30"
+};
+
+export type BookingStep1Data = {
+  timeSlots: TimeSlot[];
+};
+
+export type BookingFieldKey =
+  | "full_name"
+  | "age"
+  | "gender"
+  | "phone"
+  | "email"
+  | "city"
+  | "reason";
+
+export type BookingFieldType =
+  | "text"
+  | "number"
+  | "tel"
+  | "email"
+  | "select"
+  | "textarea";
+
+export type BookingField = {
+  id: string;
+  key: BookingFieldKey;
+  label: string;
+  placeholder: string;
+  type: BookingFieldType;
+  required: boolean;
+  visible: boolean;
+  /** "full" spans the whole row; "half" takes one column in a 2-col grid */
+  width: "full" | "half";
+  /** Option labels for select fields (e.g. gender) */
+  options?: string[];
+};
+
+export type BookingStep2Data = {
+  fields: BookingField[];
+};
+
 export type SiteContent = {
   nav: NavData;
   hero: HeroData;
@@ -132,6 +179,8 @@ export type SiteContent = {
   footer: FooterData;
   bookingSuccess: BookingSuccessData;
   bookingFailed: BookingFailedData;
+  bookingStep1: BookingStep1Data;
+  bookingStep2: BookingStep2Data;
 };
 
 // Default content — used as fallback when no API data is supplied. Mirrors
@@ -339,5 +388,26 @@ export const defaultContent: SiteContent = {
     troubleshootTitle: "Troubleshooting",
     troubleshootBody:
       "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account.",
+  },
+  bookingStep1: {
+    timeSlots: [
+      { id: "slot-1", time: "10:00" },
+      { id: "slot-2", time: "11:30" },
+      { id: "slot-3", time: "12:15" },
+      { id: "slot-4", time: "13:30" },
+      { id: "slot-5", time: "14:00" },
+      { id: "slot-6", time: "17:30" },
+    ],
+  },
+  bookingStep2: {
+    fields: [
+      { id: "f-full_name", key: "full_name", label: "Full name",                type: "text",     placeholder: "Enter your full legal name",                          required: true,  visible: true,  width: "full" },
+      { id: "f-age",       key: "age",       label: "Age",                      type: "number",   placeholder: "28",                                                  required: false, visible: true,  width: "half" },
+      { id: "f-gender",    key: "gender",    label: "Gender",                   type: "select",   placeholder: "",                                                    required: false, visible: true,  width: "half", options: ["Female", "Male", "Other", "Prefer not to say"] },
+      { id: "f-phone",     key: "phone",     label: "Phone number",             type: "tel",      placeholder: "+91 9876 543 210",                                    required: true,  visible: true,  width: "half" },
+      { id: "f-email",     key: "email",     label: "Email",                    type: "email",    placeholder: "name@example.com",                                    required: false, visible: true,  width: "half" },
+      { id: "f-city",      key: "city",      label: "City",                     type: "text",     placeholder: "Current city of residence",                           required: false, visible: true,  width: "full" },
+      { id: "f-reason",    key: "reason",    label: "Reason for consultation",  type: "textarea", placeholder: "Briefly describe what you'd like to discuss…",       required: false, visible: true,  width: "full" },
+    ],
   },
 };

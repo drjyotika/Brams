@@ -19,6 +19,21 @@
   }
 }
 
+// ─── Dynamic fields grid ──────────────────────────────────────────────────────
+
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 12px;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.colFull  { grid-column: 1 / -1; }
+.colHalf  { grid-column: span 1; }
+
 .field {
   display: flex;
   flex-direction: column;

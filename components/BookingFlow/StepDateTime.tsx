@@ -2,30 +2,25 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
+import type { TimeSlot } from "../../lib/content";
 import { StickyFooter } from "./StickyFooter";
 import { AlternativeRequestModal } from "./AlternativeRequestModal";
 import styles from "./BookingFlow.module.scss";
 import dtStyles from "./StepDateTime.module.scss";
 
-const TIME_SLOTS = [
-  "10:00 AM",
-  "11:30 AM",
-  "12:15 PM",
-  "01:30 PM",
-  "02:00 PM",
-  "05:30 PM",
-];
+// "10:00" (24h) → "10:00 AM" / "13:30" → "01:30 PM"
+function formatTime12(time: string): string {
+  const [hStr, minStr] = time.split(":");
+  let h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${String(h).padStart(2, "0")}:${minStr} ${ampm}`;
+}
 
-// Convert "10:00 AM" → "10:00:00"
-function to24h(label: string): string {
-  const m = label.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if (!m) return "00:00:00";
-  let h = parseInt(m[1], 10);
-  const min = m[2];
-  const ampm = m[3].toUpperCase();
-  if (ampm === "PM" && h !== 12) h += 12;
-  if (ampm === "AM" && h === 12) h = 0;
-  return `${String(h).padStart(2, "0")}:${min}:00`;
+// "10:00" → "10:00:00" (for DB storage)
+function toDbTime(time: string): string {
+  return `${time}:00`;
 }
 
 // ISO date for a given Date object (local timezone) → YYYY-MM-DD
@@ -38,6 +33,7 @@ function isoDate(d: Date): string {
 
 export function StepDateTime({
   plan,
+  timeSlots,
   selectedDate,
   selectedTime,
   onSelect,
@@ -45,6 +41,7 @@ export function StepDateTime({
   onNext,
 }: {
   plan: PlanInfo;
+  timeSlots: TimeSlot[];
   selectedDate: string | null;
   selectedTime: string | null;
   onSelect: (date: string, time: string) => void;
@@ -144,12 +141,13 @@ export function StepDateTime({
           )}
 
           <div className={dtStyles.slotsGrid}>
-            {TIME_SLOTS.map((label) => {
-              const value = to24h(label);
+            {timeSlots.map((slot) => {
+              const value  = toDbTime(slot.time);
+              const label  = formatTime12(slot.time);
               const active = selectedTime === value;
               return (
                 <button
-                  key={label}
+                  key={slot.id}
                   type="button"
                   className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
                   disabled={!selectedDate}

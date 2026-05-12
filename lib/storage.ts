@@ -27,6 +27,8 @@ export function mergeContent(
     footer:         { ...base.footer,         ...override.footer         },
     bookingSuccess: { ...base.bookingSuccess, ...override.bookingSuccess },
     bookingFailed:  { ...base.bookingFailed,  ...override.bookingFailed  },
+    bookingStep1:   override.bookingStep1   ?? base.bookingStep1,
+    bookingStep2:   override.bookingStep2   ?? base.bookingStep2,
   };
 }
 
