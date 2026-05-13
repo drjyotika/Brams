@@ -1,0 +1,264 @@
+@use "../../styles/tokens" as *;
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg;
+  padding: 32px 24px 64px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: $color-ink-muted;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 24px;
+  color: $color-ink;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: $color-ink-muted;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.linkBtn {
+  font-size: 13px;
+  color: $color-ink-soft;
+  text-decoration: none;
+
+  &:hover { color: $color-plum; }
+}
+
+.logoutBtn {
+  padding: 8px 14px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: $radius-sm;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  background: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover { background: rgba(220, 38, 38, 0.06); }
+}
+
+.verifyBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border: 1px solid #fcd34d;
+  background: #fffbeb;
+  border-radius: $radius-md;
+  font-size: 13px;
+  color: #78350f;
+  flex-wrap: wrap;
+
+  strong { color: #78350f; }
+}
+
+.bannerBtn {
+  padding: 8px 14px;
+  background: $color-plum;
+  color: #fff;
+  border-radius: $radius-sm;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { background: $color-plum-deep; }
+}
+
+.profileCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.25);
+  border-radius: $radius-md;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(116, 84, 117, 0.04);
+}
+
+.cardTitle {
+  margin: 0 0 16px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px 24px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(207, 195, 204, 0.35);
+    font-size: 14px;
+    color: $color-ink;
+  }
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: $color-ink-muted;
+}
+
+.appointmentsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h2 { margin: 0; }
+}
+
+.primaryBtn {
+  padding: 8px 14px;
+  background: $color-plum;
+  color: #fff;
+  border-radius: $radius-sm;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover { background: $color-plum-deep; }
+}
+
+.empty {
+  margin: 0;
+  padding: 24px;
+  background: $color-bg-muted;
+  border-radius: $radius-sm;
+  font-size: 13px;
+  color: $color-ink-muted;
+  text-align: center;
+}
+
+.appointmentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appointment {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-sm;
+  background: $color-bg;
+
+  @media (min-width: 600px) {
+    grid-template-columns: 180px 1fr auto;
+    align-items: center;
+  }
+}
+
+.apptDate {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  color: $color-ink;
+}
+
+.apptTime {
+  font-size: 12px;
+  color: $color-ink-muted;
+  margin-top: 2px;
+}
+
+.apptPlan {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-ink;
+  margin-bottom: 6px;
+}
+
+.statuses {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: $color-bg-muted;
+  color: $color-ink-soft;
+}
+
+.status_pending   { background: #fef3c7; color: #92400e; }
+.status_confirmed { background: #dbeafe; color: #1e40af; }
+.status_completed { background: #d1fae5; color: #065f46; }
+.status_cancelled { background: #fee2e2; color: #991b1b; }
+.status_no_show   { background: #f3f4f6; color: #4b5563; }
+
+.pay_paid    { background: #d1fae5; color: #065f46; }
+.pay_unpaid  { background: #fef3c7; color: #92400e; }
+.pay_refunded{ background: #e0e7ff; color: #3730a3; }
+.pay_failed  { background: #fee2e2; color: #991b1b; }
+
+.apptRight {
+  text-align: right;
+}
+
+.muted {
+  font-size: 12px;
+  color: $color-ink-muted;
+  font-style: italic;
+}

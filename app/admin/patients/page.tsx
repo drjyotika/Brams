@@ -17,6 +17,9 @@ type Patient = {
   appointment_count: number;
   last_appointment_date: string | null;
   created_at: string;
+  email_verified: boolean;
+  is_suspended:   boolean;
+  has_password:   boolean;
 };
 
 const PAGE_SIZES = [10, 20, 50];
@@ -71,6 +74,7 @@ export default function PatientsPage() {
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Email</th>
+                <th>Status</th>
                 <th>City</th>
                 <th>Sessions</th>
                 <th>Last Session</th>
@@ -80,7 +84,7 @@ export default function PatientsPage() {
             <tbody>
               {patients.length === 0 && (
                 <tr>
-                  <td colSpan={7} className={tStyles.empty}>
+                  <td colSpan={8} className={tStyles.empty}>
                     No patients yet. Bookings will appear here.
                   </td>
                 </tr>
@@ -97,6 +101,13 @@ export default function PatientsPage() {
                   </td>
                   <td>{p.phone}</td>
                   <td>{p.email ?? "—"}</td>
+                  <td>
+                    <StatusPills
+                      suspended={p.is_suspended}
+                      verified={p.email_verified}
+                      hasPassword={p.has_password}
+                    />
+                  </td>
                   <td>{p.city ?? "—"}</td>
                   <td>{p.appointment_count}</td>
                   <td>
@@ -106,7 +117,7 @@ export default function PatientsPage() {
                   </td>
                   <td className={tStyles.actions}>
                     <Link href={`/admin/patients/${p.id}`} className={tStyles.editBtn}>
-                      View
+                      Manage
                     </Link>
                   </td>
                 </tr>
@@ -131,5 +142,35 @@ export default function PatientsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Status pills ────────────────────────────────────────────────────────────
+
+function StatusPills({
+  suspended,
+  verified,
+  hasPassword,
+}: {
+  suspended:   boolean;
+  verified:    boolean;
+  hasPassword: boolean;
+}) {
+  const pill = (label: string, bg: string, fg: string) => (
+    <span style={{
+      display: "inline-block", padding: "2px 8px", borderRadius: 999,
+      fontSize: 10, fontWeight: 700, letterSpacing: 0.3,
+      textTransform: "uppercase", background: bg, color: fg,
+      marginRight: 4, marginBottom: 2,
+    }}>{label}</span>
+  );
+
+  return (
+    <span style={{ display: "inline-flex", flexWrap: "wrap" }}>
+      {suspended      ? pill("Suspended", "#fee2e2", "#991b1b")
+        : verified    ? pill("Verified",  "#d1fae5", "#065f46")
+        : hasPassword ? pill("Unverified","#fef3c7", "#92400e")
+        :               pill("Guest",     "#f3f4f6", "#4b5563")}
+    </span>
   );
 }

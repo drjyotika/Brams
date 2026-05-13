@@ -18,7 +18,15 @@ type Patient = {
   phone: string;
   email: string | null;
   city: string | null;
+  notes: string | null;
   created_at: string;
+  email_verified:    boolean | null;
+  email_verified_at: string | null;
+  is_suspended:      boolean | null;
+  suspended_at:      string | null;
+  suspension_reason: string | null;
+  last_login_at:     string | null;
+  password_hash:     string | null;
 };
 
 type Appointment = {
@@ -122,17 +130,10 @@ export default function PatientDetailPage() {
       </div>
 
       {/* ── Patient details ─────────────────────────────────────────────────── */}
-      <div className={styles.panel} style={{ marginBottom: 24 }}>
-        <h2 className={styles.panelTitle}>Patient Details</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 12 }}>
-          <KV k="Phone"  v={patient.phone} />
-          <KV k="Email"  v={patient.email ?? "—"} />
-          <KV k="Age"    v={patient.age?.toString() ?? "—"} />
-          <KV k="Gender" v={patient.gender ?? "—"} />
-          <KV k="City"   v={patient.city ?? "—"} />
-          <KV k="Joined" v={new Date(patient.created_at).toLocaleDateString("en-IN")} />
-        </div>
-      </div>
+      <PatientDetailsPanel patient={patient} onUpdated={setPatient} />
+
+      {/* ── Account management ─────────────────────────────────────────────── */}
+      <AccountManagementPanel patient={patient} onUpdated={setPatient} />
 
       {/* ── Appointments ────────────────────────────────────────────────────── */}
       <div className={styles.panel} style={{ marginBottom: 24 }}>
@@ -391,4 +392,338 @@ function paymentTone(s: string): "ok" | "warn" | "err" | "neutral" {
   if (s === "refunded") return "neutral";
   if (s === "failed")   return "err";
   return "warn";
+}
+
+// ─── Patient details panel — view + inline edit ───────────────────────────────
+
+function PatientDetailsPanel({
+  patient,
+  onUpdated,
+}: {
+  patient: Patient;
+  onUpdated: (p: Patient) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving,  setSaving]  = useState(false);
+  const [err,     setErr]     = useState("");
+  const [form,    setForm]    = useState({
+    full_name: patient.full_name,
+    age:       patient.age?.toString() ?? "",
+    gender:    patient.gender ?? "",
+    phone:     patient.phone,
+    email:     patient.email ?? "",
+    city:      patient.city ?? "",
+    notes:     patient.notes ?? "",
+  });
+
+  function reset() {
+    setForm({
+      full_name: patient.full_name,
+      age:       patient.age?.toString() ?? "",
+      gender:    patient.gender ?? "",
+      phone:     patient.phone,
+      email:     patient.email ?? "",
+      city:      patient.city ?? "",
+      notes:     patient.notes ?? "",
+    });
+    setErr("");
+    setEditing(false);
+  }
+
+  async function save() {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await fetch(`/api/patients/${patient.id}`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          full_name: form.full_name.trim(),
+          age:       form.age ? parseInt(form.age, 10) : null,
+          gender:    form.gender || null,
+          phone:     form.phone.trim(),
+          email:     form.email.trim() || null,
+          city:      form.city || null,
+          notes:     form.notes || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(data.error ?? `HTTP ${res.status}`);
+      } else {
+        onUpdated(data.patient);
+        setEditing(false);
+      }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className={styles.panel} style={{ marginBottom: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <h2 className={styles.panelTitle} style={{ margin: 0 }}>Patient Details</h2>
+        {!editing ? (
+          <button className={styles.secondary} onClick={() => setEditing(true)}>Edit</button>
+        ) : (
+          <span style={{ display: "flex", gap: 8 }}>
+            <button className={styles.secondary} onClick={reset} disabled={saving}>Cancel</button>
+            <button className={styles.primary}   onClick={save}  disabled={saving}>
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </span>
+        )}
+      </div>
+
+      {err && <p style={{ color: "#dc2626", fontSize: 13, marginTop: 8 }}>{err}</p>}
+
+      {!editing ? (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 12 }}>
+          <KV k="Phone"  v={patient.phone} />
+          <KV k="Email"  v={patient.email ?? "—"} />
+          <KV k="Age"    v={patient.age?.toString() ?? "—"} />
+          <KV k="Gender" v={patient.gender ?? "—"} />
+          <KV k="City"   v={patient.city ?? "—"} />
+          <KV k="Joined" v={new Date(patient.created_at).toLocaleDateString("en-IN")} />
+          {patient.notes && <div style={{ gridColumn: "1 / -1" }}><KV k="Notes" v={patient.notes} /></div>}
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+          <Field label="Full name"><input className={styles.input} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></Field>
+          <Field label="Phone"><input className={styles.input} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
+          <Field label="Email"><input className={styles.input} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+          <Field label="Age"><input className={styles.input} type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} /></Field>
+          <Field label="Gender">
+            <select className={styles.select} value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+              <option value="">—</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+          </Field>
+          <Field label="City"><input className={styles.input} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <Field label="Internal notes">
+              <textarea
+                className={styles.textarea}
+                rows={3}
+                value={form.notes}
+                placeholder="Admin notes — not visible to the patient"
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </Field>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "#9b8fa0", letterSpacing: 0.5, textTransform: "uppercase" }}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+// ─── Account management panel — suspend / verify / password / delete ─────────
+
+function AccountManagementPanel({
+  patient,
+  onUpdated,
+}: {
+  patient: Patient;
+  onUpdated: (p: Patient) => void;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg,  setMsg]  = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [newPwd, setNewPwd] = useState("");
+
+  const suspended = !!patient.is_suspended;
+  const verified  = !!patient.email_verified;
+  const hasPwd    = !!patient.password_hash;
+
+  async function doAction(action: string, payload: Record<string, unknown> = {}, prompt?: string) {
+    if (prompt && !window.confirm(prompt)) return;
+    setBusy(action);
+    setMsg(null);
+    try {
+      const res = await fetch(`/api/patients/${patient.id}/actions`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ action, ...payload }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg({ kind: "err", text: data.error ?? `HTTP ${res.status}` });
+      } else {
+        setMsg({ kind: "ok", text: "Done." });
+        // Re-fetch the patient so the UI reflects the new flags
+        const r = await fetch(`/api/patients/${patient.id}`);
+        if (r.ok) {
+          const next = await r.json();
+          onUpdated(next.patient);
+        }
+        if (action === "reset_password") setNewPwd("");
+      }
+    } catch (e) {
+      setMsg({ kind: "err", text: (e as Error).message });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function deletePatient() {
+    if (!window.confirm("Delete this patient permanently? This cannot be undone.")) return;
+    setBusy("delete");
+    setMsg(null);
+    try {
+      const res = await fetch(`/api/patients/${patient.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg({ kind: "err", text: data.error ?? `HTTP ${res.status}` });
+      } else {
+        window.location.href = "/admin/patients";
+      }
+    } catch (e) {
+      setMsg({ kind: "err", text: (e as Error).message });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function suspend() {
+    const reason = window.prompt("Reason for suspension (optional):") ?? "";
+    void doAction("suspend", { reason: reason || null });
+  }
+
+  return (
+    <div className={styles.panel} style={{ marginBottom: 24 }}>
+      <h2 className={styles.panelTitle}>Account Management</h2>
+
+      {/* Status row */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12, marginBottom: 16 }}>
+        <Chip label={hasPwd ? "Registered" : "Guest (no account)"} tone={hasPwd ? "ok" : "neutral"} />
+        {hasPwd && <Chip label={verified ? "Email verified" : "Email unverified"} tone={verified ? "ok" : "warn"} />}
+        {suspended && <Chip label="Suspended" tone="err" />}
+        {patient.last_login_at && (
+          <span style={{ fontSize: 11, color: "#9b8fa0", alignSelf: "center" }}>
+            Last login: {new Date(patient.last_login_at).toLocaleString("en-IN")}
+          </span>
+        )}
+      </div>
+
+      {suspended && patient.suspension_reason && (
+        <p style={{ marginTop: 0, padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 12, color: "#991b1b" }}>
+          <strong>Suspension reason:</strong> {patient.suspension_reason}
+        </p>
+      )}
+
+      {/* Action buttons */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginTop: 12 }}>
+        {suspended ? (
+          <button className={styles.secondary} disabled={busy === "unsuspend"} onClick={() => doAction("unsuspend")}>
+            {busy === "unsuspend" ? "Unsuspending…" : "Unsuspend account"}
+          </button>
+        ) : (
+          <button className={styles.danger} disabled={!hasPwd || busy === "suspend"} onClick={suspend}>
+            {busy === "suspend" ? "Suspending…" : "Suspend account"}
+          </button>
+        )}
+
+        {hasPwd && !verified && (
+          <>
+            <button
+              className={styles.secondary}
+              disabled={busy === "send_verification"}
+              onClick={() => doAction("send_verification")}
+            >
+              {busy === "send_verification" ? "Sending…" : "Resend verification email"}
+            </button>
+            <button
+              className={styles.secondary}
+              disabled={busy === "mark_email_verified"}
+              onClick={() => doAction("mark_email_verified", {}, "Manually mark this patient's email as verified?")}
+            >
+              {busy === "mark_email_verified" ? "Marking…" : "Mark email verified"}
+            </button>
+          </>
+        )}
+
+        {hasPwd && (
+          <button
+            className={styles.secondary}
+            disabled={busy === "clear_password"}
+            onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}
+          >
+            {busy === "clear_password" ? "Clearing…" : "Clear password"}
+          </button>
+        )}
+
+        <button className={styles.danger} disabled={busy === "delete"} onClick={deletePatient}>
+          {busy === "delete" ? "Deleting…" : "Delete patient"}
+        </button>
+      </div>
+
+      {/* Reset password */}
+      {hasPwd && (
+        <div style={{ marginTop: 18, padding: 14, background: "#faf9fb", border: "1px solid rgba(207,195,204,.3)", borderRadius: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b24", marginBottom: 8 }}>Reset password</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="New password (min 6 chars)"
+              value={newPwd}
+              onChange={(e) => setNewPwd(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <button
+              className={styles.primary}
+              disabled={newPwd.length < 6 || busy === "reset_password"}
+              onClick={() => doAction("reset_password", { password: newPwd }, "Set a new password for this patient?")}
+            >
+              {busy === "reset_password" ? "Saving…" : "Set password"}
+            </button>
+          </div>
+          <p style={{ fontSize: 11, color: "#9b8fa0", marginTop: 6, marginBottom: 0 }}>
+            Share the new password with the patient securely. They can change it after logging in.
+          </p>
+        </div>
+      )}
+
+      {msg && (
+        <p style={{
+          marginTop: 14, padding: "8px 12px", borderRadius: 8, fontSize: 12,
+          background: msg.kind === "ok" ? "#dcfce7" : "#fef2f2",
+          color:      msg.kind === "ok" ? "#065f46" : "#991b1b",
+          border:     msg.kind === "ok" ? "1px solid #86efac" : "1px solid #fecaca",
+        }}>
+          {msg.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Chip({ label, tone }: { label: string; tone: "ok" | "warn" | "err" | "neutral" }) {
+  const colors: Record<typeof tone, { bg: string; fg: string }> = {
+    ok:      { bg: "#dcfce7", fg: "#166534" },
+    warn:    { bg: "#fef3c7", fg: "#92400e" },
+    err:     { bg: "#fee2e2", fg: "#991b1b" },
+    neutral: { bg: "#f3f4f6", fg: "#374151" },
+  };
+  const c = colors[tone];
+  return (
+    <span style={{
+      background: c.bg, color: c.fg, padding: "4px 10px",
+      borderRadius: 999, fontSize: 11, fontWeight: 700,
+      textTransform: "uppercase", letterSpacing: 0.4,
+    }}>{label}</span>
+  );
 }

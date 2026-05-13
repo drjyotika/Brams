@@ -22,6 +22,23 @@ export type Patient = {
   email: string | null;
   city: string | null;
   notes: string | null;
+  /**
+   * Patient-side auth (added by patient-auth.ts migration).  Optional on the
+   * base type because rows created before the migration may have NULLs and
+   * code that doesn't care about auth shouldn't have to read these.
+   */
+  password_hash?:           string | null;
+  last_login_at?:           Date | null;
+  failed_login_count?:      number;
+  locked_until?:            Date | null;
+  email_verified?:          boolean;
+  email_verified_at?:       Date | null;
+  verification_otp?:        string | null;
+  verification_token?:      string | null;
+  verification_expires_at?: Date | null;
+  is_suspended?:            boolean;
+  suspended_at?:            Date | null;
+  suspension_reason?:       string | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -103,10 +120,19 @@ export type PatientWithStats = Patient & {
 };
 
 export async function getAllPatients(): Promise<PatientWithStats[]> {
+  // COALESCE on the new auth columns so older patient rows (created before
+  // the patient-auth migration) still return well-typed booleans.
   const rows = await sql`
-    SELECT p.*,
-           COALESCE(COUNT(a.id), 0)::int AS appointment_count,
-           MAX(a.scheduled_date)::text   AS last_appointment_date
+    SELECT p.id, p.full_name, p.age, p.gender, p.phone, p.email, p.city, p.notes,
+           p.created_at, p.updated_at,
+           COALESCE(p.email_verified, FALSE) AS email_verified,
+           p.email_verified_at,
+           COALESCE(p.is_suspended,   FALSE) AS is_suspended,
+           p.suspension_reason,
+           p.last_login_at,
+           (p.password_hash IS NOT NULL)     AS has_password,
+           COALESCE(COUNT(a.id), 0)::int     AS appointment_count,
+           MAX(a.scheduled_date)::text       AS last_appointment_date
     FROM patients p
     LEFT JOIN appointments a ON a.patient_id = p.id
     GROUP BY p.id
