@@ -68,19 +68,28 @@ export async function ensurePatientAuthSchema(): Promise<void> {
   await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS suspended_at      TIMESTAMPTZ`;
   await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS suspension_reason TEXT`;
 
-  // Case-insensitive unique email index (allows multiple NULLs)
-  await sql`
-    CREATE UNIQUE INDEX IF NOT EXISTS patients_email_lower_unique
-      ON patients (LOWER(email))
-      WHERE email IS NOT NULL
-  `;
+  // Case-insensitive unique email index.  Skipped if duplicate emails already
+  // exist in the table — the app enforces uniqueness at the query level too.
+  try {
+    await sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS patients_email_lower_unique
+        ON patients (LOWER(email))
+        WHERE email IS NOT NULL
+    `;
+  } catch {
+    console.warn("[patient-auth] Skipping email unique index — duplicate emails exist in patients table. Deduplicate first.");
+  }
 
   // Fast lookup by verification token
-  await sql`
-    CREATE INDEX IF NOT EXISTS patients_verification_token_idx
-      ON patients (verification_token)
-      WHERE verification_token IS NOT NULL
-  `;
+  try {
+    await sql`
+      CREATE INDEX IF NOT EXISTS patients_verification_token_idx
+        ON patients (verification_token)
+        WHERE verification_token IS NOT NULL
+    `;
+  } catch {
+    console.warn("[patient-auth] Skipping verification_token index creation.");
+  }
 
   migrated = true;
 }

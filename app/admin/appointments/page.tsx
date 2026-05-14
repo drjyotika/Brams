@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles  from "../users/users.module.scss";
 import pStyles from "../patients/patients.module.scss";
@@ -32,12 +32,57 @@ type Appointment = {
   uploads?: Upload[];
 };
 
+type SortKey =
+  | "date_desc" | "date_asc"
+  | "patient_asc" | "patient_desc"
+  | "status" | "payment";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "date_desc",    label: "Date (newest first)" },
+  { value: "date_asc",     label: "Date (oldest first)" },
+  { value: "patient_asc",  label: "Patient A → Z"       },
+  { value: "patient_desc", label: "Patient Z → A"       },
+  { value: "status",       label: "Status"              },
+  { value: "payment",      label: "Payment status"      },
+];
+
+function fmtDate(iso: string) {
+  // Accept either "YYYY-MM-DD" or a full ISO timestamp; always parse as local midnight.
+  const datePart = iso.slice(0, 10);
+  return new Date(datePart + "T00:00:00").toLocaleDateString("en-IN", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric",
+  });
+}
+
+function sortAppointments(list: Appointment[], key: SortKey): Appointment[] {
+  const a = [...list];
+  switch (key) {
+    case "date_desc":
+      return a.sort((x, y) =>
+        y.scheduled_date.localeCompare(x.scheduled_date) ||
+        y.scheduled_time.localeCompare(x.scheduled_time));
+    case "date_asc":
+      return a.sort((x, y) =>
+        x.scheduled_date.localeCompare(y.scheduled_date) ||
+        x.scheduled_time.localeCompare(y.scheduled_time));
+    case "patient_asc":
+      return a.sort((x, y) => x.patient.full_name.localeCompare(y.patient.full_name));
+    case "patient_desc":
+      return a.sort((x, y) => y.patient.full_name.localeCompare(x.patient.full_name));
+    case "status":
+      return a.sort((x, y) => x.status.localeCompare(y.status));
+    case "payment":
+      return a.sort((x, y) => x.payment_status.localeCompare(y.payment_status));
+    default:
+      return a;
+  }
+}
+
 export default function AppointmentsPage() {
   const [rows,    setRows]    = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  // Track which appointment rows have their uploads expanded
+  const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  // Cache fetched uploads per appointment id
   const [uploadMap, setUploadMap] = useState<Record<string, Upload[]>>({});
   const [loadingUploads, setLoadingUploads] = useState<Set<string>>(new Set());
 
@@ -47,14 +92,15 @@ export default function AppointmentsPage() {
       .then((d) => { setRows(d); setLoading(false); });
   }, []);
 
+  const sorted = useMemo(() => sortAppointments(rows, sortKey), [rows, sortKey]);
+
   async function toggleReports(appointmentId: string) {
     if (expanded.has(appointmentId)) {
       setExpanded((prev) => { const s = new Set(prev); s.delete(appointmentId); return s; });
       return;
     }
-    // Expand and fetch uploads if not cached
     setExpanded((prev) => new Set(prev).add(appointmentId));
-    if (uploadMap[appointmentId]) return; // already fetched
+    if (uploadMap[appointmentId]) return;
 
     setLoadingUploads((prev) => new Set(prev).add(appointmentId));
     try {
@@ -68,18 +114,25 @@ export default function AppointmentsPage() {
 
   function openFile(u: Upload) {
     if (!u.signed_url) return;
-    const isPdf = u.mime_type === "application/pdf" || u.file_name.toLowerCase().endsWith(".pdf");
-    if (isPdf) {
-      window.open(u.signed_url, "_blank", "noopener,noreferrer");
-    } else {
-      window.open(u.signed_url, "_blank", "noopener,noreferrer");
-    }
+    window.open(u.signed_url, "_blank", "noopener,noreferrer");
   }
 
   return (
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Appointments</h1>
+        {rows.length > 0 && (
+          <select
+            className={pStyles.pageSizeSelect}
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            aria-label="Sort by"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {loading ? (
@@ -101,10 +154,10 @@ export default function AppointmentsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 && (
+              {sorted.length === 0 && (
                 <tr><td colSpan={9} className={styles.empty}>No appointments yet.</td></tr>
               )}
-              {rows.map((a) => (
+              {sorted.map((a) => (
                 <>
                   <tr key={a.id}>
                     <td className={styles.username}>
@@ -112,7 +165,7 @@ export default function AppointmentsPage() {
                     </td>
                     <td>{a.patient.phone}</td>
                     <td>{a.plan_title}</td>
-                    <td>{new Date(a.scheduled_date).toLocaleDateString("en-IN")}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{fmtDate(a.scheduled_date)}</td>
                     <td>{a.scheduled_time.slice(0, 5)}</td>
                     <td>₹{(a.total_paise / 100).toLocaleString("en-IN")}</td>
                     <td><Chip s={a.status} /></td>
@@ -130,7 +183,6 @@ export default function AppointmentsPage() {
                     </td>
                   </tr>
 
-                  {/* Inline expanded reports row */}
                   {expanded.has(a.id) && (
                     <tr key={`${a.id}-uploads`}>
                       <td colSpan={9} style={{ padding: 0, background: "#faf9fb" }}>

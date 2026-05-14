@@ -11,12 +11,17 @@ type Ctx = { params: Promise<{ id: string }> };
 // ─── Read ────────────────────────────────────────────────────────────────────
 
 export async function GET(_req: NextRequest, ctx: Ctx) {
-  await ensurePatientAuthSchema();
-  const { id } = await ctx.params;
-  const patient = await getPatientById(id);
-  if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const appointments = await getAppointmentsForPatient(id);
-  return NextResponse.json({ patient, appointments });
+  try {
+    await ensurePatientAuthSchema();
+    const { id } = await ctx.params;
+    const patient = await getPatientById(id);
+    if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const appointments = await getAppointmentsForPatient(id);
+    return NextResponse.json({ patient, appointments });
+  } catch (err) {
+    console.error("[patients/GET]", err);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
+  }
 }
 
 // ─── Edit ────────────────────────────────────────────────────────────────────

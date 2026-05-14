@@ -75,6 +75,7 @@ export default function PatientDetailPage() {
   const [appointments,  setAppointments]  = useState<Appointment[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading,       setLoading]       = useState(true);
+  const [loadError,     setLoadError]     = useState("");
   const [rxLoading,     setRxLoading]     = useState(true);
 
   // Appointment pagination
@@ -87,12 +88,14 @@ export default function PatientDetailPage() {
   useEffect(() => {
     if (!id) return;
     fetch(`/api/patients/${id}`)
-      .then((r) => r.json())
-      .then((d) => {
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error ?? `HTTP ${r.status}`);
         setPatient(d.patient);
-        setAppointments(d.appointments);
+        setAppointments(d.appointments ?? []);
         setLoading(false);
-      });
+      })
+      .catch((e) => { setLoadError((e as Error).message); setLoading(false); });
   }, [id]);
 
   useEffect(() => {
@@ -103,6 +106,12 @@ export default function PatientDetailPage() {
   }, [id]);
 
   if (loading) return <BramsLoader />;
+  if (loadError) return (
+    <div>
+      <Link href="/admin/patients" style={{ fontSize: 13, color: "#9b8fa0" }}>← All Patients</Link>
+      <p style={{ marginTop: 16, color: "#dc2626" }}>Failed to load patient: {loadError}</p>
+    </div>
+  );
   if (!patient) return <p>Patient not found. <Link href="/admin/patients">← Back</Link></p>;
 
   // Appointment pagination
