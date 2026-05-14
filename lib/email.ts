@@ -99,6 +99,7 @@ export async function sendEmail(
 export {
   type EmailMessage,
   buildVerificationEmail,
+  buildForgotPasswordEmail,
   buildWelcomeEmail,
   buildAppointmentConfirmationEmail,
   buildAppointmentReminderEmail,

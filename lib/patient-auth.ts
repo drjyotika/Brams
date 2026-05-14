@@ -109,6 +109,24 @@ export function generateVerificationToken(): string {
 }
 
 /**
+ * Issues a password-reset token (30 min TTL).  Stored in the same
+ * verification_token column — overwrites any pending email verification code.
+ */
+export async function issuePasswordResetToken(patientId: string): Promise<string> {
+  await ensurePatientAuthSchema();
+  const token     = generateVerificationToken();
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+  await sql`
+    UPDATE patients SET
+      verification_token      = ${"reset_" + token},
+      verification_expires_at = ${expiresAt.toISOString()},
+      updated_at              = NOW()
+    WHERE id = ${patientId}
+  `;
+  return "reset_" + token;
+}
+
+/**
  * Issues a fresh OTP + token for the given patient, sets a 30 min expiry,
  * and returns both for use in the email body.  Any previous code is
  * overwritten — only the latest is valid.

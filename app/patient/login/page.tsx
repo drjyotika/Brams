@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./login.module.scss";
 
-type Mode = "login" | "register";
+type Mode = "login" | "register" | "forgot";
 
 export default function PatientLoginPage() {
   const router    = useRouter();
@@ -15,10 +15,14 @@ export default function PatientLoginPage() {
   const [mode,    setMode]    = useState<Mode>(initial);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   // login fields
   const [loginId,  setLoginId]  = useState("");
   const [password, setPassword] = useState("");
+
+  // forgot password
+  const [forgotId, setForgotId] = useState("");
 
   // register fields
   const [fullName,        setFullName]        = useState("");
@@ -29,7 +33,26 @@ export default function PatientLoginPage() {
 
   const switchMode = (m: Mode) => {
     setError("");
+    setForgotSent(false);
     setMode(m);
+  };
+
+  const handleForgot = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await fetch("/api/patient/auth/forgot-password", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ loginId: forgotId }),
+      });
+      setForgotSent(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = async (e: FormEvent) => {
@@ -116,25 +139,27 @@ export default function PatientLoginPage() {
             : "Register to manage your bookings online."}
         </p>
 
-        {/* Mode toggle */}
-        <div className={styles.tabs}>
-          <button
-            type="button"
-            className={`${styles.tab} ${mode === "login" ? styles.tabActive : ""}`}
-            onClick={() => switchMode("login")}
-            disabled={loading}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${mode === "register" ? styles.tabActive : ""}`}
-            onClick={() => switchMode("register")}
-            disabled={loading}
-          >
-            Register
-          </button>
-        </div>
+        {/* Mode toggle — hide tabs in forgot flow */}
+        {mode !== "forgot" && (
+          <div className={styles.tabs}>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === "login" ? styles.tabActive : ""}`}
+              onClick={() => switchMode("login")}
+              disabled={loading}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === "register" ? styles.tabActive : ""}`}
+              onClick={() => switchMode("register")}
+              disabled={loading}
+            >
+              Register
+            </button>
+          </div>
+        )}
 
         {mode === "login" ? (
           <form className={styles.form} onSubmit={handleLogin} noValidate>
@@ -156,9 +181,18 @@ export default function PatientLoginPage() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">
-                Password
-              </label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label className={styles.label} htmlFor="password">Password</label>
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  style={{ fontSize: 11 }}
+                  onClick={() => switchMode("forgot")}
+                  disabled={loading}
+                >
+                  Forgot password?
+                </button>
+              </div>
               <input
                 id="password"
                 type="password"
@@ -290,6 +324,54 @@ export default function PatientLoginPage() {
               </button>
             </p>
           </form>
+        )}
+
+        {mode === "forgot" && (
+          forgotSent ? (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>📬</div>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Check your email</p>
+              <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
+                If an account exists for that email or phone, we&apos;ve sent a reset link. It expires in 30 minutes.
+              </p>
+              <button type="button" className={styles.linkBtn} onClick={() => switchMode("login")}>
+                Back to sign in
+              </button>
+            </div>
+          ) : (
+            <form className={styles.form} onSubmit={handleForgot} noValidate style={{ width: "100%" }}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="forgotId">Phone or Email</label>
+                <input
+                  id="forgotId"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  className={styles.input}
+                  placeholder="+91 9876543210 or you@example.com"
+                  value={forgotId}
+                  onChange={(e) => setForgotId(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+
+              {error && <p className={styles.error}>{error}</p>}
+
+              <button
+                type="submit"
+                className={styles.button}
+                disabled={loading || !forgotId.trim()}
+              >
+                {loading ? "Sending…" : "Send reset link"}
+              </button>
+
+              <p className={styles.switchHint}>
+                <button type="button" className={styles.linkBtn} onClick={() => switchMode("login")}>
+                  Back to sign in
+                </button>
+              </p>
+            </form>
+          )
         )}
 
         <Link href="/" className={styles.backHome}>← Back to homepage</Link>

@@ -354,7 +354,33 @@ export function buildAppointmentReminderEmail(input: {
   return { subject, html, text };
 }
 
-// ─── 5. Password-reset notice (admin reset, no plaintext password) ───────────
+// ─── 5. Forgot-password — sends a reset link ─────────────────────────────────
+
+export function buildForgotPasswordEmail(input: {
+  fullName:  string;
+  resetLink: string;
+}): EmailMessage {
+  const subject = "Reset your Brams Mind Care password";
+
+  const html = layout({
+    preheader: "Click the link to reset your password. It expires in 30 minutes.",
+    heading:   "Reset your password",
+    intro:     `Hi <strong>${escapeHtml(input.fullName)}</strong>, we received a request to reset the password on your ${BRAND.name} account. Click the button below — the link expires in <strong>30 minutes</strong>.`,
+    content:   callout("info", `If you didn't request a password reset, you can safely ignore this email. Your password will not change.`),
+    cta:       { label: "Reset password", url: input.resetLink },
+  });
+
+  const text = plainText({
+    heading: "Reset your password",
+    intro:   `Hi ${input.fullName},`,
+    body:    `We received a request to reset your ${BRAND.name} password. Use the link below (expires in 30 minutes).\n\n${input.resetLink}\n\nIf you didn't request this, ignore this email.`,
+    cta:     { label: "Reset password", url: input.resetLink },
+  });
+
+  return { subject, html, text };
+}
+
+// ─── 6. Password-reset notice (admin reset, no plaintext password) ───────────
 
 export function buildPasswordResetEmail(input: {
   fullName:    string;
