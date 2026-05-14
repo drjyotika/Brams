@@ -25,14 +25,30 @@ export type PatientAuthData = Patient & {
 
 // ─── Schema migration ────────────────────────────────────────────────────────
 //
-// The `patients` table already exists in production (Neon).  These ALTERs are
-// additive and idempotent so they're safe to run every cold start.  We cache
-// success in-process so we only do the round-trip once per function instance.
+// Fully idempotent: creates the patients table if it doesn't exist, then adds
+// auth columns with ADD COLUMN IF NOT EXISTS.  Safe to run on every cold start;
+// cached in-process after the first successful run.
 
 let migrated = false;
 
 export async function ensurePatientAuthSchema(): Promise<void> {
   if (migrated) return;
+
+  // Base table — matches migrate.mjs exactly; no-op if already present.
+  await sql`
+    CREATE TABLE IF NOT EXISTS patients (
+      id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+      full_name   VARCHAR(255) NOT NULL,
+      age         INTEGER,
+      gender      VARCHAR(20),
+      phone       VARCHAR(30)  NOT NULL UNIQUE,
+      email       VARCHAR(255),
+      city        VARCHAR(100),
+      notes       TEXT,
+      created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    )
+  `;
 
   // Authentication columns
   await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS password_hash      TEXT`;
@@ -52,16 +68,14 @@ export async function ensurePatientAuthSchema(): Promise<void> {
   await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS suspended_at      TIMESTAMPTZ`;
   await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS suspension_reason TEXT`;
 
-  // Uniqueness — phone is already UNIQUE on the original table.  For email
-  // we use a partial, case-insensitive index so multiple NULLs are allowed
-  // but two patients can't share the same address.
+  // Case-insensitive unique email index (allows multiple NULLs)
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS patients_email_lower_unique
       ON patients (LOWER(email))
       WHERE email IS NOT NULL
   `;
 
-  // Lookup index for verification token (random hex, so equality match)
+  // Fast lookup by verification token
   await sql`
     CREATE INDEX IF NOT EXISTS patients_verification_token_idx
       ON patients (verification_token)
