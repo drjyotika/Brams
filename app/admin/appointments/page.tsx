@@ -24,6 +24,7 @@ type Appointment = {
   status: string;
   payment_status: string;
   upload_count: number;
+  created_at: string;
   patient: {
     id: string;
     full_name: string;
@@ -34,16 +35,19 @@ type Appointment = {
 
 type SortKey =
   | "date_desc" | "date_asc"
+  | "created_desc" | "created_asc"
   | "patient_asc" | "patient_desc"
   | "status" | "payment";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "date_desc",    label: "Date (newest first)" },
-  { value: "date_asc",     label: "Date (oldest first)" },
-  { value: "patient_asc",  label: "Patient A → Z"       },
-  { value: "patient_desc", label: "Patient Z → A"       },
-  { value: "status",       label: "Status"              },
-  { value: "payment",      label: "Payment status"      },
+  { value: "date_desc",    label: "Appt date (newest first)"   },
+  { value: "date_asc",     label: "Appt date (oldest first)"   },
+  { value: "created_desc", label: "Booking (recent first)"     },
+  { value: "created_asc",  label: "Booking (oldest first)"     },
+  { value: "patient_asc",  label: "Patient A → Z"              },
+  { value: "patient_desc", label: "Patient Z → A"              },
+  { value: "status",       label: "Status"                     },
+  { value: "payment",      label: "Payment status"             },
 ];
 
 function fmtDate(iso: string) {
@@ -65,6 +69,10 @@ function sortAppointments(list: Appointment[], key: SortKey): Appointment[] {
       return a.sort((x, y) =>
         x.scheduled_date.localeCompare(y.scheduled_date) ||
         x.scheduled_time.localeCompare(y.scheduled_time));
+    case "created_desc":
+      return a.sort((x, y) => y.created_at.localeCompare(x.created_at));
+    case "created_asc":
+      return a.sort((x, y) => x.created_at.localeCompare(y.created_at));
     case "patient_asc":
       return a.sort((x, y) => x.patient.full_name.localeCompare(y.patient.full_name));
     case "patient_desc":
