@@ -887,7 +887,7 @@ function MergePatientPanel({
     setQuery(value);
     setSelected(null);
     setMsg(null);
-    clearTimeout(debounceRef.current);
+    clearTimeout(debounceRef.current ?? undefined);
     if (value.trim().length < 2) { setResults([]); return; }
     setSearching(true);
     debounceRef.current = setTimeout(async () => {
