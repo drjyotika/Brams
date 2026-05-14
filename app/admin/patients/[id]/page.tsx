@@ -144,6 +144,9 @@ export default function PatientDetailPage() {
       {/* ── Account management ─────────────────────────────────────────────── */}
       <AccountManagementPanel patient={patient} onUpdated={setPatient} />
 
+      {/* ── Merge patient ───────────────────────────────────────────────────── */}
+      <MergePatientPanel primaryId={id} primaryName={patient.full_name} />
+
       {/* ── Appointments ────────────────────────────────────────────────────── */}
       <div className={styles.panel} style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -715,6 +718,188 @@ function AccountManagementPanel({
         }}>
           {msg.text}
         </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Merge patient panel ──────────────────────────────────────────────────────
+
+type PatientSearchResult = {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  city: string | null;
+  is_suspended: boolean;
+};
+
+function MergePatientPanel({
+  primaryId,
+  primaryName,
+}: {
+  primaryId: string;
+  primaryName: string;
+}) {
+  const [open,      setOpen]      = useState(false);
+  const [query,     setQuery]     = useState("");
+  const [results,   setResults]   = useState<PatientSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selected,  setSelected]  = useState<PatientSearchResult | null>(null);
+  const [merging,   setMerging]   = useState(false);
+  const [msg,       setMsg]       = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const debounceRef = { current: 0 as ReturnType<typeof setTimeout> };
+
+  function handleQuery(value: string) {
+    setQuery(value);
+    setSelected(null);
+    setMsg(null);
+    clearTimeout(debounceRef.current);
+    if (value.trim().length < 2) { setResults([]); return; }
+    setSearching(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const r = await fetch(`/api/patients?q=${encodeURIComponent(value.trim())}`);
+        const data: PatientSearchResult[] = await r.json();
+        setResults(data.filter((p) => p.id !== primaryId));
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  }
+
+  async function doMerge() {
+    if (!selected) return;
+    const confirmed = window.confirm(
+      `Merge "${selected.full_name}" into "${primaryName}"?\n\n` +
+      `• All appointments from "${selected.full_name}" will move to "${primaryName}".\n` +
+      `• Empty fields on "${primaryName}" will be filled from "${selected.full_name}".\n` +
+      `• "${selected.full_name}" will be permanently deleted.\n\n` +
+      `This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setMerging(true);
+    setMsg(null);
+    try {
+      const res  = await fetch(`/api/patients/${primaryId}/merge`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ other_id: selected.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg({ kind: "err", text: data.error ?? `HTTP ${res.status}` });
+      } else {
+        setMsg({ kind: "ok", text: `Merged successfully. Page will refresh.` });
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    } catch (e) {
+      setMsg({ kind: "err", text: (e as Error).message });
+    } finally {
+      setMerging(false);
+    }
+  }
+
+  return (
+    <div className={styles.panel} style={{ marginBottom: 24 }}>
+      <div
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+        onClick={() => { setOpen((o) => !o); setMsg(null); }}
+      >
+        <h2 className={styles.panelTitle} style={{ margin: 0 }}>Merge Patient</h2>
+        <span style={{ fontSize: 13, color: "#9b8fa0" }}>{open ? "▲ Hide" : "▼ Show"}</span>
+      </div>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          <p style={{ fontSize: 12, color: "#6b7280", marginTop: 0, marginBottom: 12 }}>
+            Search for a duplicate patient to merge into <strong>{primaryName}</strong>.
+            All their appointments will be reassigned here, then the duplicate record will be deleted.
+          </p>
+
+          {/* Search input */}
+          <input
+            className={styles.input}
+            placeholder="Search by name, phone or email…"
+            value={query}
+            onChange={(e) => handleQuery(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box" }}
+          />
+
+          {/* Results list */}
+          {searching && (
+            <p style={{ fontSize: 12, color: "#9b8fa0", marginTop: 8 }}>Searching…</p>
+          )}
+          {!searching && query.length >= 2 && results.length === 0 && (
+            <p style={{ fontSize: 12, color: "#9b8fa0", marginTop: 8 }}>No patients found.</p>
+          )}
+          {results.length > 0 && !selected && (
+            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+              {results.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => { setSelected(p); setResults([]); }}
+                  style={{
+                    textAlign: "left", background: "#faf9fb",
+                    border: "1px solid rgba(207,195,204,.4)", borderRadius: 8,
+                    padding: "10px 14px", cursor: "pointer", fontSize: 13,
+                  }}
+                >
+                  <strong>{p.full_name}</strong>
+                  <span style={{ color: "#9b8fa0", marginLeft: 8 }}>{p.phone}</span>
+                  {p.email && <span style={{ color: "#9b8fa0", marginLeft: 8 }}>{p.email}</span>}
+                  {p.is_suspended && (
+                    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#991b1b", background: "#fee2e2", padding: "1px 6px", borderRadius: 99 }}>SUSPENDED</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Selected patient preview + confirm */}
+          {selected && (
+            <div style={{ marginTop: 12, padding: 14, background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e", marginBottom: 8 }}>
+                Selected for merge (will be deleted):
+              </div>
+              <div style={{ fontSize: 13, color: "#1e1b24" }}>
+                <strong>{selected.full_name}</strong>
+                <span style={{ color: "#6b7280", marginLeft: 8 }}>{selected.phone}</span>
+                {selected.email && <span style={{ color: "#6b7280", marginLeft: 8 }}>{selected.email}</span>}
+                {selected.city && <span style={{ color: "#6b7280", marginLeft: 8 }}>· {selected.city}</span>}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button
+                  className={styles.danger}
+                  disabled={merging}
+                  onClick={doMerge}
+                >
+                  {merging ? "Merging…" : `Merge into ${primaryName}`}
+                </button>
+                <button
+                  className={styles.secondary}
+                  disabled={merging}
+                  onClick={() => { setSelected(null); setQuery(""); setResults([]); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {msg && (
+            <p style={{
+              marginTop: 12, padding: "8px 12px", borderRadius: 8, fontSize: 12,
+              background: msg.kind === "ok" ? "#dcfce7" : "#fef2f2",
+              color:      msg.kind === "ok" ? "#065f46" : "#991b1b",
+              border:     msg.kind === "ok" ? "1px solid #86efac" : "1px solid #fecaca",
+            }}>
+              {msg.text}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
