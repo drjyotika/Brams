@@ -749,7 +749,7 @@ function MergePatientPanel({
   const [merging,   setMerging]   = useState(false);
   const [msg,       setMsg]       = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
-  const debounceRef = { current: 0 as ReturnType<typeof setTimeout> };
+  const debounceRef = { current: null as ReturnType<typeof setTimeout> | null };
 
   function handleQuery(value: string) {
     setQuery(value);
