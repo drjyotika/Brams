@@ -5,8 +5,8 @@
 // email types just need to supply their copy.
 //
 // Each builder returns `{ subject, html, text }` ready to hand to
-// `sendEmail()` from `lib/email.ts`, which relays it to the email service
-// (services/email/) for delivery as `verification@bramsmindcare.com`.
+// `sendEmail()` from `lib/email.ts`, which ships it over SMTP as
+// `info@bramsmindcare.com`.
 
 // ─── Public types ────────────────────────────────────────────────────────────
 

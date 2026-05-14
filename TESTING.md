@@ -21,23 +21,19 @@ Re-run it any time you need a fresh OTP (the old one is overwritten).
 
 ### 1.2 Optional — capture real outbound emails
 
-Real email goes through the standalone microservice in `services/email/`, which relays via SMTP and ships mail as `verification@bramsmindcare.com`. To exercise real delivery:
+The Next.js app sends mail directly over SMTP via nodemailer (`lib/email.ts`). Add these to `.env.local` to enable real delivery:
 
-```bash
-# Terminal 1 — start the email service
-cd services/email
-cp .env.example .env       # fill in SMTP creds + token
-npm install
-npm run dev
-
-# Terminal 2 — Next.js
-# Add these two lines to .env.local (token must match the service)
-#   EMAIL_SERVICE_URL=http://localhost:4000
-#   EMAIL_SERVICE_TOKEN=<same value as in services/email/.env>
-npm run dev
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=info@bramsmindcare.com
+SMTP_PASS=<16-char Google App Password>
+EMAIL_FROM=Brams Mind Care <info@bramsmindcare.com>
+EMAIL_REPLY_TO=support@bramsmindcare.com   # optional
 ```
 
-Without `EMAIL_SERVICE_URL` set, the Next.js app simply console-logs the message — handy for local testing without booting the service.
+Without `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`, the app falls back to console-logging the message — handy for local testing.
 
 ### 1.3 Wipe test data when done
 

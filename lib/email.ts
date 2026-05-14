@@ -1,129 +1,109 @@
-// Email sending — talks to the standalone Node service in `services/email/`
-// over HTTP.  That service owns the SMTP credentials and the
-// `From: verification@bramsmindcare.com` address, so this file stays free
-// of any provider-specific logic.
+// Email sending — SMTP relay via nodemailer.
 //
-// When EMAIL_SERVICE_URL isn't set (local dev without the microservice
-// running), the message is logged to the console so flows like email
-// verification can still be exercised end-to-end.
+// Ships transactional + broadcast mail as the address configured by
+// EMAIL_FROM (e.g. `Brams Mind Care <info@bramsmindcare.com>`).
+//
+// Designed for Vercel Fluid Compute: the transporter is cached at module
+// scope so it gets reused across warm invocations, avoiding the SMTP
+// handshake on every send.  When SMTP_HOST is not set the message is
+// logged to the console — handy for local dev when you don't want to
+// configure SMTP at all.
+//
+// Required env vars (also set these in Vercel Project → Settings → Env):
+//   SMTP_HOST       e.g. smtp.gmail.com
+//   SMTP_PORT       587 (STARTTLS) or 465 (implicit TLS)
+//   SMTP_SECURE     "true" for 465, otherwise "false"
+//   SMTP_USER       full mailbox, e.g. info@bramsmindcare.com
+//   SMTP_PASS       Google App Password (NOT the regular account password)
+//   EMAIL_FROM      Brams Mind Care <info@bramsmindcare.com>
+// Optional:
+//   EMAIL_REPLY_TO  replies bounce here instead of the From address
+
+import nodemailer, { type Transporter } from "nodemailer";
 
 type SendInput = {
-  to:       string;
+  to:       string | string[];
   subject:  string;
   html:     string;
   text:     string;
   replyTo?: string;
+  cc?:      string | string[];
+  bcc?:     string | string[];
 };
 
-export async function sendEmail(input: SendInput): Promise<{ ok: true } | { ok: false; error: string }> {
-  const url   = process.env.EMAIL_SERVICE_URL;
-  const token = process.env.EMAIL_SERVICE_TOKEN;
+// ─── Singleton transporter ───────────────────────────────────────────────────
 
-  // ── Dev / no-service fallback ────────────────────────────────────────────
-  if (!url) {
+let _transporter: Transporter | null = null;
+
+function transporter(): Transporter {
+  if (_transporter) return _transporter;
+
+  _transporter = nodemailer.createTransport({
+    host:   process.env.SMTP_HOST,
+    port:   Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    // Speeds up cold sends on Vercel — drops the long default handshake wait
+    // when the remote is slow.  Tune up if you hit DNS-flaky regions.
+    connectionTimeout: 8_000,
+    greetingTimeout:   8_000,
+    socketTimeout:    15_000,
+  });
+
+  return _transporter;
+}
+
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+export async function sendEmail(
+  input: SendInput,
+): Promise<{ ok: true; messageId?: string } | { ok: false; error: string }> {
+  // ── Dev / no-config fallback ─────────────────────────────────────────────
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.warn(
-      "\n[email] EMAIL_SERVICE_URL is not set — logging message to console.\n" +
-      `        TO:      ${input.to}\n` +
+      "\n[email] SMTP not configured — logging message to console.\n" +
+      `        TO:      ${Array.isArray(input.to) ? input.to.join(", ") : input.to}\n` +
       `        SUBJECT: ${input.subject}\n` +
       `        ${input.text.split("\n").join("\n        ")}\n`,
     );
     return { ok: true };
   }
 
-  if (!token) {
-    console.error("[email] EMAIL_SERVICE_TOKEN is missing — refusing to call the service unauthenticated.");
-    return { ok: false, error: "Email service token not configured." };
-  }
-
   try {
-    const res = await fetch(`${url.replace(/\/+$/, "")}/send`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type":  "application/json",
-      },
-      body: JSON.stringify(input),
-      // 10s ceiling — SMTP hand-off should be fast.
-      signal: AbortSignal.timeout(10_000),
+    const info = await transporter().sendMail({
+      from:    process.env.EMAIL_FROM,
+      to:      input.to,
+      subject: input.subject,
+      html:    input.html,
+      text:    input.text,
+      cc:      input.cc,
+      bcc:     input.bcc,
+      replyTo: input.replyTo ?? process.env.EMAIL_REPLY_TO,
     });
-
-    if (!res.ok) {
-      const body = await res.text();
-      console.error(`[email] service HTTP ${res.status}: ${body}`);
-      return { ok: false, error: `Email service returned ${res.status}` };
-    }
-    return { ok: true };
+    return { ok: true, messageId: info.messageId };
   } catch (err) {
     console.error("[email] send failed:", err);
     return { ok: false, error: (err as Error).message };
   }
 }
 
-// ─── Verification email template ─────────────────────────────────────────────
+// ─── Template builders ───────────────────────────────────────────────────────
+//
+// Centralised in `./email-templates` so the shared visual layout lives in
+// one place.  Re-exported here so the rest of the codebase can keep doing
+// `import { buildVerificationEmail } from "lib/email"`.
 
-export function buildVerificationEmail({
-  fullName,
-  otp,
-  link,
-}: {
-  fullName: string;
-  otp:      string;
-  link:     string;
-}): { subject: string; html: string; text: string } {
-  const subject = "Verify your Brams Mind Care account";
-
-  const text =
-`Hi ${fullName},
-
-Welcome to Brams Mind Care.
-
-Your verification code is: ${otp}
-
-You can either enter this code in the app, or click the link below to verify
-instantly:
-
-${link}
-
-This code expires in 30 minutes. If you didn't create this account, you can
-safely ignore this email.
-
-— Brams Mind Care
-`;
-
-  const html = `<!DOCTYPE html>
-<html>
-  <body style="font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:#f9f9fb; padding:32px 16px; margin:0; color:#1a1c1d;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="100%" style="max-width:480px; background:#fff; border:1px solid rgba(207,195,204,.25); border-radius:16px; padding:36px 32px;">
-      <tr><td>
-        <h1 style="margin:0 0 8px; font-size:20px; color:#1a1c1d;">Verify your email</h1>
-        <p style="margin:0 0 24px; font-size:14px; color:#71717a;">Hi ${escapeHtml(fullName)}, welcome to Brams Mind Care. Enter the code below to confirm your email address.</p>
-
-        <div style="background:#f3f3f5; border-radius:12px; padding:20px; text-align:center; margin-bottom:24px;">
-          <div style="font-size:11px; font-weight:700; color:#71717a; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Verification code</div>
-          <div style="font-family:'SF Mono', Menlo, monospace; font-size:30px; font-weight:700; color:#745475; letter-spacing:6px;">${otp}</div>
-        </div>
-
-        <p style="margin:0 0 16px; font-size:14px; color:#4c444b; text-align:center;">…or verify instantly:</p>
-
-        <p style="text-align:center; margin:0 0 24px;">
-          <a href="${link}" style="display:inline-block; background:#745475; color:#fff; text-decoration:none; font-weight:700; padding:12px 24px; border-radius:12px; font-size:14px;">Verify Email</a>
-        </p>
-
-        <p style="margin:0 0 8px; font-size:12px; color:#a1a1aa; text-align:center;">This code expires in 30 minutes.</p>
-        <p style="margin:0; font-size:11px; color:#a1a1aa; text-align:center;">If you didn't create this account, you can safely ignore this email.</p>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
-
-  return { subject, html, text };
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+export {
+  type EmailMessage,
+  buildVerificationEmail,
+  buildWelcomeEmail,
+  buildAppointmentConfirmationEmail,
+  buildAppointmentReminderEmail,
+  buildPasswordResetEmail,
+  buildSuspensionEmail,
+  buildAccountReactivatedEmail,
+  buildNewsletterEmail,
+} from "./email-templates";
