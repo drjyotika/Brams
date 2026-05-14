@@ -16,10 +16,10 @@ export async function GET(req: Request) {
   const helpSince         = searchParams.get("helpSince");
   const altSince          = searchParams.get("altSince");
 
-  async function count(query: () => Promise<{ c: number }[]>): Promise<number> {
+  async function count(query: () => Promise<unknown[]>): Promise<number> {
     try {
       const rows = await query();
-      return Number(rows[0]?.c ?? 0);
+      return Number((rows[0] as { c: number } | undefined)?.c ?? 0);
     } catch {
       return 0;
     }
