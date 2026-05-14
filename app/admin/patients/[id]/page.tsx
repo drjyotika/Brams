@@ -142,7 +142,12 @@ export default function PatientDetailPage() {
       <PatientDetailsPanel patient={patient} onUpdated={setPatient} />
 
       {/* ── Account management ─────────────────────────────────────────────── */}
-      <AccountManagementPanel patient={patient} onUpdated={setPatient} />
+      <AccountManagementPanel
+        patient={patient}
+        appointments={appointments}
+        onUpdated={setPatient}
+        onDeleteAppointment={(apptId) => setAppointments((prev) => prev.filter((a) => a.id !== apptId))}
+      />
 
       {/* ── Merge patient ───────────────────────────────────────────────────── */}
       <MergePatientPanel primaryId={id} primaryName={patient.full_name} />
@@ -173,76 +178,16 @@ export default function PatientDetailPage() {
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
               {apptShown.map((a) => {
-                // Reports uploaded for this specific appointment
                 const apptRx = rxLoading ? [] : prescriptions.filter((rx) => rx.appointment_id === a.id);
-
                 return (
-                  <div key={a.id} className={styles.cardArrayItem}>
-                    {/* Header row */}
-                    <div className={styles.cardArrayHead}>
-                      <span>{a.plan_title}</span>
-                      <span style={{ display: "flex", gap: 8 }}>
-                        <StatusChip label={a.status}         tone={statusTone(a.status)} />
-                        <StatusChip label={a.payment_status} tone={paymentTone(a.payment_status)} />
-                      </span>
-                    </div>
-
-                    {/* Date / time / fee */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 13, color: "#6b7280" }}>
-                      <KV k="Date"  v={new Date(a.scheduled_date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} />
-                      <KV k="Time"  v={a.scheduled_time.slice(0, 5)} />
-                      <KV k="Total" v={`₹${(a.total_paise / 100).toLocaleString("en-IN")}`} />
-                    </div>
-
-                    {a.reason_for_consultation && (
-                      <p style={{ marginTop: 10, fontSize: 13, color: "#6b7280" }}>
-                        <strong style={{ color: "#1e1b24" }}>Reason: </strong>
-                        {a.reason_for_consultation}
-                      </p>
-                    )}
-
-                    {/* Reports for this appointment */}
-                    {!rxLoading && apptRx.length > 0 && (
-                      <div className={pStyles.apptReports}>
-                        <div className={pStyles.apptReportsLabel}>
-                          Reports / Prescriptions ({apptRx.length})
-                        </div>
-                        {apptRx.map((rx) => (
-                          <div key={rx.id} className={pStyles.apptReportRow}>
-                            <span className={pStyles.apptReportName} title={rx.file_name}>
-                              {fileIcon(rx.mime_type)} {rx.file_name}
-                              {rx.file_size && (
-                                <span style={{ color: "#9b8fa0", marginLeft: 6, fontSize: 11 }}>
-                                  {formatSize(rx.file_size)}
-                                </span>
-                              )}
-                            </span>
-                            <span className={pStyles.apptReportActions}>
-                              <button
-                                className={pStyles.rxViewBtn}
-                                onClick={() => openFile(rx)}
-                                disabled={!rx.signed_url}
-                                title={(rx.mime_type === "application/pdf" || rx.file_name.toLowerCase().endsWith(".pdf"))
-                                  ? "Opens in new tab"
-                                  : "Preview"}
-                              >
-                                View
-                              </button>
-                              {rx.signed_url && (
-                                <a
-                                  href={rx.signed_url}
-                                  download={rx.file_name}
-                                  className={pStyles.rxDownloadBtn}
-                                >
-                                  ↓ Download
-                                </a>
-                              )}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <AppointmentCard
+                    key={a.id}
+                    appointment={a}
+                    prescriptions={apptRx}
+                    rxLoading={rxLoading}
+                    onDelete={(apptId) => setAppointments((prev) => prev.filter((x) => x.id !== apptId))}
+                    onOpenFile={openFile}
+                  />
                 );
               })}
             </div>
@@ -347,6 +292,168 @@ function ImageModal({
       </div>
     </div>,
     document.body,
+  );
+}
+
+// ─── Compact appointment row for the delete-patient flow ─────────────────────
+
+function DeleteAppointmentRow({
+  appointment: a,
+  onDeleted,
+}: {
+  appointment: Appointment;
+  onDeleted: () => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete appointment: ${a.plan_title} on ${a.scheduled_date.slice(0, 10)}?`)) return;
+    setDeleting(true);
+    try {
+      const res  = await fetch(`/api/bookings/${a.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? "Failed to delete."); }
+      else         { onDeleted(); }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "8px 12px", background: "#fff", border: "1px solid #fecaca",
+      borderRadius: 8, fontSize: 13,
+    }}>
+      <span>
+        <strong>{a.plan_title}</strong>
+        <span style={{ color: "#6b7280", marginLeft: 8 }}>{a.scheduled_date.slice(0, 10)}</span>
+        <span style={{ color: "#9b8fa0", marginLeft: 8 }}>{a.scheduled_time.slice(0, 5)}</span>
+      </span>
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        style={{
+          background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626",
+          borderRadius: 6, padding: "3px 12px", fontSize: 11, fontWeight: 700,
+          cursor: "pointer", flexShrink: 0,
+        }}
+      >
+        {deleting ? "Deleting…" : "Delete"}
+      </button>
+    </div>
+  );
+}
+
+// ─── Appointment card ─────────────────────────────────────────────────────────
+
+function AppointmentCard({
+  appointment: a,
+  prescriptions,
+  rxLoading,
+  onDelete,
+  onOpenFile,
+}: {
+  appointment: Appointment;
+  prescriptions: Prescription[];
+  rxLoading: boolean;
+  onDelete: (id: string) => void;
+  onOpenFile: (rx: Prescription) => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete this appointment (${a.plan_title} on ${a.scheduled_date.slice(0, 10)})? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const res  = await fetch(`/api/bookings/${a.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error ?? "Failed to delete appointment.");
+      } else {
+        onDelete(a.id);
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div className={styles.cardArrayItem}>
+      {/* Header row */}
+      <div className={styles.cardArrayHead}>
+        <span>{a.plan_title}</span>
+        <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <StatusChip label={a.status}         tone={statusTone(a.status)} />
+          <StatusChip label={a.payment_status} tone={paymentTone(a.payment_status)} />
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            style={{
+              background: "none", border: "1px solid #fecaca", color: "#dc2626",
+              borderRadius: 6, padding: "2px 10px", fontSize: 11, fontWeight: 600,
+              cursor: "pointer", opacity: deleting ? 0.5 : 1,
+            }}
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
+        </span>
+      </div>
+
+      {/* Date / time / fee */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 13, color: "#6b7280" }}>
+        <KV k="Date"  v={new Date(a.scheduled_date.slice(0, 10) + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} />
+        <KV k="Time"  v={a.scheduled_time.slice(0, 5)} />
+        <KV k="Total" v={`₹${(a.total_paise / 100).toLocaleString("en-IN")}`} />
+      </div>
+
+      {a.reason_for_consultation && (
+        <p style={{ marginTop: 10, fontSize: 13, color: "#6b7280" }}>
+          <strong style={{ color: "#1e1b24" }}>Reason: </strong>
+          {a.reason_for_consultation}
+        </p>
+      )}
+
+      {!rxLoading && prescriptions.length > 0 && (
+        <div className={pStyles.apptReports}>
+          <div className={pStyles.apptReportsLabel}>
+            Reports / Prescriptions ({prescriptions.length})
+          </div>
+          {prescriptions.map((rx) => (
+            <div key={rx.id} className={pStyles.apptReportRow}>
+              <span className={pStyles.apptReportName} title={rx.file_name}>
+                {fileIcon(rx.mime_type)} {rx.file_name}
+                {rx.file_size && (
+                  <span style={{ color: "#9b8fa0", marginLeft: 6, fontSize: 11 }}>
+                    {formatSize(rx.file_size)}
+                  </span>
+                )}
+              </span>
+              <span className={pStyles.apptReportActions}>
+                <button
+                  className={pStyles.rxViewBtn}
+                  onClick={() => onOpenFile(rx)}
+                  disabled={!rx.signed_url}
+                  title={(rx.mime_type === "application/pdf" || rx.file_name.toLowerCase().endsWith(".pdf"))
+                    ? "Opens in new tab" : "Preview"}
+                >
+                  View
+                </button>
+                {rx.signed_url && (
+                  <a href={rx.signed_url} download={rx.file_name} className={pStyles.rxDownloadBtn}>
+                    ↓ Download
+                  </a>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -547,14 +654,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function AccountManagementPanel({
   patient,
+  appointments,
   onUpdated,
+  onDeleteAppointment,
 }: {
   patient: Patient;
+  appointments: Appointment[];
   onUpdated: (p: Patient) => void;
+  onDeleteAppointment: (id: string) => void;
 }) {
-  const [busy, setBusy] = useState<string | null>(null);
-  const [msg,  setMsg]  = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const [newPwd, setNewPwd] = useState("");
+  const [busy,           setBusy]           = useState<string | null>(null);
+  const [msg,            setMsg]            = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [newPwd,         setNewPwd]         = useState("");
+  const [showDeleteFlow, setShowDeleteFlow] = useState(false);
 
   const suspended = !!patient.is_suspended;
   const verified  = !!patient.email_verified;
@@ -575,12 +687,8 @@ function AccountManagementPanel({
         setMsg({ kind: "err", text: data.error ?? `HTTP ${res.status}` });
       } else {
         setMsg({ kind: "ok", text: "Done." });
-        // Re-fetch the patient so the UI reflects the new flags
         const r = await fetch(`/api/patients/${patient.id}`);
-        if (r.ok) {
-          const next = await r.json();
-          onUpdated(next.patient);
-        }
+        if (r.ok) { const next = await r.json(); onUpdated(next.patient); }
         if (action === "reset_password") setNewPwd("");
       }
     } catch (e) {
@@ -590,12 +698,12 @@ function AccountManagementPanel({
     }
   }
 
-  async function deletePatient() {
+  async function confirmDeletePatient() {
     if (!window.confirm("Delete this patient permanently? This cannot be undone.")) return;
     setBusy("delete");
     setMsg(null);
     try {
-      const res = await fetch(`/api/patients/${patient.id}`, { method: "DELETE" });
+      const res  = await fetch(`/api/patients/${patient.id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) {
         setMsg({ kind: "err", text: data.error ?? `HTTP ${res.status}` });
@@ -606,6 +714,14 @@ function AccountManagementPanel({
       setMsg({ kind: "err", text: (e as Error).message });
     } finally {
       setBusy(null);
+    }
+  }
+
+  function handleDeleteClick() {
+    if (appointments.length > 0) {
+      setShowDeleteFlow(true);
+    } else {
+      void confirmDeletePatient();
     }
   }
 
@@ -650,37 +766,53 @@ function AccountManagementPanel({
 
         {hasPwd && !verified && (
           <>
-            <button
-              className={styles.secondary}
-              disabled={busy === "send_verification"}
-              onClick={() => doAction("send_verification")}
-            >
+            <button className={styles.secondary} disabled={busy === "send_verification"} onClick={() => doAction("send_verification")}>
               {busy === "send_verification" ? "Sending…" : "Resend verification email"}
             </button>
-            <button
-              className={styles.secondary}
-              disabled={busy === "mark_email_verified"}
-              onClick={() => doAction("mark_email_verified", {}, "Manually mark this patient's email as verified?")}
-            >
+            <button className={styles.secondary} disabled={busy === "mark_email_verified"} onClick={() => doAction("mark_email_verified", {}, "Manually mark this patient's email as verified?")}>
               {busy === "mark_email_verified" ? "Marking…" : "Mark email verified"}
             </button>
           </>
         )}
 
         {hasPwd && (
-          <button
-            className={styles.secondary}
-            disabled={busy === "clear_password"}
-            onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}
-          >
+          <button className={styles.secondary} disabled={busy === "clear_password"} onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}>
             {busy === "clear_password" ? "Clearing…" : "Clear password"}
           </button>
         )}
 
-        <button className={styles.danger} disabled={busy === "delete"} onClick={deletePatient}>
+        <button className={styles.danger} disabled={busy === "delete"} onClick={handleDeleteClick}>
           {busy === "delete" ? "Deleting…" : "Delete patient"}
         </button>
       </div>
+
+      {/* Delete flow — shown when patient has appointments */}
+      {showDeleteFlow && (
+        <div style={{ marginTop: 16, padding: 16, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#991b1b", marginBottom: 4 }}>
+            Delete all appointments first
+          </div>
+          <p style={{ fontSize: 12, color: "#7f1d1d", margin: "0 0 12px" }}>
+            This patient has <strong>{appointments.length}</strong> appointment{appointments.length !== 1 ? "s" : ""}. Delete them all before deleting the patient.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+            {appointments.map((a) => (
+              <DeleteAppointmentRow
+                key={a.id}
+                appointment={a}
+                onDeleted={() => onDeleteAppointment(a.id)}
+              />
+            ))}
+          </div>
+          {appointments.length === 0 ? (
+            <button className={styles.danger} disabled={busy === "delete"} onClick={confirmDeletePatient}>
+              {busy === "delete" ? "Deleting…" : "All appointments deleted — delete patient now"}
+            </button>
+          ) : (
+            <button className={styles.secondary} onClick={() => setShowDeleteFlow(false)}>Cancel</button>
+          )}
+        </div>
+      )}
 
       {/* Reset password */}
       {hasPwd && (

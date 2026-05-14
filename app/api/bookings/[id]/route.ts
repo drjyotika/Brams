@@ -5,6 +5,7 @@ import {
   getUploadsForAppointment,
   updateAppointment,
 } from "../../../../lib/bookings";
+import { sql } from "../../../../lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -33,4 +34,23 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     admin_notes:    body.admin_notes,
   });
   return NextResponse.json({ ok: true });
+}
+
+// DELETE /api/bookings/[id] → delete appointment and all related records
+export async function DELETE(_req: NextRequest, ctx: Ctx) {
+  try {
+    const { id } = await ctx.params;
+    const appointment = await getAppointmentById(id);
+    if (!appointment) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    // Delete child records first, then the appointment
+    await sql`DELETE FROM appointment_uploads WHERE appointment_id = ${id}`;
+    await sql`DELETE FROM payments WHERE appointment_id = ${id}`;
+    await sql`DELETE FROM appointments WHERE id = ${id}`;
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[bookings/DELETE]", err);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
+  }
 }
