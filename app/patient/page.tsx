@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./patient.module.scss";
 import { BookingModal } from "./BookingModal";
@@ -49,11 +49,19 @@ type Report = {
   plan_title:       string;
 };
 
+type ActiveTab = "dashboard" | "appointments" | "reports" | "profile";
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtDate(iso: string) {
   return new Date(iso.slice(0, 10) + "T00:00:00").toLocaleDateString("en-IN", {
-    weekday: "short", day: "numeric", month: "short", year: "numeric",
+    day: "numeric", month: "short", year: "numeric",
+  });
+}
+
+function fmtDateShort(iso: string) {
+  return new Date(iso.slice(0, 10) + "T00:00:00").toLocaleDateString("en-IN", {
+    day: "numeric", month: "short",
   });
 }
 
@@ -80,23 +88,43 @@ function fileIcon(mime: string | null) {
   return "📄";
 }
 
+function initials(name: string) {
+  return name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function isUpcoming(appt: Appointment) {
+  const now = new Date();
+  const apptDate = new Date(appt.scheduled_date.slice(0, 10) + "T" + appt.scheduled_time);
+  return apptDate >= now && !["cancelled", "no_show"].includes(appt.status);
+}
+
+// ─── Nav items ────────────────────────────────────────────────────────────────
+
+const NAV: { id: ActiveTab; label: string; icon: string }[] = [
+  { id: "dashboard",    label: "Dashboard",    icon: "⊞" },
+  { id: "appointments", label: "Appointments", icon: "📅" },
+  { id: "reports",      label: "Files & Reports", icon: "📁" },
+  { id: "profile",      label: "Profile",      icon: "👤" },
+];
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function PatientDashboard() {
   const router = useRouter();
 
-  const [patient,      setPatient]      = useState<PatientInfo | null>(null);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [reports,      setReports]      = useState<Report[]>([]);
-  const [loading,      setLoading]      = useState(true);
+  const [patient,        setPatient]        = useState<PatientInfo | null>(null);
+  const [appointments,   setAppointments]   = useState<Appointment[]>([]);
+  const [reports,        setReports]        = useState<Report[]>([]);
+  const [loading,        setLoading]        = useState(true);
   const [reportsLoading, setReportsLoading] = useState(true);
-  const [error,        setError]        = useState("");
-  const [showBooking,  setShowBooking]  = useState(false);
-  const [payingId,     setPayingId]     = useState<string | null>(null);
-  const [payMsg,       setPayMsg]       = useState<Record<string, string>>({});
+  const [error,          setError]          = useState("");
+  const [activeTab,      setActiveTab]      = useState<ActiveTab>("dashboard");
+  const [showBooking,    setShowBooking]    = useState(false);
+  const [payingId,       setPayingId]       = useState<string | null>(null);
+  const [payMsg,         setPayMsg]         = useState<Record<string, string>>({});
 
-  const fetchMe = () =>
-    fetch("/api/patient/me")
+  const fetchMe = useCallback(() => {
+    return fetch("/api/patient/me")
       .then(async (r) => {
         if (r.status === 401) { router.replace("/patient/login"); return null; }
         if (!r.ok) throw new Error((await r.json()).error ?? `HTTP ${r.status}`);
@@ -110,8 +138,9 @@ export default function PatientDashboard() {
       })
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
+  }, [router]);
 
-  useEffect(() => { void fetchMe(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { void fetchMe(); }, [fetchMe]);
 
   useEffect(() => {
     fetch("/api/patient/reports")
@@ -137,9 +166,8 @@ export default function PatientDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Payment failed.");
-      setPayMsg(m => ({ ...m, [appt.id]: "Payment initiated. Our team will confirm it shortly." }));
-      // Refresh appointments
-      fetchMe();
+      setPayMsg(m => ({ ...m, [appt.id]: "Payment initiated — our team will confirm shortly." }));
+      void fetchMe();
     } catch (e) {
       setPayMsg(m => ({ ...m, [appt.id]: (e as Error).message }));
     } finally {
@@ -151,169 +179,436 @@ export default function PatientDashboard() {
   if (error)   return <div className={styles.loading}>{error}</div>;
   if (!patient) return null;
 
-  return (
-    <div className={styles.shell}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Welcome, {patient.full_name}</h1>
-          <p className={styles.subtitle}>Your appointments and records</p>
-        </div>
-        <div className={styles.headerActions}>
-          <button onClick={logout} className={styles.logoutBtn}>Logout</button>
-        </div>
-      </header>
+  // Derived data
+  const nextAppt     = appointments.find(isUpcoming) ?? null;
+  const completed    = appointments.filter(a => a.status === "completed").length;
+  const totalAppts   = appointments.length;
+  const progressPct  = totalAppts > 0 ? Math.round((completed / totalAppts) * 100) : 0;
+  const needsPay     = (a: Appointment) => a.payment_status === "unpaid" || a.payment_status === "pending";
 
-      {/* Email verification banner */}
-      {!patient.email_verified && (
-        <div className={styles.verifyBanner}>
-          <div>
-            <strong>Verify your email.</strong>{" "}
-            We sent a code to <span style={{ fontWeight: 600 }}>{patient.email ?? "your inbox"}</span>.
-          </div>
-          <a href="/patient/verify" className={styles.bannerBtn}>Verify now →</a>
+  // ── Sidebar ────────────────────────────────────────────────────────────────
+  const Sidebar = (
+    <aside className={styles.sidebar}>
+      <div className={styles.sidebarLogo}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Brams" />
+        <div className={styles.sidebarLogoText}>
+          Brams Mind Care
+          <span>Patient Portal</span>
         </div>
-      )}
+      </div>
 
-      {/* ── Appointments ─────────────────────────────────────────────────────── */}
-      <section className={styles.profileCard}>
-        <div className={styles.appointmentsHead}>
-          <h2 className={styles.cardTitle}>Appointments ({appointments.length})</h2>
-          <button className={styles.primaryBtn} onClick={() => setShowBooking(true)}>
-            + Book new
+      <nav className={styles.sidebarNav}>
+        {NAV.map(item => (
+          <button
+            key={item.id}
+            className={`${styles.navItem} ${activeTab === item.id ? styles.navItemActive : ""}`}
+            onClick={() => setActiveTab(item.id)}
+          >
+            <span className={styles.navIcon}>{item.icon}</span>
+            {item.label}
           </button>
+        ))}
+      </nav>
+
+      <div className={styles.sidebarBottom}>
+        <button className={styles.navItem} onClick={logout}>
+          <span className={styles.navIcon}>🚪</span>
+          Logout
+        </button>
+      </div>
+    </aside>
+  );
+
+  // ── Dashboard tab ──────────────────────────────────────────────────────────
+  const DashboardContent = (
+    <>
+      {/* Hero row */}
+      <div className={styles.heroRow}>
+        {/* Next appointment card */}
+        <div className={styles.heroCard}>
+          <div className={styles.heroBg} />
+          <div className={styles.heroLabel}>Next Appointment</div>
+
+          {nextAppt ? (
+            <>
+              <h2 className={styles.heroTitle}>{nextAppt.plan_title}</h2>
+              <div className={styles.heroPills}>
+                <span className={styles.heroPill}>📅 {fmtDate(nextAppt.scheduled_date)}</span>
+                <span className={styles.heroPill}>🕐 {fmtTime(nextAppt.scheduled_time)}</span>
+                <span className={styles.heroPill}>⏱ {nextAppt.duration_minutes} min</span>
+              </div>
+              <div className={styles.heroActions}>
+                {needsPay(nextAppt) ? (
+                  <>
+                    <button
+                      className={styles.payBtn}
+                      disabled={payingId === nextAppt.id}
+                      onClick={() => handlePay(nextAppt)}
+                    >
+                      {payingId === nextAppt.id ? "Processing…" : `Pay ₹${(nextAppt.total_paise / 100).toLocaleString("en-IN")}`}
+                    </button>
+                    {payMsg[nextAppt.id] && (
+                      <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
+                        {payMsg[nextAppt.id]}
+                      </span>
+                    )}
+                  </>
+                ) : nextAppt.meeting_link ? (
+                  <a
+                    href={nextAppt.meeting_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.joinBtn}
+                  >
+                    Join Meeting
+                  </a>
+                ) : (
+                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Meeting link pending</span>
+                )}
+                <button
+                  className={styles.rescheduleBtn}
+                  onClick={() => setActiveTab("appointments")}
+                >
+                  View All
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className={styles.heroTitle}>No upcoming appointments</h2>
+              <div className={styles.heroEmpty}>
+                <p className={styles.heroEmptyText}>Book a session with Dr. Jyotika Kanwar to get started.</p>
+                <button className={styles.bookBtn} onClick={() => setShowBooking(true)}>
+                  + Book a Session
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
-        {appointments.length === 0 ? (
-          <p className={styles.empty}>No appointments yet. Click &ldquo;Book new&rdquo; to get started.</p>
-        ) : (
-          <ul className={styles.appointmentList}>
-            {appointments.map((a) => {
-              const needsPay = a.payment_status === "unpaid" || a.payment_status === "pending";
-              return (
-                <li key={a.id} className={styles.appointment}>
-                  <div className={styles.apptLeft}>
-                    <div className={styles.apptDate}>{fmtDate(a.scheduled_date)}</div>
-                    <div className={styles.apptTime}>
-                      {fmtTime(a.scheduled_time)} · {a.duration_minutes} min
-                    </div>
-                  </div>
-                  <div className={styles.apptMid}>
-                    <div className={styles.apptPlan}>{a.plan_title}</div>
-                    <div className={styles.statuses}>
-                      <span className={`${styles.pill} ${styles[`status_${a.status}`] ?? ""}`}>
-                        {a.status.replace(/_/g, " ")}
-                      </span>
-                      <span className={`${styles.pill} ${styles[`pay_${a.payment_status}`] ?? ""}`}>
-                        {a.payment_status.replace(/_/g, " ")}
-                      </span>
-                    </div>
-                    {payMsg[a.id] && (
-                      <p style={{ margin: "6px 0 0", fontSize: 12, color: "#745475" }}>{payMsg[a.id]}</p>
-                    )}
-                  </div>
-                  <div className={styles.apptRight}>
-                    {needsPay ? (
-                      <button
-                        className={styles.primaryBtn}
-                        disabled={payingId === a.id}
-                        onClick={() => handlePay(a)}
-                        title={`₹${(a.total_paise / 100).toLocaleString("en-IN")} due`}
-                      >
-                        {payingId === a.id ? "Processing…" : `Pay ₹${(a.total_paise / 100).toLocaleString("en-IN")}`}
-                      </button>
-                    ) : a.meeting_link ? (
-                      <a href={a.meeting_link} target="_blank" rel="noreferrer" className={styles.primaryBtn}>
-                        Join
-                      </a>
-                    ) : (
-                      <span className={styles.muted}>Link pending</span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+        {/* Stats column */}
+        <div className={styles.statsCol}>
+          {/* Session progress */}
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Session Progress</div>
+            <div className={styles.statValue}>{completed}</div>
+            <div className={styles.statSub}>of {totalAppts} sessions completed</div>
+            <div className={styles.progressBar}>
+              <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+            </div>
+          </div>
 
-      {/* ── Reports ──────────────────────────────────────────────────────────── */}
-      <section className={styles.profileCard}>
-        <h2 className={styles.cardTitle}>Reports & Prescriptions ({reports.length})</h2>
+          {/* Reports / Prescriptions */}
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Files & Reports</div>
+            <div className={styles.statValue}>{reports.length}</div>
+            <div className={styles.statSub}>
+              {reports.length === 1 ? "document" : "documents"} uploaded
+            </div>
+            {reports.length > 0 && (
+              <button className={styles.statLink} onClick={() => setActiveTab("reports")}>
+                View all →
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {reportsLoading ? (
-          <p className={styles.empty}>Loading reports…</p>
-        ) : reports.length === 0 ? (
-          <p className={styles.empty}>No reports uploaded yet.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {reports.map((r) => (
-              <div key={r.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                gap: 12, padding: "12px 14px",
-                border: "1px solid rgba(207,195,204,.3)", borderRadius: 10, background: "#faf9fb",
-                flexWrap: "wrap",
-              }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1e1b24", marginBottom: 2 }}>
-                    {fileIcon(r.mime_type)} {r.file_name}
-                    {r.file_size && (
-                      <span style={{ color: "#9b8fa0", fontWeight: 400, marginLeft: 6, fontSize: 11 }}>
-                        {formatSize(r.file_size)}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#9b8fa0" }}>
-                    {r.plan_title} · {fmtDate(r.appointment_date)}
+      {/* Bottom row */}
+      <div className={styles.bottomRow}>
+        {/* Medical Reports */}
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHead}>
+            <h3 className={styles.sectionTitle}>Recent Reports</h3>
+            {reports.length > 3 && (
+              <button className={styles.seeAll} onClick={() => setActiveTab("reports")}>
+                See all
+              </button>
+            )}
+          </div>
+
+          {reportsLoading ? (
+            <p className={styles.empty}>Loading…</p>
+          ) : reports.length === 0 ? (
+            <p className={styles.empty}>No reports yet.</p>
+          ) : (
+            reports.slice(0, 3).map(r => (
+              <div key={r.id} className={styles.reportItem}>
+                <div className={styles.reportIcon}>{fileIcon(r.mime_type)}</div>
+                <div className={styles.reportInfo}>
+                  <div className={styles.reportName}>{r.file_name}</div>
+                  <div className={styles.reportMeta}>
+                    {r.plan_title} · {fmtDateShort(r.appointment_date)}
+                    {r.file_size ? ` · ${formatSize(r.file_size)}` : ""}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  {r.signed_url && (
-                    <>
-                      <a
-                        href={r.signed_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          padding: "6px 14px", background: "#f5f0f5",
-                          border: "1px solid rgba(116,84,117,.3)", color: "#745475",
-                          borderRadius: 6, fontSize: 12, fontWeight: 600,
-                          textDecoration: "none",
-                        }}
-                      >
-                        View
-                      </a>
-                      <a
-                        href={r.signed_url}
-                        download={r.file_name}
-                        style={{
-                          padding: "6px 14px", background: "#745475",
-                          color: "#fff", borderRadius: 6, fontSize: 12,
-                          fontWeight: 600, textDecoration: "none",
-                        }}
-                      >
-                        ↓ Download
-                      </a>
-                    </>
+                {r.signed_url && (
+                  <div className={styles.reportActions}>
+                    <a href={r.signed_url} target="_blank" rel="noreferrer" className={`${styles.reportBtn} ${styles.view}`}>View</a>
+                    <a href={r.signed_url} download={r.file_name} className={`${styles.reportBtn} ${styles.download}`}>↓</a>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Recent History */}
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHead}>
+            <h3 className={styles.sectionTitle}>Recent History</h3>
+            {appointments.length > 4 && (
+              <button className={styles.seeAll} onClick={() => setActiveTab("appointments")}>
+                See all
+              </button>
+            )}
+          </div>
+
+          {appointments.length === 0 ? (
+            <p className={styles.empty}>No appointments yet.</p>
+          ) : (
+            <table className={styles.historyTable}>
+              <thead>
+                <tr>
+                  <th className={styles.historyTh}>Date</th>
+                  <th className={styles.historyTh}>Session</th>
+                  <th className={styles.historyTh}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.slice(0, 4).map(a => (
+                  <tr key={a.id} className={styles.historyTr}>
+                    <td className={styles.historyTd}>
+                      <span className={styles.historyDate}>{fmtDateShort(a.scheduled_date)}</span>
+                      <span className={styles.historyTime}>{fmtTime(a.scheduled_time)}</span>
+                    </td>
+                    <td className={styles.historyTd}>
+                      <span className={styles.historyPlan}>{a.plan_title}</span>
+                    </td>
+                    <td className={styles.historyTd}>
+                      <span className={`${styles.pill} ${styles[`status_${a.status}` as keyof typeof styles] ?? ""}`}>
+                        {a.status.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  // ── Appointments tab ───────────────────────────────────────────────────────
+  const AppointmentsContent = (
+    <div className={styles.sectionCard}>
+      <div className={styles.sectionHead}>
+        <h3 className={styles.sectionTitle}>All Appointments ({appointments.length})</h3>
+        <button className={styles.primaryBtn} onClick={() => setShowBooking(true)}>
+          + Book new
+        </button>
+      </div>
+
+      {appointments.length === 0 ? (
+        <p className={styles.empty}>No appointments yet. Book your first session!</p>
+      ) : (
+        <div className={styles.apptFull}>
+          {appointments.map(a => {
+            const np = needsPay(a);
+            return (
+              <div key={a.id} className={styles.apptCard}>
+                <div className={styles.apptCardLeft}>
+                  <div className={styles.apptCardPlan}>{a.plan_title}</div>
+                  <div className={styles.apptCardMeta}>
+                    {fmtDate(a.scheduled_date)} · {fmtTime(a.scheduled_time)} · {a.duration_minutes} min
+                  </div>
+                  <div className={styles.apptCardPills}>
+                    <span className={`${styles.pill} ${styles[`status_${a.status}` as keyof typeof styles] ?? ""}`}>
+                      {a.status.replace(/_/g, " ")}
+                    </span>
+                    <span className={`${styles.pill} ${styles[`pay_${a.payment_status}` as keyof typeof styles] ?? ""}`}>
+                      {a.payment_status.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  {payMsg[a.id] && <p className={styles.payMsg}>{payMsg[a.id]}</p>}
+                </div>
+                <div className={styles.apptCardRight}>
+                  {np ? (
+                    <button
+                      className={styles.primaryBtn}
+                      disabled={payingId === a.id}
+                      onClick={() => handlePay(a)}
+                    >
+                      {payingId === a.id ? "Processing…" : `Pay ₹${(a.total_paise / 100).toLocaleString("en-IN")}`}
+                    </button>
+                  ) : a.meeting_link ? (
+                    <a href={a.meeting_link} target="_blank" rel="noreferrer" className={styles.primaryBtn}>
+                      Join
+                    </a>
+                  ) : (
+                    <span className={styles.muted}>Link pending</span>
                   )}
                 </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Reports tab ────────────────────────────────────────────────────────────
+  const ReportsContent = (
+    <div className={styles.sectionCard}>
+      <div className={styles.sectionHead}>
+        <h3 className={styles.sectionTitle}>Files & Reports ({reports.length})</h3>
+      </div>
+
+      {reportsLoading ? (
+        <p className={styles.empty}>Loading reports…</p>
+      ) : reports.length === 0 ? (
+        <p className={styles.empty}>No reports uploaded yet. Reports shared by your doctor will appear here.</p>
+      ) : (
+        reports.map(r => (
+          <div key={r.id} className={styles.reportItem}>
+            <div className={styles.reportIcon}>{fileIcon(r.mime_type)}</div>
+            <div className={styles.reportInfo}>
+              <div className={styles.reportName}>{r.file_name}</div>
+              <div className={styles.reportMeta}>
+                {r.plan_title} · {fmtDate(r.appointment_date)}
+                {r.file_size ? ` · ${formatSize(r.file_size)}` : ""}
+              </div>
+            </div>
+            {r.signed_url && (
+              <div className={styles.reportActions}>
+                <a href={r.signed_url} target="_blank" rel="noreferrer" className={`${styles.reportBtn} ${styles.view}`}>View</a>
+                <a href={r.signed_url} download={r.file_name} className={`${styles.reportBtn} ${styles.download}`}>↓ Download</a>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  // ── Profile tab ────────────────────────────────────────────────────────────
+  const ProfileContent = (
+    <div className={styles.sectionCard}>
+      <div className={styles.sectionHead}>
+        <h3 className={styles.sectionTitle}>Your Profile</h3>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 24px" }}>
+        {[
+          ["Name",   patient.full_name],
+          ["Phone",  patient.phone],
+          ["Email",  patient.email ?? "—"],
+          ["Age",    patient.age?.toString() ?? "—"],
+          ["Gender", patient.gender ?? "—"],
+          ["City",   patient.city ?? "—"],
+        ].map(([label, value]) => (
+          <div key={label} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "baseline",
+            gap: 12, paddingBottom: 10, borderBottom: "1px dashed rgba(207,195,204,.3)",
+            fontSize: 14, color: "#1e1b24",
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#9b8fa0" }}>{label}</span>
+            <span>{value}</span>
+          </div>
+        ))}
+      </div>
+
+      {!patient.email_verified && patient.email && (
+        <div style={{ marginTop: 20, padding: "14px 16px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, color: "#78350f" }}>
+            <strong>Email not verified.</strong> Verify to receive appointment confirmations.
+          </span>
+          <a href="/patient/verify" style={{ padding: "8px 14px", background: "#745475", color: "#fff", borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+            Verify now →
+          </a>
+        </div>
+      )}
+
+      <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(207,195,204,.2)" }}>
+        <button
+          onClick={logout}
+          style={{ padding: "10px 20px", border: "1px solid rgba(220,38,38,.25)", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#dc2626", background: "none", cursor: "pointer" }}
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={styles.shell}>
+      {Sidebar}
+
+      <div className={styles.main}>
+        {/* Top bar */}
+        <header className={styles.topBar}>
+          <div className={styles.topBarLeft}>
+            <div className={styles.breadcrumb}>Brams Mind Care</div>
+            <h1 className={styles.pageTitle}>
+              {NAV.find(n => n.id === activeTab)?.label ?? "Dashboard"}
+            </h1>
+          </div>
+          <div className={styles.topBarRight}>
+            {/* Email verify banner compact */}
+            {!patient.email_verified && (
+              <a href="/patient/verify" style={{
+                fontSize: 12, fontWeight: 600, color: "#92400e",
+                background: "#fffbeb", border: "1px solid #fcd34d",
+                borderRadius: 8, padding: "6px 12px", textDecoration: "none",
+                display: "none",
+              }}
+              className="hide-mobile">
+                Verify email ↗
+              </a>
+            )}
+            <div className={styles.avatarBtn} title={patient.full_name}>
+              {initials(patient.full_name)}
+            </div>
+          </div>
+        </header>
+
+        {/* Email verification banner */}
+        {!patient.email_verified && activeTab === "dashboard" && (
+          <div style={{ padding: "12px 32px 0" }}>
+            <div className={styles.verifyBanner}>
+              <div>
+                <strong>Verify your email.</strong>{" "}
+                We sent a code to <strong>{patient.email ?? "your inbox"}</strong>.
+              </div>
+              <a href="/patient/verify" className={styles.bannerBtn}>Verify now →</a>
+            </div>
           </div>
         )}
-      </section>
 
-      {/* ── Profile ──────────────────────────────────────────────────────────── */}
-      <section className={styles.profileCard}>
-        <h2 className={styles.cardTitle}>Profile</h2>
-        <div className={styles.profileGrid}>
-          <div><span className={styles.label}>Name</span><span>{patient.full_name}</span></div>
-          <div><span className={styles.label}>Phone</span><span>{patient.phone}</span></div>
-          <div><span className={styles.label}>Email</span><span>{patient.email ?? "—"}</span></div>
-          <div><span className={styles.label}>Age</span><span>{patient.age ?? "—"}</span></div>
-          <div><span className={styles.label}>Gender</span><span>{patient.gender ?? "—"}</span></div>
-          <div><span className={styles.label}>City</span><span>{patient.city ?? "—"}</span></div>
-        </div>
-      </section>
+        {/* Content canvas */}
+        <main className={styles.canvas}>
+          {activeTab === "dashboard"    && DashboardContent}
+          {activeTab === "appointments" && AppointmentsContent}
+          {activeTab === "reports"      && ReportsContent}
+          {activeTab === "profile"      && ProfileContent}
+        </main>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <nav className={styles.mobileNav}>
+        {NAV.map(item => (
+          <button
+            key={item.id}
+            className={`${styles.mobileNavItem} ${activeTab === item.id ? styles.mobileNavItemActive : ""}`}
+            onClick={() => setActiveTab(item.id)}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label.split(" ")[0]}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* Booking modal */}
       {showBooking && (
