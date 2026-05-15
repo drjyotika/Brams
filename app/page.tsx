@@ -14,7 +14,44 @@ export default async function Home() {
 
   return (
     <>
-      <TopNavBar data={content.nav} />
+      <TopNavBar
+        data={content.nav}
+        ctaSlot={
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a
+              href="/patient/login"
+              style={{
+                fontFamily: "var(--font-manrope), system-ui, sans-serif",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#745475",
+                padding: "10px 20px",
+                borderRadius: 12,
+                border: "1.5px solid rgba(116,84,117,0.3)",
+                textDecoration: "none",
+              }}
+            >
+              Login
+            </a>
+            <a
+              href={content.nav.cta.href}
+              style={{
+                fontFamily: "var(--font-manrope), system-ui, sans-serif",
+                fontWeight: 600,
+                fontSize: 16,
+                background: "#c8a2c8",
+                color: "#553757",
+                padding: "10px 24px",
+                borderRadius: 12,
+                textDecoration: "none",
+                boxShadow: "0 1px 1px rgba(0,0,0,0.05)",
+              }}
+            >
+              {content.nav.cta.label}
+            </a>
+          </div>
+        }
+      />
       <main>
         <HeroSection data={content.hero} />
         <SpecializedSupport data={content.support} />
