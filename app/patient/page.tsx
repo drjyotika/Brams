@@ -447,9 +447,6 @@ export default function PatientDashboard() {
     <div className={styles.sectionCard}>
       <div className={styles.sectionHead}>
         <h3 className={styles.sectionTitle}>All Appointments ({appointments.length})</h3>
-        <button className={styles.primaryBtn} onClick={() => setShowBooking(true)}>
-          + Book new
-        </button>
       </div>
 
       {appointments.length === 0 ? (
