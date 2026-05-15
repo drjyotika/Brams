@@ -6,6 +6,7 @@ import styles from "./patient.module.scss";
 import { BookingModal } from "./BookingModal";
 import { TopNavBar } from "../../components/TopNavBar";
 import { defaultContent } from "../../lib/content";
+import { BramsLoader } from "../../components/BramsLoader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -173,7 +174,7 @@ export default function PatientDashboard() {
     }
   }
 
-  if (loading) return <div className={styles.loading}>Loading…</div>;
+  if (loading) return <BramsLoader fullPage />;
   if (error)   return <div className={styles.loading}>{error}</div>;
   if (!patient) return null;
 
@@ -362,7 +363,7 @@ export default function PatientDashboard() {
           </div>
 
           {reportsLoading ? (
-            <p className={styles.empty}>Loading…</p>
+            <BramsLoader />
           ) : reports.length === 0 ? (
             <p className={styles.empty}>No reports yet.</p>
           ) : (
@@ -499,7 +500,7 @@ export default function PatientDashboard() {
       </div>
 
       {reportsLoading ? (
-        <p className={styles.empty}>Loading reports…</p>
+        <BramsLoader />
       ) : reports.length === 0 ? (
         <p className={styles.empty}>No reports uploaded yet. Reports shared by your doctor will appear here.</p>
       ) : (

@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DaySchedule } from "../../lib/content";
 import { defaultContent } from "../../lib/content";
+import { BramsLoader } from "../../components/BramsLoader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -279,7 +280,7 @@ export function BookingModal({ patient, onClose, onBooked }: {
           {/* ── Step 0: Plan selection ── */}
           {step === 0 && (
             plansLoading ? (
-              <p style={{ textAlign: "center", color: "#9b8fa0", padding: "40px 0" }}>Loading plans…</p>
+              <BramsLoader />
             ) : plans.length === 0 ? (
               <p style={{ textAlign: "center", color: "#9b8fa0", padding: "40px 0" }}>No plans available.</p>
             ) : (
