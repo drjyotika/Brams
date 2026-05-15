@@ -31,23 +31,14 @@
 .sidebarLogo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
   padding: 24px 20px 20px;
   border-bottom: 1px solid rgba(207, 195, 204, 0.15);
 
   img {
-    height: 36px;
+    height: 40px;
     width: auto;
   }
-}
-
-.sidebarLogoText {
-  font-family: $font-display;
-  font-weight: 700;
-  font-size: 13px;
-  color: #1e1b24;
-  line-height: 1.3;
-  span { display: block; color: $color-plum; font-size: 11px; font-weight: 600; }
 }
 
 .sidebarNav {
@@ -62,8 +53,7 @@
 .navItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -80,20 +70,12 @@
     background: rgba(116, 84, 117, 0.06);
     color: $color-plum;
   }
-
-  .navIcon {
-    width: 18px;
-    height: 18px;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
 }
 
 .navItemActive {
   background: rgba(116, 84, 117, 0.1);
   color: $color-plum;
-
-  .navIcon { opacity: 1; }
+  font-weight: 700;
 }
 
 .sidebarBottom {
@@ -103,6 +85,8 @@
   flex-direction: column;
   gap: 4px;
 }
+
+// navIcon class removed (icons removed from nav per design)
 
 // ─── Main area ────────────────────────────────────────────────────────────────
 
@@ -132,27 +116,15 @@
 
 .topBarLeft {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
 }
 
-.breadcrumb {
-  font-size: 11px;
-  color: #9b8fa0;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pageTitle {
-  font-family: $font-display;
-  font-weight: 800;
-  font-size: 18px;
-  color: #1e1b24;
-  margin: 0;
+.topBarLogo {
+  height: 36px;
+  width: auto;
 
   @media (max-width: 600px) {
-    font-size: 16px;
+    height: 30px;
   }
 }
 
@@ -162,38 +134,25 @@
   gap: 12px;
 }
 
-.notifBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid rgba(207, 195, 204, 0.3);
-  background: #faf9fb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 120ms;
-  flex-shrink: 0;
-
-  &:hover { background: rgba(116, 84, 117, 0.06); }
-}
-
-.avatarBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg, #745475 0%, #553757 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
+.bookConsultBtn {
+  padding: 10px 20px;
+  background: $color-plum;
   color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  flex-shrink: 0;
+  transition: background 120ms;
+  white-space: nowrap;
   font-family: $font-display;
+
+  &:hover { background: $color-plum-deep; }
+
+  @media (max-width: 400px) {
+    font-size: 12px;
+    padding: 9px 14px;
+  }
 }
 
 // ─── Content canvas ───────────────────────────────────────────────────────────
@@ -694,6 +653,123 @@
 
   &:hover { opacity: 0.9; }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ─── Greeting ─────────────────────────────────────────────────────────────────
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greetingText {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 22px;
+  color: #1e1b24;
+
+  @media (max-width: 600px) {
+    font-size: 18px;
+  }
+}
+
+.greetingSubtext {
+  font-size: 13px;
+  color: #9b8fa0;
+}
+
+// ─── Payment alert ────────────────────────────────────────────────────────────
+
+.payAlert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #fffbeb;
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #78350f;
+  flex-wrap: wrap;
+}
+
+.payAlertLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.payAlertIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.payAlertBtn {
+  padding: 8px 16px;
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms;
+  flex-shrink: 0;
+
+  &:hover { background: #d97706; }
+}
+
+// ─── New patient onboarding card ──────────────────────────────────────────────
+
+.onboardCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.2);
+  border-radius: 20px;
+  padding: 48px 32px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(116, 84, 117, 0.04);
+}
+
+.onboardIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.onboardTitle {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 22px;
+  color: #1e1b24;
+  margin: 0 0 10px;
+}
+
+.onboardText {
+  font-size: 14px;
+  color: #6b7280;
+  max-width: 440px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.onboardBtn {
+  padding: 14px 32px;
+  background: $color-plum;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: $font-display;
+  transition: background 120ms;
+
+  &:hover { background: $color-plum-deep; }
 }
 
 // ─── Loading / empty ──────────────────────────────────────────────────────────

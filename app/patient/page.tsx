@@ -88,10 +88,6 @@ function fileIcon(mime: string | null) {
   return "📄";
 }
 
-function initials(name: string) {
-  return name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-}
-
 function isUpcoming(appt: Appointment) {
   const now = new Date();
   const apptDate = new Date(appt.scheduled_date.slice(0, 10) + "T" + appt.scheduled_time);
@@ -180,22 +176,25 @@ export default function PatientDashboard() {
   if (!patient) return null;
 
   // Derived data
-  const nextAppt     = appointments.find(isUpcoming) ?? null;
-  const completed    = appointments.filter(a => a.status === "completed").length;
-  const totalAppts   = appointments.length;
-  const progressPct  = totalAppts > 0 ? Math.round((completed / totalAppts) * 100) : 0;
-  const needsPay     = (a: Appointment) => a.payment_status === "unpaid" || a.payment_status === "pending";
+  const nextAppt       = appointments.find(isUpcoming) ?? null;
+  const completed      = appointments.filter(a => a.status === "completed").length;
+  const totalAppts     = appointments.length;
+  const progressPct    = totalAppts > 0 ? Math.round((completed / totalAppts) * 100) : 0;
+  const needsPay       = (a: Appointment) => a.payment_status === "unpaid" || a.payment_status === "pending";
+  const pendingPayment = appointments.filter(needsPay);
+  const isNewPatient   = totalAppts === 0;
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = patient.full_name.split(" ")[0];
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
   const Sidebar = (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarLogo}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Brams" />
-        <div className={styles.sidebarLogoText}>
-          Brams Mind Care
-          <span>Patient Portal</span>
-        </div>
+        <img src="/logo.png" alt="Brams Mind Care" />
       </div>
 
       <nav className={styles.sidebarNav}>
@@ -205,16 +204,17 @@ export default function PatientDashboard() {
             className={`${styles.navItem} ${activeTab === item.id ? styles.navItemActive : ""}`}
             onClick={() => setActiveTab(item.id)}
           >
-            <span className={styles.navIcon}>{item.icon}</span>
             {item.label}
           </button>
         ))}
       </nav>
 
       <div className={styles.sidebarBottom}>
-        <button className={styles.navItem} onClick={logout}>
-          <span className={styles.navIcon}>🚪</span>
-          Logout
+        <button
+          className={`${styles.navItem} ${activeTab === "profile" ? styles.navItemActive : ""}`}
+          onClick={() => setActiveTab("profile")}
+        >
+          Profile &amp; Settings
         </button>
       </div>
     </aside>
@@ -223,6 +223,45 @@ export default function PatientDashboard() {
   // ── Dashboard tab ──────────────────────────────────────────────────────────
   const DashboardContent = (
     <>
+      {/* Greeting */}
+      <div className={styles.greeting}>
+        <span className={styles.greetingText}>{greeting}, {firstName} 👋</span>
+        <span className={styles.greetingSubtext}>Here&apos;s a summary of your health journey.</span>
+      </div>
+
+      {/* Payment pending alert */}
+      {pendingPayment.length > 0 && (
+        <div className={styles.payAlert}>
+          <div className={styles.payAlertLeft}>
+            <span className={styles.payAlertIcon}>⚠️</span>
+            <div>
+              <strong>Payment pending</strong> on {pendingPayment.length} appointment{pendingPayment.length > 1 ? "s" : ""}.
+              Your slot is reserved but needs payment to be confirmed.
+            </div>
+          </div>
+          <button
+            className={styles.payAlertBtn}
+            onClick={() => setActiveTab("appointments")}
+          >
+            Pay now →
+          </button>
+        </div>
+      )}
+
+      {/* New patient empty state */}
+      {isNewPatient ? (
+        <div className={styles.onboardCard}>
+          <div className={styles.onboardIcon}>🌿</div>
+          <h2 className={styles.onboardTitle}>Welcome to Brams Mind Care</h2>
+          <p className={styles.onboardText}>
+            You&apos;re all set! Book your first session with Dr. Jyotika Kanwar and start your wellness journey.
+          </p>
+          <button className={styles.onboardBtn} onClick={() => setShowBooking(true)}>
+            Book My First Session
+          </button>
+        </div>
+      ) : (
+      <>
       {/* Hero row */}
       <div className={styles.heroRow}>
         {/* Next appointment card */}
@@ -398,6 +437,8 @@ export default function PatientDashboard() {
           )}
         </div>
       </div>
+      </>
+      )}
     </>
   );
 
@@ -549,28 +590,11 @@ export default function PatientDashboard() {
       <div className={styles.main}>
         {/* Top bar */}
         <header className={styles.topBar}>
-          <div className={styles.topBarLeft}>
-            <div className={styles.breadcrumb}>Brams Mind Care</div>
-            <h1 className={styles.pageTitle}>
-              {NAV.find(n => n.id === activeTab)?.label ?? "Dashboard"}
-            </h1>
-          </div>
+          <div className={styles.topBarLeft} />
           <div className={styles.topBarRight}>
-            {/* Email verify banner compact */}
-            {!patient.email_verified && (
-              <a href="/patient/verify" style={{
-                fontSize: 12, fontWeight: 600, color: "#92400e",
-                background: "#fffbeb", border: "1px solid #fcd34d",
-                borderRadius: 8, padding: "6px 12px", textDecoration: "none",
-                display: "none",
-              }}
-              className="hide-mobile">
-                Verify email ↗
-              </a>
-            )}
-            <div className={styles.avatarBtn} title={patient.full_name}>
-              {initials(patient.full_name)}
-            </div>
+            <button className={styles.bookConsultBtn} onClick={() => setShowBooking(true)}>
+              Book Consultation
+            </button>
           </div>
         </header>
 
