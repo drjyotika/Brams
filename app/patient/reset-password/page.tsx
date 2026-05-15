@@ -44,7 +44,7 @@ function ResetPasswordForm() {
         setError(data.error ?? "Something went wrong. Please try again.");
       } else {
         setDone(true);
-        setTimeout(() => router.replace("/patient/login"), 2500);
+        setTimeout(() => router.replace("/patient/verify"), 1200);
       }
     } catch {
       setError("Network error. Please try again.");
@@ -58,7 +58,7 @@ function ResetPasswordForm() {
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
         <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Password updated!</p>
-        <p style={{ fontSize: 13, color: "#6b7280" }}>Redirecting you to sign in…</p>
+        <p style={{ fontSize: 13, color: "#6b7280" }}>Signing you in…</p>
       </div>
     );
   }
