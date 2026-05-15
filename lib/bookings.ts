@@ -211,7 +211,8 @@ export async function getAllAppointments(): Promise<AppointmentWithPatient[]> {
 export async function updateAppointment(
   id: string,
   patch: Partial<Pick<Appointment,
-    "status" | "payment_status" | "meeting_link" | "admin_notes"
+    "status" | "payment_status" | "meeting_link" | "admin_notes" |
+    "scheduled_date" | "scheduled_time"
   >>
 ): Promise<void> {
   await sql`
@@ -220,6 +221,8 @@ export async function updateAppointment(
       payment_status = COALESCE(${patch.payment_status ?? null}, payment_status),
       meeting_link   = COALESCE(${patch.meeting_link   ?? null}, meeting_link),
       admin_notes    = COALESCE(${patch.admin_notes    ?? null}, admin_notes),
+      scheduled_date = COALESCE(${patch.scheduled_date ?? null}, scheduled_date),
+      scheduled_time = COALESCE(${patch.scheduled_time ?? null}, scheduled_time),
       updated_at     = NOW()
     WHERE id = ${id}
   `;

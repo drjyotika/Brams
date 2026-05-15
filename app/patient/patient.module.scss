@@ -911,3 +911,21 @@
   color: #9b8fa0;
   font-style: italic;
 }
+
+.rescheduleCardBtn {
+  padding: 7px 14px;
+  background: none;
+  border: 1px solid rgba(116, 84, 117, 0.35);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-plum;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms, border-color 120ms;
+
+  &:hover {
+    background: rgba(116, 84, 117, 0.06);
+    border-color: $color-plum;
+  }
+}

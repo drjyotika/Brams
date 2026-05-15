@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./patient.module.scss";
 import { BookingModal } from "./BookingModal";
+import { RescheduleModal } from "./RescheduleModal";
 import { TopNavBar } from "../../components/TopNavBar";
 import { defaultContent } from "../../lib/content";
 import { BramsLoader } from "../../components/BramsLoader";
@@ -118,9 +119,10 @@ export default function PatientDashboard() {
   const [reportsLoading, setReportsLoading] = useState(true);
   const [error,          setError]          = useState("");
   const [activeTab,      setActiveTab]      = useState<ActiveTab>("dashboard");
-  const [showBooking,    setShowBooking]    = useState(false);
-  const [payingId,       setPayingId]       = useState<string | null>(null);
-  const [payMsg,         setPayMsg]         = useState<Record<string, string>>({});
+  const [showBooking,      setShowBooking]      = useState(false);
+  const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
+  const [payingId,         setPayingId]         = useState<string | null>(null);
+  const [payMsg,           setPayMsg]           = useState<Record<string, string>>({});
 
   const fetchMe = useCallback(() => {
     return fetch("/api/patient/me")
@@ -302,9 +304,9 @@ export default function PatientDashboard() {
                 )}
                 <button
                   className={styles.rescheduleBtn}
-                  onClick={() => setActiveTab("appointments")}
+                  onClick={() => setReschedulingAppt(nextAppt)}
                 >
-                  View All
+                  Reschedule
                 </button>
               </div>
             </>
@@ -483,6 +485,15 @@ export default function PatientDashboard() {
                   ) : (
                     <span className={styles.muted}>Link pending</span>
                   )}
+                  {/* Reschedule — only for upcoming, non-terminal appointments */}
+                  {!["cancelled", "completed", "no_show"].includes(a.status) && (
+                    <button
+                      className={styles.rescheduleCardBtn}
+                      onClick={() => setReschedulingAppt(a)}
+                    >
+                      Reschedule
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -636,6 +647,15 @@ export default function PatientDashboard() {
           patient={patient}
           onClose={() => setShowBooking(false)}
           onBooked={() => { void fetchMe(); setShowBooking(false); }}
+        />
+      )}
+
+      {/* Reschedule modal */}
+      {reschedulingAppt && (
+        <RescheduleModal
+          appointment={reschedulingAppt}
+          onClose={() => setReschedulingAppt(null)}
+          onRescheduled={() => { void fetchMe(); }}
         />
       )}
     </div>
