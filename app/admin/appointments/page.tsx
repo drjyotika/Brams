@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles  from "../users/users.module.scss";
 import pStyles from "../patients/patients.module.scss";
@@ -166,8 +166,8 @@ export default function AppointmentsPage() {
                 <tr><td colSpan={9} className={styles.empty}>No appointments yet.</td></tr>
               )}
               {sorted.map((a) => (
-                <>
-                  <tr key={a.id}>
+                <Fragment key={a.id}>
+                  <tr>
                     <td className={styles.username}>
                       <Link href={`/admin/patients/${a.patient.id}`}>{a.patient.full_name}</Link>
                     </td>
@@ -237,7 +237,7 @@ export default function AppointmentsPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
