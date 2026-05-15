@@ -210,11 +210,8 @@ export default function PatientDashboard() {
       </nav>
 
       <div className={styles.sidebarBottom}>
-        <button
-          className={`${styles.navItem} ${activeTab === "profile" ? styles.navItemActive : ""}`}
-          onClick={() => setActiveTab("profile")}
-        >
-          Profile &amp; Settings
+        <button className={styles.navItem} onClick={logout}>
+          Logout
         </button>
       </div>
     </aside>
