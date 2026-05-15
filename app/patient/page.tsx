@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./patient.module.scss";
 import { BookingModal } from "./BookingModal";
+import { TopNavBar } from "../../components/TopNavBar";
+import { defaultContent } from "../../lib/content";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -192,11 +194,6 @@ export default function PatientDashboard() {
   // ── Sidebar ────────────────────────────────────────────────────────────────
   const Sidebar = (
     <aside className={styles.sidebar}>
-      <div className={styles.sidebarLogo}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Brams Mind Care" />
-      </div>
-
       <nav className={styles.sidebarNav}>
         {NAV.map(item => (
           <button
@@ -579,18 +576,21 @@ export default function PatientDashboard() {
 
   return (
     <div className={styles.shell}>
-      {Sidebar}
+      {/* Full-width homepage-style header */}
+      <TopNavBar
+        data={defaultContent.nav}
+        hideLinks
+        ctaSlot={
+          <button className={styles.bookConsultBtn} onClick={() => setShowBooking(true)}>
+            Book Consultation
+          </button>
+        }
+      />
 
-      <div className={styles.main}>
-        {/* Top bar */}
-        <header className={styles.topBar}>
-          <div className={styles.topBarLeft} />
-          <div className={styles.topBarRight}>
-            <button className={styles.bookConsultBtn} onClick={() => setShowBooking(true)}>
-              Book Consultation
-            </button>
-          </div>
-        </header>
+      <div className={styles.body}>
+        {Sidebar}
+
+        <div className={styles.main}>
 
         {/* Email verification banner */}
         {!patient.email_verified && activeTab === "dashboard" && (
@@ -612,6 +612,7 @@ export default function PatientDashboard() {
           {activeTab === "reports"      && ReportsContent}
           {activeTab === "profile"      && ProfileContent}
         </main>
+        </div>
       </div>
 
       {/* Mobile bottom nav */}
