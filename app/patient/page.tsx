@@ -319,7 +319,7 @@ export default function PatientDashboard() {
               <div className={styles.heroEmpty}>
                 <p className={styles.heroEmptyText}>Book a session with Dr. Jyotika Kanwar to get started.</p>
                 <button className={styles.bookBtn} onClick={() => setShowBooking(true)}>
-                  + Book a Session
+                  Book a Session
                 </button>
               </div>
             </>
