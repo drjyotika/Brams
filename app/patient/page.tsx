@@ -3,10 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./patient.module.scss";
-import { BookingModal } from "./BookingModal";
-import { RescheduleModal } from "./RescheduleModal";
-import { TopNavBar } from "../../components/TopNavBar";
-import { defaultContent } from "../../lib/content";
 import { BramsLoader } from "../../components/BramsLoader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -119,8 +115,6 @@ export default function PatientDashboard() {
   const [reportsLoading, setReportsLoading] = useState(true);
   const [error,          setError]          = useState("");
   const [activeTab,      setActiveTab]      = useState<ActiveTab>("dashboard");
-  const [showBooking,      setShowBooking]      = useState(false);
-  const [reschedulingAppt, setReschedulingAppt] = useState<Appointment | null>(null);
   const [payingId,         setPayingId]         = useState<string | null>(null);
   const [payMsg,           setPayMsg]           = useState<Record<string, string>>({});
 
@@ -128,7 +122,10 @@ export default function PatientDashboard() {
     return fetch("/api/patient/me")
       .then(async (r) => {
         if (r.status === 401) { router.replace("/patient/login"); return null; }
-        if (!r.ok) throw new Error((await r.json()).error ?? `HTTP ${r.status}`);
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          throw new Error(body?.error ?? `Server error (HTTP ${r.status}). Please try again shortly.`);
+        }
         return r.json();
       })
       .then((data) => {
@@ -197,6 +194,10 @@ export default function PatientDashboard() {
   // ── Sidebar ────────────────────────────────────────────────────────────────
   const Sidebar = (
     <aside className={styles.sidebar}>
+      <div className={styles.sidebarLogo}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <a href="/"><img src="/logo.png" alt="Brams Mind Care" /></a>
+      </div>
       <nav className={styles.sidebarNav}>
         {NAV.map(item => (
           <button
@@ -253,7 +254,7 @@ export default function PatientDashboard() {
           <p className={styles.onboardText}>
             You&apos;re all set! Book your first session with Dr. Jyotika Kanwar and start your wellness journey.
           </p>
-          <button className={styles.onboardBtn} onClick={() => setShowBooking(true)}>
+          <button className={styles.onboardBtn} onClick={() => router.push("/patient/book")}>
             Book My First Session
           </button>
         </div>
@@ -304,7 +305,7 @@ export default function PatientDashboard() {
                 )}
                 <button
                   className={styles.rescheduleBtn}
-                  onClick={() => setReschedulingAppt(nextAppt)}
+                  onClick={() => router.push(`/patient/reschedule/${nextAppt.id}`)}
                 >
                   Reschedule
                 </button>
@@ -315,7 +316,7 @@ export default function PatientDashboard() {
               <h2 className={styles.heroTitle}>No upcoming appointments</h2>
               <div className={styles.heroEmpty}>
                 <p className={styles.heroEmptyText}>Book a session with Dr. Jyotika Kanwar to get started.</p>
-                <button className={styles.bookBtn} onClick={() => setShowBooking(true)}>
+                <button className={styles.bookBtn} onClick={() => router.push("/patient/book")}>
                   Book a Session
                 </button>
               </div>
@@ -489,7 +490,7 @@ export default function PatientDashboard() {
                   {!["cancelled", "completed", "no_show"].includes(a.status) && (
                     <button
                       className={styles.rescheduleCardBtn}
-                      onClick={() => setReschedulingAppt(a)}
+                      onClick={() => router.push(`/patient/reschedule/${a.id}`)}
                     >
                       Reschedule
                     </button>
@@ -588,21 +589,18 @@ export default function PatientDashboard() {
 
   return (
     <div className={styles.shell}>
-      {/* Full-width homepage-style header */}
-      <TopNavBar
-        data={defaultContent.nav}
-        hideLinks
-        ctaSlot={
-          <button className={styles.bookConsultBtn} onClick={() => setShowBooking(true)}>
-            Book Consultation
-          </button>
-        }
-      />
+      {Sidebar}
 
-      <div className={styles.body}>
-        {Sidebar}
-
-        <div className={styles.main}>
+      <div className={styles.main}>
+        {/* Header above main content only — sidebar logo lives in the left column */}
+        <header className={styles.topBar}>
+          <div className={styles.topBarLeft} />
+          <div className={styles.topBarRight}>
+            <button className={styles.bookConsultBtn} onClick={() => router.push("/patient/book")}>
+              Book Consultation
+            </button>
+          </div>
+        </header>
 
         {/* Email verification banner */}
         {!patient.email_verified && activeTab === "dashboard" && (
@@ -624,7 +622,6 @@ export default function PatientDashboard() {
           {activeTab === "reports"      && ReportsContent}
           {activeTab === "profile"      && ProfileContent}
         </main>
-        </div>
       </div>
 
       {/* Mobile bottom nav */}
@@ -641,23 +638,6 @@ export default function PatientDashboard() {
         ))}
       </nav>
 
-      {/* Booking modal */}
-      {showBooking && (
-        <BookingModal
-          patient={patient}
-          onClose={() => setShowBooking(false)}
-          onBooked={() => { void fetchMe(); setShowBooking(false); }}
-        />
-      )}
-
-      {/* Reschedule modal */}
-      {reschedulingAppt && (
-        <RescheduleModal
-          appointment={reschedulingAppt}
-          onClose={() => setReschedulingAppt(null)}
-          onRescheduled={() => { void fetchMe(); }}
-        />
-      )}
     </div>
   );
 }

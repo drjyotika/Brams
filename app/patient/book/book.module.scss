@@ -1,0 +1,513 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/mixins" as *;
+
+// ─── Shell ────────────────────────────────────────────────────────────────────
+
+.shell {
+  min-height: 100vh;
+  background: $color-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  @include container;
+  padding-top: 32px;
+  padding-bottom: 96px;
+}
+
+// ─── Step header ──────────────────────────────────────────────────────────────
+
+.stepHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.stepEyebrow {
+  display: block;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: $color-plum;
+  text-transform: uppercase;
+}
+
+.stepTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.1;
+  color: $color-ink;
+  margin: 8px 0 12px;
+
+  @include md { font-size: 40px; }
+}
+
+.stepSubtitle {
+  color: $color-ink-soft;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 520px;
+}
+
+.progress {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progressDot {
+  width: 48px;
+  height: 6px;
+  border-radius: 3px;
+  background: $color-lilac-soft;
+}
+
+.progressDotActive {
+  background: $color-plum;
+}
+
+// ─── Cards ────────────────────────────────────────────────────────────────────
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+}
+
+.cardTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+  margin-bottom: 14px;
+}
+
+.helper {
+  font-size: 14px;
+  color: $color-ink-muted;
+  margin: 0;
+}
+
+.empty {
+  font-size: 14px;
+  color: $color-ink-muted;
+  text-align: center;
+  padding: 24px;
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+.layoutEqual {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// ─── Plan grid ────────────────────────────────────────────────────────────────
+
+.planGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @include md { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+.planCard {
+  text-align: left;
+  background: $color-bg;
+  border: 1.5px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-md;
+  padding: 22px 24px;
+  cursor: pointer;
+  transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+  font-family: inherit;
+
+  &:hover {
+    border-color: $color-plum;
+    box-shadow: 0 4px 16px rgba(116, 84, 117, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+.planEyebrow {
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  color: $color-plum;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.planTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 17px;
+  color: $color-ink;
+  margin-bottom: 10px;
+}
+
+.planPrice {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 24px;
+  color: $color-plum;
+}
+
+.planUnit {
+  font-size: 12px;
+  color: $color-ink-muted;
+  margin-bottom: 12px;
+}
+
+.planDuration {
+  font-size: 13px;
+  color: $color-ink-soft;
+  margin-top: 8px;
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────────────
+
+.calHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.monthLabel {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: $color-ink;
+}
+
+.calNav { display: inline-flex; gap: 6px; }
+
+.calNavBtn {
+  background: none;
+  border: 1px solid rgba(207, 195, 204, 0.5);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 15px;
+  color: $color-ink-soft;
+  transition: background 120ms;
+
+  &:hover { background: $color-lilac-soft; }
+}
+
+.calWeekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.calWeekDay {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: $color-ink-muted;
+  padding: 4px 0;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calDay {
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: $color-ink;
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+  font-family: inherit;
+
+  &:hover:not(:disabled) { background: $color-lilac-soft; }
+}
+
+.calDayActive {
+  background: $color-plum;
+  color: #fff;
+  font-weight: 700;
+
+  &:hover { background: $color-plum-deep; }
+}
+
+.calDayDisabled {
+  color: rgba(160, 145, 160, 0.5);
+  cursor: default;
+  background: transparent;
+
+  &:hover { background: transparent; }
+}
+
+// ─── Slots ────────────────────────────────────────────────────────────────────
+
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slotBtn {
+  padding: 12px 16px;
+  border: 1.5px solid rgba(207, 195, 204, 0.4);
+  border-radius: 10px;
+  background: $color-bg;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: inherit;
+  transition: border-color 120ms, background 120ms;
+
+  &:hover {
+    border-color: $color-plum;
+    background: #fff;
+  }
+
+  span:first-child {
+    font-weight: 600;
+    font-size: 14px;
+    color: $color-ink;
+  }
+}
+
+.slotBtnActive {
+  border-color: $color-plum;
+  background: $color-lilac-soft;
+
+  span:first-child { color: $color-plum-deep; font-weight: 700; }
+}
+
+.slotMeta {
+  font-size: 12px;
+  color: $color-ink-muted;
+}
+
+// ─── Form ─────────────────────────────────────────────────────────────────────
+
+.label {
+  display: block;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 13px;
+  color: $color-ink;
+  margin-bottom: 8px;
+}
+
+.optional {
+  font-weight: 500;
+  color: $color-ink-muted;
+  font-size: 12px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-sm;
+  font-size: 14px;
+  font-family: inherit;
+  color: $color-ink;
+  background: $color-bg;
+  outline: none;
+  resize: vertical;
+  transition: border-color 120ms;
+
+  &:focus { border-color: $color-plum; }
+}
+
+.error {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+// ─── Summary ──────────────────────────────────────────────────────────────────
+
+.summary {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-md;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(116, 84, 117, 0.04);
+}
+
+.summaryTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 17px;
+  color: $color-ink;
+  margin: 0 0 16px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(207, 195, 204, 0.3);
+
+  &:last-of-type { border-bottom: none; }
+
+  span { color: $color-ink-muted; font-weight: 500; }
+  strong { color: $color-ink; font-weight: 600; text-align: right; max-width: 60%; }
+}
+
+.summaryDivider {
+  height: 1px;
+  background: rgba(207, 195, 204, 0.3);
+  margin: 8px 0;
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 12px;
+  font-family: $font-display;
+
+  span { font-size: 14px; color: $color-ink; font-weight: 600; }
+  strong { font-size: 22px; color: $color-plum; font-weight: 800; }
+}
+
+// ─── Step buttons row ─────────────────────────────────────────────────────────
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-ink-soft;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover { color: $color-ink; }
+}
+
+// ─── Primary CTA — matches homepage TopNavBar style ───────────────────────────
+
+.primaryCta {
+  display: inline-block;
+  background: $color-lilac;
+  color: $color-plum-deep;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: $radius-sm;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 120ms ease;
+
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+// ─── Success state ────────────────────────────────────────────────────────────
+
+.successCard {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-lg;
+  padding: 56px 32px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(116, 84, 117, 0.06);
+  max-width: 520px;
+  margin: 40px auto 0;
+}
+
+.successIcon { font-size: 56px; margin-bottom: 18px; }
+
+.successTitle {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 28px;
+  color: $color-ink;
+  margin: 0 0 12px;
+}
+
+.successText {
+  font-size: 15px;
+  color: $color-ink-soft;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.successDetails {
+  background: $color-bg;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-sm;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  text-align: left;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px dashed rgba(207, 195, 204, 0.3);
+
+    &:last-child { border-bottom: none; }
+
+    span { color: $color-ink-muted; }
+    strong { color: $color-ink; }
+  }
+}
+
+// ─── Reschedule-specific ──────────────────────────────────────────────────────
+
+.currentBox {
+  background: $color-bg;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-sm;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: $color-ink-soft;
+  margin-bottom: 20px;
+
+  strong { color: $color-ink; }
+}

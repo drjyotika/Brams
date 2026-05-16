@@ -79,21 +79,21 @@ export default function PatientLoginPage() {
         <p className={styles.subtitle}>
           {mode === "login"
             ? "Sign in to view your appointments and records."
-            : "We'll send a reset link to your email or phone."}
+            : "We'll send a reset link to your email."}
         </p>
 
         {/* ── Sign in form ── */}
         {mode === "login" && (
           <form className={styles.form} onSubmit={handleLogin} noValidate>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="loginId">Phone or Email</label>
+              <label className={styles.label} htmlFor="loginId">Email</label>
               <input
                 id="loginId"
-                type="text"
-                autoComplete="username"
+                type="email"
+                autoComplete="email"
                 required
                 className={styles.input}
-                placeholder="+91 9876543210 or you@example.com"
+                placeholder="you@example.com"
                 value={loginId}
                 onChange={e => setLoginId(e.target.value)}
                 disabled={loading}
@@ -144,7 +144,7 @@ export default function PatientLoginPage() {
               <div style={{ fontSize: 40, marginBottom: 14 }}>📬</div>
               <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Check your inbox</p>
               <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
-                If an account exists for that email or phone, we&apos;ve sent a reset link. It expires in 30 minutes.
+                If an account exists for that email, we&apos;ve sent a reset link. It expires in 30 minutes.
               </p>
               <button type="button" className={styles.linkBtn} onClick={() => switchMode("login")}>
                 ← Back to sign in
@@ -153,14 +153,14 @@ export default function PatientLoginPage() {
           ) : (
             <form className={styles.form} onSubmit={handleForgot} noValidate>
               <div className={styles.field}>
-                <label className={styles.label} htmlFor="forgotId">Phone or Email</label>
+                <label className={styles.label} htmlFor="forgotId">Email</label>
                 <input
                   id="forgotId"
-                  type="text"
-                  autoComplete="username"
+                  type="email"
+                  autoComplete="email"
                   required
                   className={styles.input}
-                  placeholder="+91 9876543210 or you@example.com"
+                  placeholder="you@example.com"
                   value={forgotId}
                   onChange={e => setForgotId(e.target.value)}
                   disabled={loading}
