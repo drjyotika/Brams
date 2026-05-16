@@ -5,7 +5,12 @@ import { NeedHelpButton } from "../../../components/NeedHelpButton";
 import { Footer } from "../../../components/Footer";
 import { BookingFailed } from "../../../components/BookingStatus/BookingFailed";
 
-export const metadata = { title: "Payment Failed — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Payment Failed",
+  robots: { index: false, follow: false },
+};
 
 export default async function BookingFailedPage() {
   const content = await readContent();

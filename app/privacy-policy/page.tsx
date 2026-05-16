@@ -2,7 +2,14 @@ import { getPage } from "../../lib/pages";
 import { parsePageContent } from "../../lib/page-types";
 import { PublicPageShell } from "../../components/PublicPageShell";
 
-export const metadata = { title: "Privacy Policy — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How Brams Mind Care collects, uses, and protects your personal and medical information when you book and attend online psychiatric consultations with Dr. Jyotika Kanwar.",
+  alternates: { canonical: "/privacy-policy" },
+};
 
 export default async function PrivacyPolicyPage() {
   const page = await getPage("privacy-policy");

@@ -4,7 +4,12 @@ import { TopNavBar } from "../../../components/TopNavBar";
 import { NeedHelpButton } from "../../../components/NeedHelpButton";
 import { BookingSuccess } from "../../../components/BookingStatus/BookingSuccess";
 
-export const metadata = { title: "Booking Confirmed — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Booking Confirmed",
+  robots: { index: false, follow: false },
+};
 
 export default async function BookingSuccessPage() {
   const content = await readContent();
