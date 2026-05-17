@@ -6,6 +6,12 @@
   display: flex;
   min-height: 100vh;
   background: #f4f1f8;
+  // Guard against any wide child element (table, etc.) producing horizontal scroll
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -99,6 +105,7 @@
   flex-direction: column;
 }
 
+// Desktop-only header in the main column (logo lives in the sidebar)
 .topBar {
   background: #fff;
   border-bottom: 1px solid rgba(207, 195, 204, 0.2);
@@ -113,9 +120,17 @@
   top: 0;
   z-index: 10;
 
-  @media (max-width: 600px) {
-    padding: 0 16px;
-    height: 60px;
+  @media (max-width: 768px) {
+    display: none; // mobileHeader takes over below 768px
+  }
+}
+
+// Mobile-only header (TopNavBar) — provides logo + hamburger + CTA on small screens
+.mobileHeader {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
   }
 }
 
@@ -149,15 +164,17 @@
 
 .canvas {
   flex: 1;
+  min-width: 0; // ensure children can shrink rather than overflow horizontally
   padding: 28px 32px 48px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   overflow-y: auto;
+  overflow-x: hidden;
 
   @media (max-width: 600px) {
-    padding: 16px 16px 40px;
-    gap: 16px;
+    padding: 14px 12px 32px;
+    gap: 14px;
   }
 }
 
@@ -439,6 +456,12 @@
   padding: 22px 24px;
   border: 1px solid rgba(207, 195, 204, 0.2);
   box-shadow: 0 1px 4px rgba(116, 84, 117, 0.04);
+  min-width: 0; // lets long children (file names, plan titles) shrink instead of overflowing
+  overflow: hidden;
+
+  @media (max-width: 600px) {
+    padding: 18px 16px;
+  }
 }
 
 .sectionHead {
@@ -478,6 +501,7 @@
   gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(207, 195, 204, 0.15);
+  min-width: 0; // critical: lets the reportInfo column shrink
 
   &:last-child { border-bottom: none; padding-bottom: 0; }
   &:first-child { padding-top: 0; }
@@ -530,6 +554,12 @@
   cursor: pointer;
   border: none;
   transition: background 120ms;
+  white-space: nowrap;
+
+  @media (max-width: 500px) {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 
   &.view {
     background: #f5f0f5;
@@ -784,43 +814,7 @@
 
 // ─── Mobile bottom nav ────────────────────────────────────────────────────────
 
-.mobileNav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-top: 1px solid rgba(207, 195, 204, 0.25);
-  z-index: 100;
-  padding: 8px 0 env(safe-area-inset-bottom, 0px);
-
-  @media (max-width: 768px) {
-    display: flex;
-    justify-content: space-around;
-  }
-}
-
-.mobileNavItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 8px 12px;
-  font-size: 10px;
-  font-weight: 600;
-  color: #9b8fa0;
-  text-decoration: none;
-  border: none;
-  background: none;
-  cursor: pointer;
-
-  span:first-child { font-size: 20px; }
-}
-
-.mobileNavItemActive {
-  color: $color-plum;
-}
+// mobileNav classes removed — replaced by TopNavBar hamburger on mobile
 
 // ─── Profile section ──────────────────────────────────────────────────────────
 

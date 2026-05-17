@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./patient.module.scss";
 import { BramsLoader } from "../../components/BramsLoader";
+import { TopNavBar } from "../../components/TopNavBar";
+import { defaultContent } from "../../lib/content";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -589,10 +591,31 @@ export default function PatientDashboard() {
 
   return (
     <div className={styles.shell}>
+      {/* Mobile-only header: logo + hamburger + CTA (sidebar replaces this on desktop) */}
+      <div className={styles.mobileHeader}>
+        <TopNavBar
+          data={defaultContent.nav}
+          hideLinks
+          ctaSlot={
+            <a href="/patient/book" className="topnav-primary-cta">
+              Book Consultation
+            </a>
+          }
+          mobileMenuItems={[
+            ...NAV.map((item) => ({
+              label:  item.label,
+              active: activeTab === item.id,
+              onClick: () => setActiveTab(item.id),
+            })),
+            { label: "Logout", onClick: logout, variant: "danger" as const },
+          ]}
+        />
+      </div>
+
       {Sidebar}
 
       <div className={styles.main}>
-        {/* Header above main content only — sidebar logo lives in the left column */}
+        {/* Desktop-only header above main content area */}
         <header className={styles.topBar}>
           <div className={styles.topBarLeft} />
           <div className={styles.topBarRight}>
@@ -624,19 +647,7 @@ export default function PatientDashboard() {
         </main>
       </div>
 
-      {/* Mobile bottom nav */}
-      <nav className={styles.mobileNav}>
-        {NAV.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.mobileNavItem} ${activeTab === item.id ? styles.mobileNavItemActive : ""}`}
-            onClick={() => setActiveTab(item.id)}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label.split(" ")[0]}</span>
-          </button>
-        ))}
-      </nav>
+      {/* Mobile nav is in the TopNavBar hamburger menu (above) */}
 
     </div>
   );

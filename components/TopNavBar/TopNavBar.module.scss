@@ -15,20 +15,29 @@
 .inner {
   @include container;
   display: flex;
-  height: 80px;
+  height: 72px;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+
+  @include md {
+    height: 80px;
+    gap: 24px;
+  }
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .logo {
   display: block;
-  height: 40px;
+  height: 32px;
   width: auto;
+
+  @include md { height: 40px; }
 }
 
 .links {
@@ -53,18 +62,157 @@
   }
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .cta {
   background: $color-lilac;
   color: $color-plum-deep;
   font-family: $font-display;
   font-weight: 600;
-  font-size: 16px;
-  padding: 10px 24px;
+  font-size: 14px;
+  padding: 8px 16px;
   border-radius: $radius-sm;
   box-shadow: $shadow-card;
   transition: transform 120ms ease;
+  white-space: nowrap;
+  text-decoration: none;
 
   &:hover {
     transform: translateY(-1px);
+  }
+
+  @include md {
+    font-size: 16px;
+    padding: 10px 24px;
+  }
+}
+
+// ─── Hamburger button (mobile only) ──────────────────────────────────────────
+
+.hamburger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: 1px solid rgba(116, 84, 117, 0.25);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 120ms;
+
+  &:hover { background: rgba(116, 84, 117, 0.06); }
+
+  @include md {
+    display: none;
+  }
+}
+
+.hamburgerBar {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: $color-plum-deep;
+  border-radius: 1px;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.hamburgerBarTop { transform: translateY(6px) rotate(45deg); }
+.hamburgerBarMid { opacity: 0; }
+.hamburgerBarBot { transform: translateY(-6px) rotate(-45deg); }
+
+// ─── Mobile menu panel ───────────────────────────────────────────────────────
+
+.mobileMenuBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 27, 36, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 60;
+
+  @include md { display: none; }
+}
+
+.mobileMenuPanel {
+  position: fixed;
+  top: 72px;
+  right: 0;
+  width: 80%;
+  max-width: 300px;
+  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px); // accounts for mobile browser chrome
+  background: #fff;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px env(safe-area-inset-bottom, 16px);
+  box-shadow: -8px 0 24px rgba(116, 84, 117, 0.12);
+  overflow-y: auto;
+  animation: slideInRight 200ms ease-out;
+
+  @include md { display: none; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.mobileMenuItem {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: $color-ink;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 120ms, color 120ms;
+
+  &:hover {
+    background: rgba(116, 84, 117, 0.06);
+    color: $color-plum;
+  }
+}
+
+.mobileMenuItemActive {
+  background: rgba(116, 84, 117, 0.1);
+  color: $color-plum;
+}
+
+.mobileMenuItem_primary {
+  background: $color-lilac;
+  color: $color-plum-deep;
+  margin-top: 8px;
+
+  &:hover {
+    background: $color-lilac;
+    color: $color-plum-deep;
+    transform: translateY(-1px);
+  }
+}
+
+.mobileMenuItem_danger {
+  color: #dc2626;
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.06);
+    color: #dc2626;
   }
 }

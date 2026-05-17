@@ -33,40 +33,17 @@ export default async function Home() {
       <TopNavBar
         data={content.nav}
         ctaSlot={
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a
-              href="/patient/login"
-              style={{
-                fontFamily: "var(--font-manrope), system-ui, sans-serif",
-                fontWeight: 600,
-                fontSize: 15,
-                color: "#745475",
-                padding: "10px 20px",
-                borderRadius: 12,
-                border: "1.5px solid rgba(116,84,117,0.3)",
-                textDecoration: "none",
-              }}
-            >
-              Login
-            </a>
-            <a
-              href={content.nav.cta.href}
-              style={{
-                fontFamily: "var(--font-manrope), system-ui, sans-serif",
-                fontWeight: 600,
-                fontSize: 16,
-                background: "#c8a2c8",
-                color: "#553757",
-                padding: "10px 24px",
-                borderRadius: 12,
-                textDecoration: "none",
-                boxShadow: "0 1px 1px rgba(0,0,0,0.05)",
-              }}
-            >
+          <div className="topnav-cta-row">
+            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <a href={content.nav.cta.href} className="topnav-primary-cta">
               {content.nav.cta.label}
             </a>
           </div>
         }
+        mobileMenuItems={[
+          { label: "Login", href: "/patient/login" },
+          ...content.nav.links.map((l) => ({ label: l.label, href: l.href })),
+        ]}
       />
       <main>
         <HeroSection data={content.hero} />
