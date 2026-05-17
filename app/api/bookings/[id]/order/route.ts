@@ -30,10 +30,14 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: "Amount too low" }, { status: 400 });
     }
 
+    // Razorpay caps receipt at 40 chars — UUIDs alone are 36, so we strip
+    // dashes to leave headroom for an "a_" prefix and still fit.
+    const receipt = `a_${id.replace(/-/g, "")}`.slice(0, 40);
+
     const order = await rzp().orders.create({
       amount,
       currency: "INR",
-      receipt:  `appt_${id}`,
+      receipt,
     });
 
     return NextResponse.json({
@@ -43,7 +47,8 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
       keyId:    process.env.RAZORPAY_KEY_ID,
     });
   } catch (e) {
+    const msg = (e as Error).message || "Failed to create order";
     console.error("[order] create failed:", e);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
