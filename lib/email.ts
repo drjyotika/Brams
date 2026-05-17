@@ -45,7 +45,7 @@ export async function sendEmail(
       subject:  input.subject,
       html:     input.html,
       text:     input.text,
-      reply_to: input.replyTo ?? process.env.EMAIL_REPLY_TO,
+      replyTo:  input.replyTo ?? process.env.EMAIL_REPLY_TO,
       cc:       input.cc ? (Array.isArray(input.cc) ? input.cc : [input.cc]) : undefined,
       bcc:      input.bcc ? (Array.isArray(input.bcc) ? input.bcc : [input.bcc]) : undefined,
     });
