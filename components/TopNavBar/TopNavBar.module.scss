@@ -62,6 +62,13 @@
   }
 }
 
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .right {
   display: flex;
   align-items: center;
@@ -146,7 +153,7 @@
 .mobileMenuPanel {
   position: fixed;
   top: 72px;
-  right: 0;
+  left: 0;
   width: 80%;
   max-width: 300px;
   height: calc(100vh - 72px);
@@ -157,16 +164,16 @@
   flex-direction: column;
   gap: 4px;
   padding: 16px 12px env(safe-area-inset-bottom, 16px);
-  box-shadow: -8px 0 24px rgba(116, 84, 117, 0.12);
+  box-shadow: 8px 0 24px rgba(116, 84, 117, 0.12);
   overflow-y: auto;
-  animation: slideInRight 200ms ease-out;
+  animation: slideInLeft 200ms ease-out;
 
   @include md { display: none; }
 }
 
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
 }
 
 .mobileMenuItem {

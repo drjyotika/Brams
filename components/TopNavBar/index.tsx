@@ -20,10 +20,15 @@ export function TopNavBar({ data, hideLinks, ctaSlot, mobileMenuItems }: TopNavB
   return (
     <header className={styles.nav}>
       <div className={styles.inner}>
-        <a href="/" className={styles.brand} aria-label={data.brand}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt={data.brand} className={styles.logo} />
-        </a>
+        <div className={styles.left}>
+          {mobileMenuItems && mobileMenuItems.length > 0 && (
+            <MobileMenu items={mobileMenuItems} />
+          )}
+          <a href="/" className={styles.brand} aria-label={data.brand}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt={data.brand} className={styles.logo} />
+          </a>
+        </div>
         {!hideLinks && (
           <nav className={styles.links} aria-label="Primary">
             {data.links.map((link, i) => (
@@ -38,9 +43,6 @@ export function TopNavBar({ data, hideLinks, ctaSlot, mobileMenuItems }: TopNavB
             <a href={data.cta.href} className={styles.cta}>
               {data.cta.label}
             </a>
-          )}
-          {mobileMenuItems && mobileMenuItems.length > 0 && (
-            <MobileMenu items={mobileMenuItems} />
           )}
         </div>
       </div>
