@@ -4,10 +4,17 @@ import { getAppointmentById } from "../../../../../lib/bookings";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const rzp = new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+let _rzp: Razorpay | null = null;
+function rzp(): Razorpay {
+  if (_rzp) return _rzp;
+  const key_id     = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay keys not configured");
+  }
+  _rzp = new Razorpay({ key_id, key_secret });
+  return _rzp;
+}
 
 // POST /api/bookings/[id]/order — creates a Razorpay order for this appointment.
 export async function POST(_req: NextRequest, ctx: Ctx) {
@@ -23,7 +30,7 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: "Amount too low" }, { status: 400 });
     }
 
-    const order = await rzp.orders.create({
+    const order = await rzp().orders.create({
       amount,
       currency: "INR",
       receipt:  `appt_${id}`,
