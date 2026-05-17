@@ -6,7 +6,8 @@ import styles from "./BookingStatus.module.scss";
 
 export function BookingFailed({ data }: { data: BookingFailedData }) {
   const params = useSearchParams();
-  const planId = params.get("plan") ?? "initial";
+  const planId   = params.get("plan") ?? "initial";
+  const errorMsg = params.get("error");
 
   // Replace {planId} token in href strings with the actual plan from the URL
   const resolveHref = (href: string) => href.replace(/\{planId\}/g, planId);
@@ -66,6 +67,11 @@ export function BookingFailed({ data }: { data: BookingFailedData }) {
                 <div>
                   <p className={styles.troubleshootHeading}>{data.troubleshootTitle}</p>
                   <p className={styles.troubleshootBody}>{data.troubleshootBody}</p>
+                  {errorMsg && (
+                    <p className={styles.troubleshootBody} style={{ marginTop: 8, fontFamily: "monospace", fontSize: 13, opacity: 0.85 }}>
+                      Details: {errorMsg}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

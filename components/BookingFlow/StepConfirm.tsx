@@ -95,14 +95,18 @@ export function StepConfirm({
     setError(null);
     try {
       const loaded = await loadRazorpayScript();
-      if (!loaded) throw new Error("Could not load payment gateway. Please try again.");
+      if (!loaded) throw new Error("Could not load payment gateway (script blocked or offline)");
 
       // Create Razorpay order on the server
       const orderRes = await fetch(`/api/bookings/${bookingId}/order`, { method: "POST" });
-      if (!orderRes.ok) throw new Error("Could not create payment order. Please try again.");
+      if (!orderRes.ok) {
+        const body = await orderRes.json().catch(() => ({}));
+        throw new Error(`Order failed (${orderRes.status}): ${body.error || orderRes.statusText}`);
+      }
       const { orderId, amount, currency, keyId } = await orderRes.json() as {
         orderId: string; amount: number; currency: string; keyId: string;
       };
+      if (!keyId) throw new Error("Payment gateway key missing — contact support");
 
       // Open Razorpay checkout modal and wait for result
       await new Promise<void>((resolve, reject) => {
@@ -160,8 +164,9 @@ export function StepConfirm({
         setPaying(false);
         return;
       }
+      console.error("[pay] failed:", e);
       setError(msg);
-      const params = new URLSearchParams({ plan: plan.id });
+      const params = new URLSearchParams({ plan: plan.id, error: msg });
       router.push(`/book/failed?${params.toString()}`);
     } finally {
       setPaying(false);
