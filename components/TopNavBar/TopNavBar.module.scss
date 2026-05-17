@@ -4,7 +4,9 @@
 .nav {
   position: sticky;
   top: 0;
-  z-index: 50;
+  // Higher than mobile-menu backdrop (60) and panel (61) so the header
+  // — and especially the hamburger/close button — stays tappable while open.
+  z-index: 70;
   width: 100%;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(6px);
@@ -109,15 +111,23 @@
   gap: 4px;
   width: 40px;
   height: 40px;
-  background: none;
-  border: 1px solid rgba(116, 84, 117, 0.25);
+  // Solid background keeps the icon (and the X when open) clearly visible
+  // against the dark menu backdrop sitting behind the header.
+  background: #fff;
+  border: 1px solid rgba(116, 84, 117, 0.35);
   border-radius: 10px;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
-  transition: background 120ms;
+  transition: background 120ms, border-color 120ms;
+  position: relative; // create its own stacking context
 
   &:hover { background: rgba(116, 84, 117, 0.06); }
+
+  &[aria-expanded="true"] {
+    background: #fff;
+    border-color: $color-plum;
+  }
 
   @include md {
     display: none;
