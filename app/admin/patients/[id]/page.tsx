@@ -775,11 +775,9 @@ function AccountManagementPanel({
           </>
         )}
 
-        {hasPwd && (
-          <button className={styles.secondary} disabled={busy === "clear_password"} onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}>
-            {busy === "clear_password" ? "Clearing…" : "Clear password"}
-          </button>
-        )}
+        <button className={styles.secondary} disabled={busy === "clear_password"} onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}>
+          {busy === "clear_password" ? "Clearing…" : "Clear password"}
+        </button>
 
         <button className={styles.danger} disabled={busy === "delete"} onClick={handleDeleteClick}>
           {busy === "delete" ? "Deleting…" : "Delete patient"}
@@ -814,32 +812,32 @@ function AccountManagementPanel({
         </div>
       )}
 
-      {/* Reset password */}
-      {hasPwd && (
-        <div style={{ marginTop: 18, padding: 14, background: "#faf9fb", border: "1px solid rgba(207,195,204,.3)", borderRadius: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b24", marginBottom: 8 }}>Reset password</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              type="text"
-              className={styles.input}
-              placeholder="New password (min 6 chars)"
-              value={newPwd}
-              onChange={(e) => setNewPwd(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <button
-              className={styles.primary}
-              disabled={newPwd.length < 6 || busy === "reset_password"}
-              onClick={() => doAction("reset_password", { password: newPwd }, "Set a new password for this patient?")}
-            >
-              {busy === "reset_password" ? "Saving…" : "Set password"}
-            </button>
-          </div>
-          <p style={{ fontSize: 11, color: "#9b8fa0", marginTop: 6, marginBottom: 0 }}>
-            Share the new password with the patient securely. They can change it after logging in.
-          </p>
+      {/* Set / reset password — available for guests too */}
+      <div style={{ marginTop: 18, padding: 14, background: "#faf9fb", border: "1px solid rgba(207,195,204,.3)", borderRadius: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b24", marginBottom: 8 }}>
+          {hasPwd ? "Reset password" : "Set initial password"}
         </div>
-      )}
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="text"
+            className={styles.input}
+            placeholder="New password (min 6 chars)"
+            value={newPwd}
+            onChange={(e) => setNewPwd(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button
+            className={styles.primary}
+            disabled={newPwd.length < 6 || busy === "reset_password"}
+            onClick={() => doAction("reset_password", { password: newPwd }, hasPwd ? "Set a new password for this patient?" : "Create a password for this guest patient?")}
+          >
+            {busy === "reset_password" ? "Saving…" : hasPwd ? "Set password" : "Create password"}
+          </button>
+        </div>
+        <p style={{ fontSize: 11, color: "#9b8fa0", marginTop: 6, marginBottom: 0 }}>
+          Share the password with the patient securely. They can change it after logging in.
+        </p>
+      </div>
 
       {msg && (
         <p style={{

@@ -154,7 +154,7 @@ export default function VerifyEmailPage() {
           </button>
         </div>
 
-        <Link href="/" className={styles.backHome}>← Back to homepage</Link>
+        <Link href="/" className={styles.backHome}>Back to homepage</Link>
       </div>
     </div>
   );
