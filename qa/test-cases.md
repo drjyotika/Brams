@@ -73,28 +73,135 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 
 ## F. Patient Auth
 
+### F.1 — Login page
+
 | ID | Type | Severity | Check |
 |---|---|---|---|
 | **F1** | automated | critical | `GET /patient/login` returns 200 |
 | **F2** | automated | critical | Login page HTML contains "Sign In" tab and "Forgot Password" link, NO "Register" tab |
-| **F3** | automated | critical | Login page input field accepts email (not phone) |
-| **F4** | automated | major | `POST /api/patient/auth/login` with bad creds returns 401 |
-| **F5** | manual | critical | Register a new patient → receive OTP email in inbox (NOT spam) via Resend |
-| **F6** | manual | critical | Enter OTP → email verified → redirected to `/patient` |
-| **F7** | manual | major | "Forgot Password" sends reset email; reset link works and signs in |
+| **F3** | automated | critical | Login page input field accepts email (`type="email"`), not phone |
+| **F4** | automated | major | `POST /api/patient/auth/login` with bad creds returns 401 with `{error}` |
+| **F5** | automated | major | `POST /api/patient/auth/login` with no body returns 400 |
+| **F6** | manual | critical | Valid email + password → 200, sets `brams_patient_session` cookie, redirects to `/patient` (or `/patient/verify` if unverified) |
+| **F7** | manual | major | Locked account (5+ failed attempts) returns "account locked" message |
+| **F8** | manual | major | Suspended account returns "account suspended" message with reason |
 
-## G. Patient Dashboard (/patient)
+### F.2 — Registration & email verification
 
 | ID | Type | Severity | Check |
 |---|---|---|---|
-| **G1** | automated | critical | `GET /patient` redirects unauthenticated users to `/patient/login` |
-| **G2** | manual | critical | Logged in: dashboard shows tabs Dashboard / Appointments / Reports / Profile |
-| **G3** | manual | critical | Logout button visible (NOT profile/settings buttons) |
-| **G4** | manual | major | Mobile: hamburger menu with brand logo visible, nav items + Logout (red) inside |
-| **G5** | manual | major | "Book Consultation" navigates to `/patient/book` (full page, NOT modal) |
-| **G6** | manual | major | Click "Reschedule" on appointment → `/patient/reschedule/[id]` full page (NOT modal) |
-| **G7** | manual | minor | Reports section: no horizontal scroll on mobile |
-| **G8** | manual | minor | No stray "+ Book new" or "+" buttons anywhere |
+| **F9** | automated | critical | `GET /patient/verify` returns 200 |
+| **F10** | manual | critical | Register a new patient (via booking flow) → receive OTP email in inbox (NOT spam) via Resend |
+| **F11** | manual | critical | Enter 6-digit OTP → `POST /api/patient/auth/verify-email` returns 200, redirects to `/patient` |
+| **F12** | manual | major | Magic link (`?token=...` in URL) auto-submits and verifies on page load |
+| **F13** | manual | major | "Resend code" calls `/api/patient/auth/resend-verification`, new email arrives |
+| **F14** | manual | minor | Wrong OTP shows error; expired OTP (>30 min) shows "expired" message |
+
+### F.3 — Forgot / reset password
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **F15** | automated | critical | `GET /patient/reset-password` returns 200 |
+| **F16** | automated | major | `POST /api/patient/auth/forgot-password` with any input always returns 200 (doesn't leak account existence) |
+| **F17** | manual | critical | "Forgot Password" with valid email → reset email arrives within 1 min |
+| **F18** | manual | critical | Reset link in email opens `/patient/reset-password?token=...`, sets new password, auto-signs in |
+| **F19** | manual | major | Expired reset token (>30 min) shows clear error |
+
+### F.4 — Logout
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **F20** | automated | major | `POST /api/patient/auth/logout` clears the session cookie (response `Set-Cookie` has past `Expires`) |
+
+## G. Patient Dashboard (/patient)
+
+### G.1 — Access control & header
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **G1** | automated | critical | `GET /patient` without session → redirects to `/patient/login` (302/307) |
+| **G2** | automated | major | `GET /api/patient/me` without session returns 401 |
+| **G3** | manual | critical | Logged in: header shows Brams logo + Book Consultation CTA + Logout |
+| **G4** | manual | critical | NO profile/settings buttons in header — only Logout |
+| **G5** | manual | major | Mobile (<768px): brand logo visible, hamburger on LEFT with nav items + Logout (red) inside |
+| **G6** | manual | minor | "Back to homepage" link has NO ← arrow |
+
+### G.2 — Dashboard tab
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **G7** | manual | critical | Default tab is "Dashboard", shows greeting with patient name |
+| **G8** | manual | major | Shows upcoming appointments summary card |
+| **G9** | manual | major | Shows recent reports summary card |
+| **G10** | manual | minor | Empty state when no appointments exist — friendly message, "Book Consultation" CTA |
+
+### G.3 — Appointments tab
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **G11** | manual | critical | Appointments tab lists all patient's appointments (upcoming + past), sorted newest first |
+| **G12** | manual | critical | Each row shows: plan title, date/time, payment status pill, action buttons |
+| **G13** | manual | critical | "Reschedule" button navigates to `/patient/reschedule/[id]` (full page, NOT modal) |
+| **G14** | manual | major | "Join" link visible only when meeting_link is set on appointment |
+| **G15** | manual | minor | Cancelled / completed appointments are visually distinguished (greyed, badge) |
+
+### G.4 — Reports tab
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **G16** | manual | critical | Reports tab lists all uploaded reports across appointments |
+| **G17** | manual | critical | Mobile: reports list has NO horizontal scroll (overflow hidden, min-width: 0) |
+| **G18** | manual | major | Each report shows: file name, upload date, appointment context, view/download link |
+| **G19** | automated | major | `GET /api/patient/reports` without session returns 401 |
+| **G20** | manual | minor | Empty state when no reports — explanatory message |
+
+### G.5 — Profile tab
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **G21** | manual | critical | Profile tab shows: full name, email, phone, age, gender, city |
+| **G22** | manual | major | Email shows verification badge (✓ verified) when `email_verified=true` |
+| **G23** | manual | major | "Logout" button at bottom of profile (in addition to header) |
+| **G24** | manual | minor | No stray "+ Book new" or "+" buttons anywhere in the dashboard |
+
+## L. Patient Sub-Pages
+
+### L.1 — Patient booking (/patient/book)
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **L1** | automated | critical | `GET /patient/book` returns 200 (or 307 to login if no session) |
+| **L2** | manual | critical | Logged-in: same 3-step flow as `/book` but prefilled with patient details |
+| **L3** | manual | critical | After payment success → redirects to `/patient` (not `/book/success`) |
+| **L4** | manual | major | Header shows logged-in patient context (no Login button) |
+
+### L.2 — Reschedule (/patient/reschedule/[id])
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **L5** | automated | critical | `GET /patient/reschedule/invalid-id` returns 404 or redirects gracefully |
+| **L6** | manual | critical | Full page (not modal) with date/time picker for the existing appointment |
+| **L7** | manual | critical | Shows current appointment details (plan, current date/time) for context |
+| **L8** | manual | critical | Pick new slot → submit → `PATCH /api/patient/appointments/[id]/reschedule` succeeds |
+| **L9** | manual | major | On success, redirects back to `/patient` with the appointment now showing new date/time |
+| **L10** | manual | major | Reschedule only allowed for status `pending` or `confirmed` appointments (not completed/cancelled) |
+| **L11** | manual | minor | Can only reschedule own appointments — attempting another patient's ID returns 403/404 |
+
+### L.3 — Verify page (/patient/verify)
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **L12** | manual | critical | Shows masked email of current patient (from `/api/patient/me`) |
+| **L13** | manual | critical | OTP input: 6 digits, numeric only, `inputMode="numeric"`, `autocomplete="one-time-code"` |
+| **L14** | manual | major | After verification, BramsLoader shows briefly then redirects to `/patient` |
+
+### L.4 — Reset password page (/patient/reset-password)
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **L15** | manual | critical | Missing or invalid `?token=` shows clear error before allowing password entry |
+| **L16** | manual | critical | New password + confirm match → submits → auto signs in → `/patient` |
+| **L17** | manual | major | Password strength validation: minimum length enforced |
 
 ## H. Admin Panel (/admin)
 
