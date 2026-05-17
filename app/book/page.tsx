@@ -21,7 +21,15 @@ export default async function BookPage() {
       <TopNavBar
         data={content.nav}
         hideLinks
-        ctaSlot={<NeedHelpButton source="booking-flow" />}
+        ctaSlot={
+          <div className="topnav-cta-row">
+            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <NeedHelpButton source="booking-flow" />
+          </div>
+        }
+        mobileMenuItems={[
+          { label: "Login", href: "/patient/login" },
+        ]}
       />
       <Suspense fallback={<BramsLoader fullPage />}>
         <BookingFlow />

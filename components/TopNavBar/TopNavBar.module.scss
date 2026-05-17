@@ -111,22 +111,19 @@
   gap: 4px;
   width: 40px;
   height: 40px;
-  // Solid background keeps the icon (and the X when open) clearly visible
-  // against the dark menu backdrop sitting behind the header.
-  background: #fff;
-  border: 1px solid rgba(116, 84, 117, 0.35);
+  background: none;
+  border: none;
   border-radius: 10px;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
-  transition: background 120ms, border-color 120ms;
-  position: relative; // create its own stacking context
+  transition: background 120ms;
+  position: relative;
 
   &:hover { background: rgba(116, 84, 117, 0.06); }
 
   &[aria-expanded="true"] {
-    background: #fff;
-    border-color: $color-plum;
+    background: none;
   }
 
   @include md {
