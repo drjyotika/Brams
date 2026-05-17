@@ -47,7 +47,10 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
       keyId:    process.env.RAZORPAY_KEY_ID,
     });
   } catch (e) {
-    const msg = (e as Error).message || "Failed to create order";
+    // Razorpay SDK errors carry the human-readable text under
+    // `error.description`, not on `.message` — surface either.
+    const err = e as { message?: string; error?: { description?: string; code?: string } };
+    const msg = err.error?.description || err.message || "Failed to create order";
     console.error("[order] create failed:", e);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
