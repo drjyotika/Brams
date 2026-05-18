@@ -152,7 +152,14 @@ async function fileWrite(next: SiteContent): Promise<void> {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function readContent(): Promise<SiteContent> {
-  return USE_BLOB ? blobRead() : fileRead();
+  if (!USE_BLOB) return fileRead();
+  const timeout = new Promise<SiteContent>((resolve) =>
+    setTimeout(() => {
+      console.warn("[storage] blobRead timed out — using defaults");
+      resolve(defaultContent);
+    }, 5000)
+  );
+  return Promise.race([blobRead(), timeout]);
 }
 
 export async function writeContent(next: SiteContent): Promise<void> {
