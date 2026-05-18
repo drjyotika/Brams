@@ -229,7 +229,7 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 
 | ID | Type | Severity | Check |
 |---|---|---|---|
-| **J1** | automated | critical | DNS: `dig TXT bramsmindcare.com` includes `v=spf1` with `amazonses.com` |
+| **J1** | automated | critical | DNS: `dig TXT send.bramsmindcare.com` includes `v=spf1 include:amazonses.com` (Resend's envelope-sender subdomain — apex SPF is optional) |
 | **J2** | automated | critical | DNS: `dig TXT resend._domainkey.bramsmindcare.com` returns DKIM key |
 | **J3** | automated | major | DNS: `dig TXT _dmarc.bramsmindcare.com` includes `v=DMARC1` |
 | **J4** | manual | major | OTP email actually lands in inbox (not spam) on Gmail, Outlook, Yahoo |
