@@ -13,7 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang:        SITE.language,
     categories:  ["medical", "health", "lifestyle"],
     icons: [
-      { src: "/logo.png", sizes: "any", type: "image/png" },
+      { src: "/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

@@ -84,9 +84,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon:     [{ url: "/logo.png", type: "image/png" }],
-    shortcut: "/logo.png",
-    apple:    "/logo.png",
+    icon:     [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    shortcut: "/icon.png",
+    apple:    "/icon.png",
   },
   manifest: "/manifest.webmanifest",
   // Add Google Search Console verification token when provisioned:
