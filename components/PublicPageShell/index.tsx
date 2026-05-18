@@ -17,9 +17,22 @@ function toHomeLinks(nav: NavData): NavData {
 
 export async function PublicPageShell({ title, children }: { title: string; children: ReactNode }) {
   const content = await readContent();
+  const nav = toHomeLinks(content.nav);
   return (
     <>
-      <TopNavBar data={toHomeLinks(content.nav)} />
+      <TopNavBar
+        data={nav}
+        ctaSlot={
+          <div className="topnav-cta-row">
+            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <a href={nav.cta.href} className="topnav-primary-cta">{nav.cta.label}</a>
+          </div>
+        }
+        mobileMenuItems={[
+          { label: "Login", href: "/patient/login" },
+          ...nav.links.map((l) => ({ label: l.label, href: l.href })),
+        ]}
+      />
       <main className={styles.main}>
         <div className={styles.container}>
           <h1 className={styles.title}>{title}</h1>

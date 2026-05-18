@@ -119,6 +119,10 @@
   flex-shrink: 0;
   transition: background 120ms;
   position: relative;
+  // Icon bars are 18px and centered in a 40px button, so the visible
+  // icon sits 11px inside the button. Pull the button left by the same
+  // amount so the icon visually aligns with the page padding edge.
+  margin-left: -11px;
 
   &:hover { background: rgba(116, 84, 117, 0.06); }
 
@@ -169,8 +173,8 @@
   z-index: 61;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 12px env(safe-area-inset-bottom, 16px);
+  gap: 2px;
+  padding: 0 8px env(safe-area-inset-bottom, 8px);
   box-shadow: 8px 0 24px rgba(116, 84, 117, 0.12);
   overflow-y: auto;
   animation: slideInLeft 200ms ease-out;
