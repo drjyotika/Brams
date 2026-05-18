@@ -40,3 +40,56 @@ img {
   display: block;
   max-width: 100%;
 }
+
+// ─── TopNavBar ctaSlot helpers (used by homepage) ────────────────────────────
+// Defined globally because page.tsx is a server component and cannot import a
+// CSS module from TopNavBar directly.
+
+.topnav-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// Outlined Login link — hidden on mobile (lives in the hamburger menu instead)
+.topnav-login-link {
+  display: none;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 15px;
+  color: $color-plum;
+  padding: 10px 20px;
+  border-radius: $radius-sm;
+  border: 1.5px solid rgba(116, 84, 117, 0.3);
+  text-decoration: none;
+  transition: background 120ms ease;
+  white-space: nowrap;
+
+  &:hover { background: rgba(116, 84, 117, 0.06); }
+
+  @media (min-width: 768px) { display: inline-flex; align-items: center; }
+}
+
+// Primary CTA — homepage style
+.topnav-primary-cta {
+  display: inline-flex;
+  align-items: center;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 14px;
+  background: $color-lilac;
+  color: $color-plum-deep;
+  padding: 8px 16px;
+  border-radius: $radius-sm;
+  box-shadow: $shadow-card;
+  transition: transform 120ms ease;
+  white-space: nowrap;
+  text-decoration: none;
+
+  &:hover { transform: translateY(-1px); }
+
+  @media (min-width: 768px) {
+    font-size: 16px;
+    padding: 10px 24px;
+  }
+}

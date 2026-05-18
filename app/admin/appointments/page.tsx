@@ -1,8 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import styles from "../users/users.module.scss";
+import styles  from "../users/users.module.scss";
+import pStyles from "../patients/patients.module.scss";
+import { BramsLoader } from "../../../components/BramsLoader";
+
+type Upload = {
+  id: string;
+  file_name: string;
+  file_url: string;
+  signed_url: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+};
 
 type Appointment = {
   id: string;
@@ -12,16 +23,76 @@ type Appointment = {
   total_paise: number;
   status: string;
   payment_status: string;
+  upload_count: number;
+  created_at: string;
   patient: {
     id: string;
     full_name: string;
     phone: string;
   };
+  uploads?: Upload[];
 };
 
+type SortKey =
+  | "date_desc" | "date_asc"
+  | "created_desc" | "created_asc"
+  | "patient_asc" | "patient_desc"
+  | "status" | "payment";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "date_desc",    label: "Appt date (newest first)"   },
+  { value: "date_asc",     label: "Appt date (oldest first)"   },
+  { value: "created_desc", label: "Booking (recent first)"     },
+  { value: "created_asc",  label: "Booking (oldest first)"     },
+  { value: "patient_asc",  label: "Patient A → Z"              },
+  { value: "patient_desc", label: "Patient Z → A"              },
+  { value: "status",       label: "Status"                     },
+  { value: "payment",      label: "Payment status"             },
+];
+
+function fmtDate(iso: string) {
+  // Accept either "YYYY-MM-DD" or a full ISO timestamp; always parse as local midnight.
+  const datePart = iso.slice(0, 10);
+  return new Date(datePart + "T00:00:00").toLocaleDateString("en-IN", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric",
+  });
+}
+
+function sortAppointments(list: Appointment[], key: SortKey): Appointment[] {
+  const a = [...list];
+  switch (key) {
+    case "date_desc":
+      return a.sort((x, y) =>
+        y.scheduled_date.localeCompare(x.scheduled_date) ||
+        y.scheduled_time.localeCompare(x.scheduled_time));
+    case "date_asc":
+      return a.sort((x, y) =>
+        x.scheduled_date.localeCompare(y.scheduled_date) ||
+        x.scheduled_time.localeCompare(y.scheduled_time));
+    case "created_desc":
+      return a.sort((x, y) => y.created_at.localeCompare(x.created_at));
+    case "created_asc":
+      return a.sort((x, y) => x.created_at.localeCompare(y.created_at));
+    case "patient_asc":
+      return a.sort((x, y) => x.patient.full_name.localeCompare(y.patient.full_name));
+    case "patient_desc":
+      return a.sort((x, y) => y.patient.full_name.localeCompare(x.patient.full_name));
+    case "status":
+      return a.sort((x, y) => x.status.localeCompare(y.status));
+    case "payment":
+      return a.sort((x, y) => x.payment_status.localeCompare(y.payment_status));
+    default:
+      return a;
+  }
+}
+
 export default function AppointmentsPage() {
-  const [rows, setRows]       = useState<Appointment[]>([]);
+  const [rows,    setRows]    = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>("date_desc");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [uploadMap, setUploadMap] = useState<Record<string, Upload[]>>({});
+  const [loadingUploads, setLoadingUploads] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/appointments")
@@ -29,14 +100,51 @@ export default function AppointmentsPage() {
       .then((d) => { setRows(d); setLoading(false); });
   }, []);
 
+  const sorted = useMemo(() => sortAppointments(rows, sortKey), [rows, sortKey]);
+
+  async function toggleReports(appointmentId: string) {
+    if (expanded.has(appointmentId)) {
+      setExpanded((prev) => { const s = new Set(prev); s.delete(appointmentId); return s; });
+      return;
+    }
+    setExpanded((prev) => new Set(prev).add(appointmentId));
+    if (uploadMap[appointmentId]) return;
+
+    setLoadingUploads((prev) => new Set(prev).add(appointmentId));
+    try {
+      const res  = await fetch(`/api/bookings/${appointmentId}/uploads`);
+      const data = await res.json();
+      setUploadMap((prev) => ({ ...prev, [appointmentId]: Array.isArray(data) ? data : [] }));
+    } finally {
+      setLoadingUploads((prev) => { const s = new Set(prev); s.delete(appointmentId); return s; });
+    }
+  }
+
+  function openFile(u: Upload) {
+    if (!u.signed_url) return;
+    window.open(u.signed_url, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Appointments</h1>
+        {rows.length > 0 && (
+          <select
+            className={pStyles.pageSizeSelect}
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            aria-label="Sort by"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {loading ? (
-        <p className={styles.loading}>Loading…</p>
+        <BramsLoader />
       ) : (
         <div className={styles.card}>
           <table className={styles.table}>
@@ -50,25 +158,86 @@ export default function AppointmentsPage() {
                 <th>Total</th>
                 <th>Status</th>
                 <th>Payment</th>
+                <th>Reports</th>
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 && (
-                <tr><td colSpan={8} className={styles.empty}>No appointments yet.</td></tr>
+              {sorted.length === 0 && (
+                <tr><td colSpan={9} className={styles.empty}>No appointments yet.</td></tr>
               )}
-              {rows.map((a) => (
-                <tr key={a.id}>
-                  <td className={styles.username}>
-                    <Link href={`/admin/patients/${a.patient.id}`}>{a.patient.full_name}</Link>
-                  </td>
-                  <td>{a.patient.phone}</td>
-                  <td>{a.plan_title}</td>
-                  <td>{new Date(a.scheduled_date).toLocaleDateString("en-IN")}</td>
-                  <td>{a.scheduled_time.slice(0, 5)}</td>
-                  <td>₹{(a.total_paise / 100).toLocaleString("en-IN")}</td>
-                  <td><Chip s={a.status} /></td>
-                  <td><Chip s={a.payment_status} /></td>
-                </tr>
+              {sorted.map((a) => (
+                <Fragment key={a.id}>
+                  <tr>
+                    <td className={styles.username}>
+                      <Link href={`/admin/patients/${a.patient.id}`}>{a.patient.full_name}</Link>
+                    </td>
+                    <td>{a.patient.phone}</td>
+                    <td>{a.plan_title}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{fmtDate(a.scheduled_date)}</td>
+                    <td>{a.scheduled_time.slice(0, 5)}</td>
+                    <td>₹{(a.total_paise / 100).toLocaleString("en-IN")}</td>
+                    <td><Chip s={a.status} /></td>
+                    <td><Chip s={a.payment_status} /></td>
+                    <td>
+                      {a.upload_count > 0 && (
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => toggleReports(a.id)}
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          {expanded.has(a.id) ? "Hide" : "Reports"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+
+                  {expanded.has(a.id) && (
+                    <tr key={`${a.id}-uploads`}>
+                      <td colSpan={9} style={{ padding: 0, background: "#faf9fb" }}>
+                        <div style={{ padding: "12px 16px" }}>
+                          {loadingUploads.has(a.id) ? (
+                            <span style={{ fontSize: 13, color: "#9b8fa0" }}>Loading reports…</span>
+                          ) : !uploadMap[a.id] || uploadMap[a.id].length === 0 ? (
+                            <span style={{ fontSize: 13, color: "#9b8fa0" }}>No reports uploaded for this appointment.</span>
+                          ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              {uploadMap[a.id].map((u) => (
+                                <div key={u.id} className={pStyles.apptReportRow}>
+                                  <span className={pStyles.apptReportName} title={u.file_name}>
+                                    {fileIcon(u.mime_type)} {u.file_name}
+                                    {u.file_size && (
+                                      <span style={{ color: "#9b8fa0", marginLeft: 6, fontSize: 11 }}>
+                                        {formatSize(u.file_size)}
+                                      </span>
+                                    )}
+                                  </span>
+                                  <span className={pStyles.apptReportActions}>
+                                    <button
+                                      className={pStyles.rxViewBtn}
+                                      onClick={() => openFile(u)}
+                                      disabled={!u.signed_url}
+                                    >
+                                      View
+                                    </button>
+                                    {u.signed_url && (
+                                      <a
+                                        href={u.signed_url}
+                                        download={u.file_name}
+                                        className={pStyles.rxDownloadBtn}
+                                      >
+                                        ↓ Download
+                                      </a>
+                                    )}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -76,6 +245,23 @@ export default function AppointmentsPage() {
       )}
     </div>
   );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fileIcon(mime: string | null): string {
+  if (!mime) return "📄";
+  if (mime === "application/pdf")                         return "📋";
+  if (mime.startsWith("image/"))                          return "🖼️";
+  if (mime.includes("word") || mime.includes("document")) return "📝";
+  if (mime.includes("sheet") || mime.includes("excel"))   return "📊";
+  return "📄";
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024)        return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function Chip({ s }: { s: string }) {

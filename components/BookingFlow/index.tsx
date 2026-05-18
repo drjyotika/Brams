@@ -7,6 +7,9 @@ import { StepDateTime } from "./StepDateTime";
 import { StepDetails }  from "./StepDetails";
 import { StepConfirm }  from "./StepConfirm";
 import { StepHeader }   from "./StepHeader";
+import { BramsLoader }  from "../BramsLoader";
+import type { BookingStep1Data, BookingStep2Data } from "../../lib/content";
+import { defaultContent } from "../../lib/content";
 import styles from "./BookingFlow.module.scss";
 
 export type PlanInfo = {
@@ -40,8 +43,15 @@ export function BookingFlow() {
   const [planError, setPlanError] = useState<string | null>(null);
   const [step, setStep]           = useState<Step>(1);
 
-  // Step 1 state
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Booking flow config (time slots + form fields)
+  const [step1Config, setStep1Config] = useState<BookingStep1Data>(defaultContent.bookingStep1);
+  const [step2Config, setStep2Config] = useState<BookingStep2Data>(defaultContent.bookingStep2);
+
+  // Step 1 state — pre-select today so the calendar is never blank on load
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   // Step 2 state
@@ -58,12 +68,20 @@ export function BookingFlow() {
   // Step 3 state
   const [bookingId, setBookingId] = useState<string | null>(null);
 
-  // Load the plan info
+  // Load plan info + booking flow config in parallel
   useEffect(() => {
     fetch(`/api/plans/${planId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
       .then((p: PlanInfo) => setPlan(p))
       .catch(() => setPlanError(`Plan "${planId}" not found.`));
+
+    fetch("/api/booking-config")
+      .then((r) => r.json())
+      .then((cfg: { step1: BookingStep1Data; step2: BookingStep2Data }) => {
+        if (cfg.step1) setStep1Config(cfg.step1);
+        if (cfg.step2) setStep2Config(cfg.step2);
+      })
+      .catch(() => { /* keep defaults */ });
   }, [planId]);
 
   // Smoothly scroll back to the top of the booking shell on step change,
@@ -84,7 +102,7 @@ export function BookingFlow() {
   }
 
   if (!plan) {
-    return <div className={styles.loadingShell}>Loading plan details…</div>;
+    return <BramsLoader fullPage />;
   }
 
   return (
@@ -95,6 +113,7 @@ export function BookingFlow() {
         {step === 1 && (
           <StepDateTime
             plan={plan}
+            schedule={step1Config.schedule}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
             onSelect={(date, time) => {
@@ -111,6 +130,7 @@ export function BookingFlow() {
             plan={plan}
             scheduledDate={selectedDate}
             scheduledTime={selectedTime}
+            fields={step2Config.fields}
             details={details}
             onChange={setDetails}
             onBack={() => setStep(1)}

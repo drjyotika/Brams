@@ -3,7 +3,14 @@ import { parsePageContent } from "../../lib/page-types";
 import { PublicPageShell } from "../../components/PublicPageShell";
 import { ContactForm } from "../../components/ContactForm";
 
-export const metadata = { title: "Contact Us — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Get in touch with Brams Mind Care for general queries, support, or to book an online psychiatric consultation with Dr. Jyotika Kanwar.",
+  alternates: { canonical: "/contact" },
+};
 
 export default async function ContactPage() {
   const page = await getPage("contact");

@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { PlanInfo } from "./index";
+import { StickyFooter } from "./StickyFooter";
 import styles from "./BookingFlow.module.scss";
 import cStyles from "./StepConfirm.module.scss";
 
@@ -12,6 +13,21 @@ type Upload = {
   file_url: string;
   file_size: number | null;
 };
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") { resolve(false); return; }
+    if ((window as Window & { Razorpay?: unknown }).Razorpay) { resolve(true); return; }
+    const existing = document.getElementById("razorpay-checkout-js");
+    if (existing) { existing.addEventListener("load", () => resolve(true)); return; }
+    const script = document.createElement("script");
+    script.id  = "razorpay-checkout-js";
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload  = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export function StepConfirm({
   plan,
@@ -28,11 +44,11 @@ export function StepConfirm({
   patientName: string;
   onBack: () => void;
 }) {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploads, setUploads]     = useState<Upload[]>([]);
   const [uploading, setUploading] = useState(false);
   const [paying, setPaying]       = useState(false);
-  const [paid, setPaid]           = useState(false);
   const [error, setError]         = useState<string | null>(null);
 
   const consultationFee = plan.price_paise;
@@ -78,16 +94,80 @@ export function StepConfirm({
     setPaying(true);
     setError(null);
     try {
-      // Stub: real payment integration goes here. For now we mark it initiated.
-      const res = await fetch(`/api/bookings/${bookingId}/payment`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ gateway: "manual", status: "initiated" }),
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Could not load payment gateway (script blocked or offline)");
+
+      // Create Razorpay order on the server
+      const orderRes = await fetch(`/api/bookings/${bookingId}/order`, { method: "POST" });
+      if (!orderRes.ok) {
+        const body = await orderRes.json().catch(() => ({}));
+        throw new Error(`Order failed (${orderRes.status}): ${body.error || orderRes.statusText}`);
+      }
+      const { orderId, amount, currency, keyId } = await orderRes.json() as {
+        orderId: string; amount: number; currency: string; keyId: string;
+      };
+      if (!keyId) throw new Error("Payment gateway key missing — contact support");
+
+      // Open Razorpay checkout modal and wait for result
+      await new Promise<void>((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rzp = new (window as any).Razorpay({
+          key:         keyId,
+          amount,
+          currency,
+          order_id:    orderId,
+          name:        "Brams Mind Care",
+          description: plan.title,
+          prefill:     { name: patientName },
+          theme:       { color: "#745475" },
+          handler: async (response: {
+            razorpay_payment_id: string;
+            razorpay_order_id:   string;
+            razorpay_signature:  string;
+          }) => {
+            try {
+              const verifyRes = await fetch(`/api/bookings/${bookingId}/payment`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  gateway_payment_id: response.razorpay_payment_id,
+                  gateway_order_id:   response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+              if (!verifyRes.ok) throw new Error("Payment verification failed. Contact support.");
+              resolve();
+            } catch (e) {
+              reject(e);
+            }
+          },
+          modal: { ondismiss: () => reject(new Error("CANCELLED")) },
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rzp.on("payment.failed", (res: any) => {
+          reject(new Error(res.error?.description || "Payment failed. Please try again."));
+        });
+        rzp.open();
       });
-      if (!res.ok) throw new Error("Failed to start payment");
-      setPaid(true);
+
+      const params = new URLSearchParams({
+        id:   bookingId,
+        plan: plan.title,
+        date: scheduledDate,
+        time: scheduledTime,
+        name: patientName,
+      });
+      router.push(`/book/success?${params.toString()}`);
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      if (msg === "CANCELLED") {
+        setPaying(false);
+        return;
+      }
+      console.error("[pay] failed:", e);
+      setError(msg);
+      const params = new URLSearchParams({ plan: plan.id, error: msg });
+      router.push(`/book/failed?${params.toString()}`);
     } finally {
       setPaying(false);
     }
@@ -172,53 +252,30 @@ export function StepConfirm({
           <Row label="Total" value={formatINR(total)} strong />
 
           {error && <p className={cStyles.error}>{error}</p>}
-
-          {paid ? (
-            <div className={cStyles.successBox}>
-              <h4>✓ Booking submitted</h4>
-              <p>
-                Your booking reference is{" "}
-                <code>{bookingId.slice(0, 8)}</code>. We&rsquo;ll reach out shortly
-                to confirm and share the video call link.
-              </p>
-              <Link href="/" className={cStyles.homeLink}>Return to home</Link>
-            </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                className={cStyles.payBtn}
-                onClick={pay}
-                disabled={paying}
-              >
-                {paying ? "Processing…" : `Pay ${formatINR(total)} →`}
-              </button>
-              <button
-                type="button"
-                className={cStyles.backInline}
-                onClick={onBack}
-                disabled={paying}
-              >
-                ← Back to details
-              </button>
-            </>
-          )}
         </div>
       </div>
+
+      <StickyFooter
+        onBack={onBack}
+        backLabel="← Back to details"
+        onNext={pay}
+        nextLabel={`Pay ${formatINR(total)} →`}
+        nextLoading={paying}
+      />
     </div>
   );
 }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={strong ? "row rowStrong" : "row"} style={{
-      display: "flex",
+    <div style={{
+      display:        "flex",
       justifyContent: "space-between",
-      padding: "8px 0",
-      fontSize: strong ? 17 : 14,
-      fontWeight: strong ? 700 : 400,
-      fontFamily: strong ? "var(--font-display)" : undefined,
-      color: strong ? "#1e1b24" : "#6b7280",
+      padding:        "8px 0",
+      fontSize:       strong ? 17 : 14,
+      fontWeight:     strong ? 700 : 400,
+      fontFamily:     strong ? "var(--font-display)" : undefined,
+      color:          strong ? "#1e1b24" : "#6b7280",
     }}>
       <span>{label}</span>
       <span style={{ color: strong ? "#745475" : "#1e1b24", fontWeight: 600 }}>{value}</span>
@@ -234,6 +291,6 @@ function formatTime(time24: string): string {
   if (!time24) return "—";
   const [h, m] = time24.split(":").map((s) => parseInt(s, 10));
   const ampm = h >= 12 ? "PM" : "AM";
-  const hh = ((h + 11) % 12) + 1;
+  const hh   = ((h + 11) % 12) + 1;
   return `${hh}:${String(m).padStart(2, "0")} ${ampm}`;
 }

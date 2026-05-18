@@ -1,7 +1,9 @@
 // Auth utilities — uses Web Crypto API only (Edge + Node.js compatible).
 
-export const SESSION_COOKIE  = "brams_admin_session";
-export const SESSION_MAX_AGE = 60 * 60 * 24; // 24 h in seconds
+export const SESSION_COOKIE          = "brams_admin_session";
+export const PATIENT_SESSION_COOKIE  = "brams_patient_session";
+export const SESSION_MAX_AGE         = 60 * 60 * 24;       // 24 h (admin)
+export const PATIENT_SESSION_MAX_AGE = 60 * 60 * 24 * 30;  // 30 d (patient)
 
 // ─── HMAC helpers ────────────────────────────────────────────────────────────
 
@@ -66,4 +68,44 @@ export function verifyCredentials(username: string, password: string): boolean {
   const validUser = process.env.ADMIN_USERNAME ?? "admin";
   const validPass = process.env.ADMIN_PASSWORD ?? "";
   return username === validUser && password === validPass;
+}
+
+// ─── Patient session token (carries patient id) ──────────────────────────────
+
+/**
+ * Patient tokens are HMAC-signed `{patientId}|{ts}` strings.  They live
+ * longer than admin sessions (30 d) and carry the patient id so we know
+ * who is making the request.
+ */
+export async function createPatientToken(patientId: string): Promise<string> {
+  const payload = `${patientId}|${Date.now()}`;
+  const key     = await hmacKey("sign");
+  const sig     = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return btoa(JSON.stringify({ p: payload, s: bufToHex(sig) }));
+}
+
+/** Returns the patient id when the token is valid & fresh, otherwise null. */
+export async function verifyPatientToken(token: string): Promise<string | null> {
+  try {
+    const { p, s } = JSON.parse(atob(token)) as { p: string; s: string };
+    const key      = await hmacKey("verify");
+    const valid    = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      hexToBuf(s),
+      new TextEncoder().encode(p),
+    );
+    if (!valid) return null;
+
+    const sep = p.lastIndexOf("|");
+    if (sep < 0) return null;
+    const patientId = p.slice(0, sep);
+    const ts        = parseInt(p.slice(sep + 1), 10);
+    if (!patientId || Number.isNaN(ts)) return null;
+    if (Date.now() - ts > PATIENT_SESSION_MAX_AGE * 1000) return null;
+
+    return patientId;
+  } catch {
+    return null;
+  }
 }

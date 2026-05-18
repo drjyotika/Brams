@@ -28,8 +28,13 @@ export function HowItWorks({ data }: HowItWorksProps) {
                 {step.number}
               </span>
               <article className={styles.card}>
-                <div className={`${styles.iconBox} ${BG_CLASS[step.iconBg]}`}>
-                  <Icon name={step.iconName} size={25} strokeWidth={2.2} />
+                <div className={styles.iconRow}>
+                  <div className={`${styles.iconBox} ${BG_CLASS[step.iconBg]}`}>
+                    <Icon name={step.iconName} size={25} strokeWidth={2.2} />
+                  </div>
+                  <span className={styles.inlineNumber} aria-hidden>
+                    {step.number}
+                  </span>
                 </div>
                 <h3 className={styles.stepTitle}>{step.title}</h3>
                 <p className={styles.stepBody}>{step.description}</p>

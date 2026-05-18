@@ -8,18 +8,25 @@
     "start": "next start",
     "lint": "next lint",
     "sync": "node scripts/sync-from-blob.mjs",
-    "migrate": "node --env-file=.env.local scripts/migrate.mjs"
+    "migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "seed:test-patients": "node --env-file=.env.local scripts/seed-test-patients.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@neondatabase/serverless": "^1.1.0",
     "@vercel/blob": "^2.3.3",
     "lucide-react": "^0.460.0",
     "next": "^15.1.0",
+    "nodemailer": "^6.10.1",
+    "razorpay": "^2.9.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/nodemailer": "^6.4.23",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.17.0",

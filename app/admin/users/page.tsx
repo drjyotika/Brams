@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./users.module.scss";
+import { BramsLoader } from "../../../components/BramsLoader";
 
 type User = {
   id: string;
@@ -42,7 +43,7 @@ export default function UsersPage() {
       </div>
 
       {loading ? (
-        <p className={styles.loading}>Loading…</p>
+        <BramsLoader />
       ) : (
         <div className={styles.card}>
           <table className={styles.table}>

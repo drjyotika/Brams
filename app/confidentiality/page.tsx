@@ -2,7 +2,14 @@ import { getPage } from "../../lib/pages";
 import { parsePageContent } from "../../lib/page-types";
 import { PublicPageShell } from "../../components/PublicPageShell";
 
-export const metadata = { title: "Confidentiality Agreement — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Confidentiality Agreement",
+  description:
+    "Our commitment to keeping every conversation, record, and document shared with Brams Mind Care strictly confidential and HIPAA-aligned.",
+  alternates: { canonical: "/confidentiality" },
+};
 
 export default async function ConfidentialityPage() {
   const page = await getPage("confidentiality");

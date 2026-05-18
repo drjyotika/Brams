@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../create/create.module.scss";
+import { BramsLoader } from "../../../../components/BramsLoader";
 
 type UserForm = {
   username: string;
@@ -67,7 +68,7 @@ export default function EditUserPage() {
 
   const pwMismatch = !!(form.password || form.passwordConfirm) && form.password !== form.passwordConfirm;
 
-  if (loading) return <p style={{ color: "#71717a", fontSize: 14 }}>Loading…</p>;
+  if (loading) return <BramsLoader />;
 
   return (
     <div>

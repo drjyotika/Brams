@@ -2,7 +2,14 @@ import { getPage } from "../../lib/pages";
 import { parsePageContent } from "../../lib/page-types";
 import { PublicPageShell } from "../../components/PublicPageShell";
 
-export const metadata = { title: "Terms of Service — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Terms governing the use of Brams Mind Care, including booking, payments, cancellations, and the scope of online psychiatric consultations with Dr. Jyotika Kanwar.",
+  alternates: { canonical: "/terms" },
+};
 
 export default async function TermsPage() {
   const page = await getPage("terms");

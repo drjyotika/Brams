@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import type {
+  BookingFailedData,
+  BookingSuccessData,
+  BookingStep1Data,
+  BookingStep2Data,
+  BookingField,
+  DaySchedule,
   HeroData,
   HowItWorksData,
   NavData,
@@ -9,28 +15,34 @@ import type {
   PricingData,
   PricingPlan,
   SiteContent,
+  StatusCta,
   SupportCard,
   SupportData,
   FooterData,
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
+import { BramsLoader } from "../../../components/BramsLoader";
 import styles from "../admin.module.scss";
 
 const SUPPORT_TONES: SupportCard["tone"][] = [
   "sky", "lilac", "muted", "lime", "sand", "mint", "dark",
 ];
 
-type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer";
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "hero",        label: "Hero"              },
-  { id: "support",     label: "Specialized Support"},
-  { id: "howItWorks",  label: "How it Works"       },
-  { id: "pricing",     label: "Pricing Plans"      },
-  { id: "newsletter",  label: "Newsletter CTA"     },
-  { id: "nav",         label: "Navigation"         },
-  { id: "footer",      label: "Footer"             },
+  { id: "hero",           label: "Hero"               },
+  { id: "support",        label: "Specialized Support" },
+  { id: "howItWorks",     label: "How it Works"        },
+  { id: "pricing",        label: "Pricing Plans"       },
+  { id: "newsletter",     label: "Newsletter CTA"      },
+  { id: "nav",            label: "Navigation"          },
+  { id: "footer",         label: "Footer"              },
+  { id: "bookingSuccess", label: "Booking — Success"   },
+  { id: "bookingFailed",  label: "Booking — Failed"    },
+  { id: "bookingStep1",   label: "Booking — Time Slots" },
+  { id: "bookingStep2",   label: "Booking — Form Fields" },
 ];
 
 export default function ContentPage() {
@@ -43,13 +55,7 @@ export default function ContentPage() {
       .then((data: SiteContent) => setContent(data));
   }, []);
 
-  if (!content) {
-    return (
-      <div className={styles.layout}>
-        <div className={styles.panel}>Loading…</div>
-      </div>
-    );
-  }
+  if (!content) return <BramsLoader />;
 
   const update = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) =>
     setContent((c) => (c ? { ...c, [key]: value } : c));
@@ -75,13 +81,17 @@ export default function ContentPage() {
         </nav>
 
         <div>
-          {tab === "hero"       && <HeroEditor       data={content.hero}        onChange={(v) => update("hero",        v)} />}
-          {tab === "support"    && <SupportEditor    data={content.support}     onChange={(v) => update("support",     v)} />}
-          {tab === "howItWorks" && <HowEditor        data={content.howItWorks}  onChange={(v) => update("howItWorks",  v)} />}
-          {tab === "pricing"    && <PricingEditor    data={content.pricing}     onChange={(v) => update("pricing",     v)} />}
-          {tab === "newsletter" && <NewsletterEditor data={content.newsletter}  onChange={(v) => update("newsletter",  v)} />}
-          {tab === "nav"        && <NavEditor        data={content.nav}         onChange={(v) => update("nav",         v)} />}
-          {tab === "footer"     && <FooterEditor     data={content.footer}      onChange={(v) => update("footer",      v)} />}
+          {tab === "hero"           && <HeroEditor           data={content.hero}           onChange={(v) => update("hero",           v)} />}
+          {tab === "support"        && <SupportEditor        data={content.support}        onChange={(v) => update("support",        v)} />}
+          {tab === "howItWorks"     && <HowEditor            data={content.howItWorks}     onChange={(v) => update("howItWorks",     v)} />}
+          {tab === "pricing"        && <PricingEditor        data={content.pricing}        onChange={(v) => update("pricing",        v)} />}
+          {tab === "newsletter"     && <NewsletterEditor     data={content.newsletter}     onChange={(v) => update("newsletter",     v)} />}
+          {tab === "nav"            && <NavEditor            data={content.nav}            onChange={(v) => update("nav",            v)} />}
+          {tab === "footer"         && <FooterEditor         data={content.footer}         onChange={(v) => update("footer",         v)} />}
+          {tab === "bookingSuccess" && <BookingSuccessEditor data={content.bookingSuccess} onChange={(v) => update("bookingSuccess", v)} />}
+          {tab === "bookingFailed"  && <BookingFailedEditor  data={content.bookingFailed}  onChange={(v) => update("bookingFailed",  v)} />}
+          {tab === "bookingStep1"   && <BookingStep1Editor   data={content.bookingStep1}   onChange={(v) => update("bookingStep1",  v)} />}
+          {tab === "bookingStep2"   && <BookingStep2Editor   data={content.bookingStep2}   onChange={(v) => update("bookingStep2",  v)} />}
         </div>
       </div>
     </div>
@@ -379,6 +389,497 @@ function FooterEditor({ data, onChange }: { data: FooterData; onChange: (v: Foot
       ))}
       <div className={styles.actions}>
         <button className={styles.primary} onClick={() => save(data)}>Save Footer</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── Shared CTA array editor ──────────────────────────────────────────────────
+
+const CTA_VARIANTS: StatusCta["variant"][] = ["primary", "secondary", "text"];
+
+function CtaArrayEditor({
+  ctas,
+  onChange,
+  hint,
+}: {
+  ctas: StatusCta[];
+  onChange: (v: StatusCta[]) => void;
+  hint?: string;
+}) {
+  const update = (id: string, patch: Partial<StatusCta>) =>
+    onChange(ctas.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const remove = (id: string) => onChange(ctas.filter((c) => c.id !== id));
+  const add = () =>
+    onChange([
+      ...ctas,
+      { id: `cta-${Date.now()}`, label: "New CTA", href: "#", variant: "secondary" },
+    ]);
+
+  return (
+    <div className={styles.cardArrayItem}>
+      <div className={styles.cardArrayHead}>
+        Action CTAs
+        {hint && <span style={{ fontWeight: 400, marginLeft: 8, fontSize: 12, color: "#9b8fa0" }}>{hint}</span>}
+      </div>
+
+      {ctas.map((cta, i) => (
+        <div key={cta.id} style={{ borderTop: i > 0 ? "1px solid rgba(207,195,204,.3)" : undefined, paddingTop: i > 0 ? 14 : 0, marginTop: i > 0 ? 14 : 0 }}>
+          <div className={styles.cardArrayHead} style={{ marginBottom: 10 }}>
+            <span>CTA #{i + 1}</span>
+            <button type="button" className={styles.danger} onClick={() => remove(cta.id)}>Remove</button>
+          </div>
+          <div className={styles.row}>
+            <Field label="Label">
+              <input
+                className={styles.input}
+                value={cta.label}
+                onChange={(e) => update(cta.id, { label: e.target.value })}
+              />
+            </Field>
+            <Field label="Emoji (optional)">
+              <input
+                className={styles.input}
+                value={cta.emoji ?? ""}
+                placeholder="e.g. 🎥"
+                onChange={(e) => update(cta.id, { emoji: e.target.value || undefined })}
+              />
+            </Field>
+          </div>
+          <div className={styles.row}>
+            <Field label="Link (href)">
+              <input
+                className={styles.input}
+                value={cta.href}
+                placeholder="https://… or /path or # or {planId}"
+                onChange={(e) => update(cta.id, { href: e.target.value })}
+              />
+            </Field>
+            <Field label="Variant">
+              <select
+                className={styles.select}
+                value={cta.variant}
+                onChange={(e) => update(cta.id, { variant: e.target.value as StatusCta["variant"] })}
+              >
+                {CTA_VARIANTS.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ marginTop: 12 }}>
+        <button type="button" className={styles.secondary} onClick={add}>+ Add CTA</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Booking — Success ────────────────────────────────────────────────────────
+
+function BookingSuccessEditor({ data, onChange }: { data: BookingSuccessData; onChange: (v: BookingSuccessData) => void }) {
+  const { status, save } = useSaver("bookingSuccess");
+  const set = <K extends keyof BookingSuccessData>(k: K, v: BookingSuccessData[K]) =>
+    onChange({ ...data, [k]: v });
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Success Page</h2>
+      <p className={styles.panelHint}>Shown at <code>/book/success</code> after payment is confirmed.</p>
+
+      <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
+      <Field label="Subtitle"><textarea className={styles.textarea} value={data.subtitle} onChange={(e) => set("subtitle", e.target.value)} /></Field>
+
+      <CtaArrayEditor
+        ctas={data.ctas}
+        onChange={(v) => set("ctas", v)}
+        hint="primary = large button · secondary = row of outline buttons · text = plain link"
+      />
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Footer Note</div>
+        <Field label="Note text (before email)"><textarea className={styles.textarea} value={data.footerNote} onChange={(e) => set("footerNote", e.target.value)} /></Field>
+        <div className={styles.row}>
+          <Field label="Support email"><input className={styles.input} type="email" value={data.supportEmail} onChange={(e) => set("supportEmail", e.target.value)} /></Field>
+          <Field label="Copyright"><input className={styles.input} value={data.copyright} onChange={(e) => set("copyright", e.target.value)} /></Field>
+        </div>
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Success Page</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── Booking — Step 1 (Time Slots) ───────────────────────────────────────────
+
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/** "10:00" → "10:00 AM" */
+function fmt12(time: string): string {
+  const [hStr, minStr] = time.split(":");
+  let h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${String(h).padStart(2, "0")}:${minStr} ${ampm}`;
+}
+
+function BookingStep1Editor({ data, onChange }: { data: BookingStep1Data; onChange: (v: BookingStep1Data) => void }) {
+  const { status, save } = useSaver("bookingStep1");
+
+  const patchDay = (dayIdx: number, patch: Partial<DaySchedule>) =>
+    onChange({
+      ...data,
+      schedule: data.schedule.map((ds) => ds.day === dayIdx ? { ...ds, ...patch } : ds),
+    });
+
+  const setSlotTime = (dayIdx: number, slotId: string, time: string) =>
+    patchDay(dayIdx, {
+      slots: data.schedule
+        .find((ds) => ds.day === dayIdx)!
+        .slots.map((s) => (s.id === slotId ? { ...s, time } : s)),
+    });
+
+  const removeSlot = (dayIdx: number, slotId: string) =>
+    patchDay(dayIdx, {
+      slots: data.schedule.find((ds) => ds.day === dayIdx)!.slots.filter((s) => s.id !== slotId),
+    });
+
+  const addSlot = (dayIdx: number) =>
+    patchDay(dayIdx, {
+      slots: [
+        ...(data.schedule.find((ds) => ds.day === dayIdx)?.slots ?? []),
+        { id: `s${dayIdx}-${Date.now()}`, time: "09:00" },
+      ],
+    });
+
+  const moveSlot = (dayIdx: number, slotIdx: number, dir: -1 | 1) => {
+    const ds = data.schedule.find((s) => s.day === dayIdx);
+    if (!ds) return;
+    const slots = [...ds.slots];
+    const target = slotIdx + dir;
+    if (target < 0 || target >= slots.length) return;
+    [slots[slotIdx], slots[target]] = [slots[target], slots[slotIdx]];
+    patchDay(dayIdx, { slots });
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Time Slots</h2>
+      <p className={styles.panelHint}>
+        Enable or disable each day of the week and configure the available appointment slots for that day.
+        Times are in 24-hour format; patients see them as AM/PM.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {data.schedule.map((ds) => (
+          <div key={ds.day} className={styles.cardArrayItem}>
+            {/* Day header */}
+            <div className={styles.cardArrayHead}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{DAY_NAMES[ds.day]}</span>
+              <label className={styles.checkbox} style={{ marginLeft: "auto" }}>
+                <input
+                  type="checkbox"
+                  checked={ds.enabled}
+                  onChange={(e) => patchDay(ds.day, { enabled: e.target.checked })}
+                />
+                Enabled
+              </label>
+            </div>
+
+            {ds.enabled ? (
+              <>
+                {ds.slots.length === 0 && (
+                  <p style={{ fontSize: 12, color: "#9b8fa0", margin: "8px 0 4px", fontStyle: "italic" }}>
+                    No slots yet — add one below.
+                  </p>
+                )}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: ds.slots.length ? 8 : 0 }}>
+                  {ds.slots.map((slot, si) => (
+                    <div key={slot.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      {/* Reorder */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <button
+                          type="button"
+                          className={styles.secondary}
+                          style={{ padding: "2px 8px", fontSize: 11 }}
+                          onClick={() => moveSlot(ds.day, si, -1)}
+                          disabled={si === 0}
+                          title="Move up"
+                        >▲</button>
+                        <button
+                          type="button"
+                          className={styles.secondary}
+                          style={{ padding: "2px 8px", fontSize: 11 }}
+                          onClick={() => moveSlot(ds.day, si, 1)}
+                          disabled={si === ds.slots.length - 1}
+                          title="Move down"
+                        >▼</button>
+                      </div>
+
+                      {/* Time picker */}
+                      <div style={{ flex: 1, minWidth: 140 }}>
+                        <label className={styles.label} style={{ display: "block", marginBottom: 4 }}>
+                          Slot {si + 1} — <span style={{ color: "#745475", fontWeight: 700 }}>{fmt12(slot.time)}</span>
+                        </label>
+                        <input
+                          type="time"
+                          className={styles.input}
+                          value={slot.time}
+                          onChange={(e) => setSlotTime(ds.day, slot.id, e.target.value)}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        className={styles.danger}
+                        onClick={() => removeSlot(ds.day, slot.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <button type="button" className={styles.secondary} onClick={() => addSlot(ds.day)}>
+                    + Add Slot
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p style={{ fontSize: 12, color: "#9b8fa0", margin: "8px 0 0", fontStyle: "italic" }}>
+                No appointments scheduled on this day.
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Time Slots</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── Booking — Step 2 (Form Fields) ──────────────────────────────────────────
+
+const FIELD_WIDTHS: BookingField["width"][] = ["full", "half"];
+const FIELD_TYPES:  BookingField["type"][]  = ["text", "number", "tel", "email", "select", "textarea"];
+
+const FIELD_KEY_LABELS: Record<BookingField["key"], string> = {
+  full_name: "Full Name",
+  age:       "Age",
+  gender:    "Gender",
+  phone:     "Phone",
+  email:     "Email",
+  city:      "City",
+  reason:    "Reason for Consultation",
+};
+
+function BookingStep2Editor({ data, onChange }: { data: BookingStep2Data; onChange: (v: BookingStep2Data) => void }) {
+  const { status, save } = useSaver("bookingStep2");
+
+  const setField = (id: string, patch: Partial<BookingField>) =>
+    onChange({ ...data, fields: data.fields.map((f) => f.id === id ? { ...f, ...patch } : f) });
+
+  const moveField = (idx: number, dir: -1 | 1) => {
+    const fields = [...data.fields];
+    const target = idx + dir;
+    if (target < 0 || target >= fields.length) return;
+    [fields[idx], fields[target]] = [fields[target], fields[idx]];
+    onChange({ ...data, fields });
+  };
+
+  const setOption = (fieldId: string, optIdx: number, val: string) => {
+    const field = data.fields.find((f) => f.id === fieldId);
+    if (!field) return;
+    const options = [...(field.options ?? [])];
+    options[optIdx] = val;
+    setField(fieldId, { options });
+  };
+
+  const removeOption = (fieldId: string, optIdx: number) => {
+    const field = data.fields.find((f) => f.id === fieldId);
+    if (!field) return;
+    setField(fieldId, { options: (field.options ?? []).filter((_, i) => i !== optIdx) });
+  };
+
+  const addOption = (fieldId: string) => {
+    const field = data.fields.find((f) => f.id === fieldId);
+    if (!field) return;
+    setField(fieldId, { options: [...(field.options ?? []), "New option"] });
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Form Fields</h2>
+      <p className={styles.panelHint}>
+        Configure the patient details form in Step 2. Toggle visibility, edit labels &amp; placeholders,
+        set required fields, adjust layout, and reorder. For the Gender field you can also edit the dropdown options.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {data.fields.map((field, i) => (
+          <div key={field.id} className={styles.cardArrayItem}>
+            {/* Header row */}
+            <div className={styles.cardArrayHead}>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontWeight: 700 }}>{FIELD_KEY_LABELS[field.key]}</span>
+                <span style={{ fontSize: 11, color: "#9b8fa0", fontFamily: "monospace" }}>({field.key})</span>
+                {!field.visible && (
+                  <span style={{ fontSize: 10, background: "#f3f4f6", color: "#6b7280", padding: "2px 6px", borderRadius: 99, fontWeight: 600 }}>HIDDEN</span>
+                )}
+              </span>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  style={{ padding: "2px 8px", fontSize: 11 }}
+                  onClick={() => moveField(i, -1)}
+                  disabled={i === 0}
+                >▲</button>
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  style={{ padding: "2px 8px", fontSize: 11 }}
+                  onClick={() => moveField(i, 1)}
+                  disabled={i === data.fields.length - 1}
+                >▼</button>
+              </div>
+            </div>
+
+            {/* Label + Placeholder */}
+            <div className={styles.row}>
+              <Field label="Label">
+                <input
+                  className={styles.input}
+                  value={field.label}
+                  onChange={(e) => setField(field.id, { label: e.target.value })}
+                />
+              </Field>
+              <Field label="Placeholder">
+                <input
+                  className={styles.input}
+                  value={field.placeholder}
+                  onChange={(e) => setField(field.id, { placeholder: e.target.value })}
+                />
+              </Field>
+            </div>
+
+            {/* Type + Width + Toggles */}
+            <div className={styles.row} style={{ alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+              <Field label="Input type">
+                <select
+                  className={styles.select}
+                  value={field.type}
+                  onChange={(e) => setField(field.id, { type: e.target.value as BookingField["type"] })}
+                >
+                  {FIELD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </Field>
+              <Field label="Width">
+                <select
+                  className={styles.select}
+                  value={field.width}
+                  onChange={(e) => setField(field.id, { width: e.target.value as BookingField["width"] })}
+                >
+                  {FIELD_WIDTHS.map((w) => <option key={w} value={w}>{w === "full" ? "Full row" : "Half row"}</option>)}
+                </select>
+              </Field>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={field.required}
+                  onChange={(e) => setField(field.id, { required: e.target.checked })}
+                />
+                Required
+              </label>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={field.visible}
+                  onChange={(e) => setField(field.id, { visible: e.target.checked })}
+                />
+                Visible
+              </label>
+            </div>
+
+            {/* Options editor (for select fields) */}
+            {field.type === "select" && (
+              <div style={{ marginTop: 8 }}>
+                <span className={styles.label} style={{ display: "block", marginBottom: 6 }}>Dropdown options</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {(field.options ?? []).map((opt, oi) => (
+                    <div key={oi} className={styles.featureRow}>
+                      <input
+                        className={styles.input}
+                        value={opt}
+                        onChange={(e) => setOption(field.id, oi, e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className={styles.danger}
+                        onClick={() => removeOption(field.id, oi)}
+                      >×</button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    onClick={() => addOption(field.id)}
+                  >+ Add option</button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.actions} style={{ marginTop: 20 }}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Form Fields</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── Booking — Failed ─────────────────────────────────────────────────────────
+
+function BookingFailedEditor({ data, onChange }: { data: BookingFailedData; onChange: (v: BookingFailedData) => void }) {
+  const { status, save } = useSaver("bookingFailed");
+  const set = <K extends keyof BookingFailedData>(k: K, v: BookingFailedData[K]) =>
+    onChange({ ...data, [k]: v });
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Booking — Failed Page</h2>
+      <p className={styles.panelHint}>Shown at <code>/book/failed</code> when payment is unsuccessful. Use <code>{"{planId}"}</code> in any href to insert the plan from the URL.</p>
+
+      <Field label="Heading"><input className={styles.input} value={data.title} onChange={(e) => set("title", e.target.value)} /></Field>
+      <Field label="Body text"><textarea className={styles.textarea} value={data.body} onChange={(e) => set("body", e.target.value)} /></Field>
+
+      <CtaArrayEditor
+        ctas={data.ctas}
+        onChange={(v) => set("ctas", v)}
+        hint="primary = large retry button · secondary = outline row · use {planId} in href to append plan"
+      />
+
+      <div className={styles.cardArrayItem}>
+        <div className={styles.cardArrayHead}>Troubleshooting Box</div>
+        <Field label="Heading"><input className={styles.input} value={data.troubleshootTitle} onChange={(e) => set("troubleshootTitle", e.target.value)} /></Field>
+        <Field label="Body"><textarea className={styles.textarea} value={data.troubleshootBody} onChange={(e) => set("troubleshootBody", e.target.value)} /></Field>
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={() => save(data)}>Save Failed Page</button>
         <StatusBadge status={status} />
       </div>
     </section>

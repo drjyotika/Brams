@@ -22,6 +22,23 @@ export type Patient = {
   email: string | null;
   city: string | null;
   notes: string | null;
+  /**
+   * Patient-side auth (added by patient-auth.ts migration).  Optional on the
+   * base type because rows created before the migration may have NULLs and
+   * code that doesn't care about auth shouldn't have to read these.
+   */
+  password_hash?:           string | null;
+  last_login_at?:           Date | null;
+  failed_login_count?:      number;
+  locked_until?:            Date | null;
+  email_verified?:          boolean;
+  email_verified_at?:       Date | null;
+  verification_otp?:        string | null;
+  verification_token?:      string | null;
+  verification_expires_at?: Date | null;
+  is_suspended?:            boolean;
+  suspended_at?:            Date | null;
+  suspension_reason?:       string | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -103,10 +120,19 @@ export type PatientWithStats = Patient & {
 };
 
 export async function getAllPatients(): Promise<PatientWithStats[]> {
+  // COALESCE on the new auth columns so older patient rows (created before
+  // the patient-auth migration) still return well-typed booleans.
   const rows = await sql`
-    SELECT p.*,
-           COALESCE(COUNT(a.id), 0)::int AS appointment_count,
-           MAX(a.scheduled_date)::text   AS last_appointment_date
+    SELECT p.id, p.full_name, p.age, p.gender, p.phone, p.email, p.city, p.notes,
+           p.created_at, p.updated_at,
+           COALESCE(p.email_verified, FALSE) AS email_verified,
+           p.email_verified_at,
+           COALESCE(p.is_suspended,   FALSE) AS is_suspended,
+           p.suspension_reason,
+           p.last_login_at,
+           (p.password_hash IS NOT NULL)     AS has_password,
+           COALESCE(COUNT(a.id), 0)::int     AS appointment_count,
+           MAX(a.scheduled_date)::text       AS last_appointment_date
     FROM patients p
     LEFT JOIN appointments a ON a.patient_id = p.id
     GROUP BY p.id
@@ -171,9 +197,12 @@ export type AppointmentWithPatient = Appointment & { patient: Patient };
 
 export async function getAllAppointments(): Promise<AppointmentWithPatient[]> {
   const rows = await sql`
-    SELECT a.*, row_to_json(p.*) AS patient
+    SELECT a.*, row_to_json(p.*) AS patient,
+           COUNT(au.id)::int AS upload_count
     FROM appointments a
     JOIN patients p ON p.id = a.patient_id
+    LEFT JOIN appointment_uploads au ON au.appointment_id = a.id
+    GROUP BY a.id, p.id
     ORDER BY a.scheduled_date DESC, a.scheduled_time DESC
   `;
   return rows as AppointmentWithPatient[];
@@ -182,7 +211,8 @@ export async function getAllAppointments(): Promise<AppointmentWithPatient[]> {
 export async function updateAppointment(
   id: string,
   patch: Partial<Pick<Appointment,
-    "status" | "payment_status" | "meeting_link" | "admin_notes"
+    "status" | "payment_status" | "meeting_link" | "admin_notes" |
+    "scheduled_date" | "scheduled_time"
   >>
 ): Promise<void> {
   await sql`
@@ -191,6 +221,8 @@ export async function updateAppointment(
       payment_status = COALESCE(${patch.payment_status ?? null}, payment_status),
       meeting_link   = COALESCE(${patch.meeting_link   ?? null}, meeting_link),
       admin_notes    = COALESCE(${patch.admin_notes    ?? null}, admin_notes),
+      scheduled_date = COALESCE(${patch.scheduled_date ?? null}, scheduled_date),
+      scheduled_time = COALESCE(${patch.scheduled_time ?? null}, scheduled_time),
       updated_at     = NOW()
     WHERE id = ${id}
   `;
@@ -223,6 +255,31 @@ export async function getUploadsForAppointment(
     ORDER BY uploaded_at DESC
   `;
   return rows as AppointmentUpload[];
+}
+
+export type UploadWithAppointment = AppointmentUpload & {
+  appointment_date: string;
+  appointment_time: string;
+  plan_title: string;
+};
+
+/** All uploads across every appointment for a patient, newest first. */
+export async function getUploadsForPatient(
+  patient_id: string,
+): Promise<UploadWithAppointment[]> {
+  const rows = await sql`
+    SELECT
+      au.id, au.appointment_id, au.file_name, au.file_url,
+      au.file_size, au.mime_type, au.uploaded_at,
+      a.scheduled_date AS appointment_date,
+      a.scheduled_time AS appointment_time,
+      a.plan_title
+    FROM appointment_uploads au
+    JOIN appointments a ON a.id = au.appointment_id
+    WHERE a.patient_id = ${patient_id}
+    ORDER BY au.uploaded_at DESC
+  `;
+  return rows as UploadWithAppointment[];
 }
 
 // ─── Payments ─────────────────────────────────────────────────────────────────

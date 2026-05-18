@@ -3,38 +3,38 @@
     "brand": "Brams Mind Care",
     "links": [
       {
-        "label": "Consultations",
-        "href": "#consultations"
+        "label": "Specialized Services",
+        "href": "#services"
       },
       {
-        "label": "Approach",
+        "label": "How It Works",
         "href": "#approach"
       },
       {
-        "label": "About",
-        "href": "#about"
+        "label": "Consultation Plans",
+        "href": "#consultations"
       },
       {
-        "label": "FAQ",
-        "href": "#faq"
+        "label": "",
+        "href": ""
       }
     ],
     "cta": {
-      "label": "Book Session",
-      "href": "#book"
+      "label": "Book Consultation",
+      "href": "#consultations"
     }
   },
   "hero": {
     "eyebrow": "COMPASSIONATE PSYCHIATRIC CARE",
-    "titleLead": "Confidential care",
-    "titleAccent": "from home.",
-    "description": "Experience evidence-based mental health support that prioritizes your peace of mind and professional excellence.",
+    "titleLead": "Private psychiatric care, from the ",
+    "titleAccent": "comfort of your home.",
+    "description": "Speak with Dr. Jyotika Kanwar, MD Psychiatry, for confidential online consultations focused on your mental health, emotional wellbeing, and recovery.",
     "primaryCta": {
       "label": "Book Online Consultation",
-      "href": "#book"
+      "href": "#consultations"
     },
     "secondaryCta": {
-      "label": "Explore Services",
+      "label": "View Services",
       "href": "#services"
     },
     "portrait": {
@@ -42,13 +42,13 @@
       "alt": "Dr. Jyotika Kanwar, board-certified psychiatrist"
     },
     "badge": {
-      "label": "Dr",
-      "quote": "Jo"
+      "label": "M.B.B.S. | MD Psychiatry, PGIMER Chandigarh",
+      "quote": "Confidential | Evidence-based | Patient-first care"
     }
   },
   "support": {
-    "title": "Specialized Support",
-    "description": "Compassionate care tailored to your unique psychological needs and life circumstances.",
+    "title": "Care for your mental health, at every stage.",
+    "description": "Mental health concerns can feel overwhelming, but the right support can make recovery possible. Dr. Jyotika offers structured psychiatric consultations, diagnosis, treatment planning, and follow-up care tailored to your needs.",
     "link": {
       "label": "View all specialties",
       "href": "#specialties"
@@ -56,59 +56,73 @@
     "cards": [
       {
         "id": "anxiety",
-        "title": "Anxiety & Panic Disorders",
-        "description": "Evidence-based approaches to manage overwhelming stress and help you regain control of your daily life.",
+        "title": "Anxiety & Panic",
+        "description": "For excessive worry, panic attacks, restlessness, overthinking, physical anxiety symptoms, and difficulty relaxing.",
         "iconName": "wind",
         "tone": "sky"
       },
       {
         "id": "depression",
-        "title": "Depression",
-        "description": "Navigating the complexities of mood disorders with empathy and clinical precision.",
+        "title": "Depression & Mood Concerns",
+        "description": "For persistent sadness, low motivation, hopelessness, irritability, mood swings, and loss of interest.\nCompassionate psychiatric care to understand your symptoms, identify the underlying concerns, and begin a structured path toward recovery.",
         "iconName": "cloud-rain",
         "tone": "lilac"
       },
       {
         "id": "adhd",
-        "title": "ADHD & Focus",
-        "description": "Comprehensive evaluation and management for adults navigating executive function challenges.",
-        "iconName": "target",
+        "title": "Stress, Sleep & Burnout",
+        "description": "For work stress, emotional exhaustion, poor sleep, fatigue, and feeling mentally drained.\nSupport for stress-related concerns with practical, medical, and therapeutic guidance to help restore balance.",
+        "iconName": "wind",
         "tone": "muted"
       },
       {
         "id": "trauma",
-        "title": "Trauma Recovery",
-        "description": "Specialized therapeutic interventions for processing past experiences in a gentle, secure environment.",
-        "iconName": "shield",
+        "title": "Addiction & Substance Use",
+        "description": "For alcohol, nicotine, cannabis, prescription medication misuse, or other substance-related concerns.\nNon-judgmental support for understanding dependence, managing cravings, preventing relapse, and planning safe recovery.",
+        "iconName": "flame",
         "tone": "dark"
+      },
+      {
+        "id": "card-1778070538795",
+        "title": "Child & Adolescent Concerns",
+        "description": "For attention issues, behavioral concerns, emotional difficulties, anxiety, academic stress, and parent guidance.\nStructured psychiatric evaluation and guidance for children, teenagers, and families.",
+        "iconName": "users",
+        "tone": "lime"
+      },
+      {
+        "id": "card-1778070556887",
+        "title": "Psychiatric Emergencies & Risk Assessment",
+        "description": "For severe distress, self-harm thoughts, suicidal thoughts, agitation, or sudden behavioral changes.\nClinical assessment and guidance for urgent mental health concerns, with clear next steps for safety and care.",
+        "iconName": "brain",
+        "tone": "sand"
       }
     ]
   },
   "howItWorks": {
-    "title": "How it Works",
-    "description": "Your journey to mental wellness is simplified through our structured 3-step digital process.",
+    "title": "How It Works",
+    "description": "Simple, private, and convenient online care.",
     "steps": [
       {
         "id": "book",
         "number": "01",
         "title": "Book Your Slot",
-        "description": "Select a time that suits your schedule through our secure HIPAA-compliant portal.",
+        "description": "Choose a suitable consultation time and share basic details securely.",
         "iconName": "calendar",
         "iconBg": "lilac"
       },
       {
         "id": "join",
         "number": "02",
-        "title": "Join Session",
-        "description": "Receive a private video link for your high-definition, encrypted consultation.",
+        "title": "Join Online Consultation",
+        "description": "Connect with Dr. Jyotika through a private video consultation from your home.",
         "iconName": "video",
         "iconBg": "sky"
       },
       {
         "id": "care",
         "number": "03",
-        "title": "Continued Care",
-        "description": "Access your treatment plans and schedule follow-ups through your dashboard.",
+        "title": "Receive a Care Plan",
+        "description": "Get a diagnosis-focused assessment, treatment plan, prescription if needed, and follow-up guidance.",
         "iconName": "heart-pulse",
         "iconBg": "lime"
       }
@@ -118,19 +132,20 @@
     "title": "Consultation Plans",
     "toggle": {
       "primary": "Self-Pay",
-      "secondary": "Insurance"
+      "secondary": ""
     },
     "plans": [
       {
         "id": "follow-up",
-        "eyebrow": "RETURNING PATIENTS",
-        "title": "Follow-up",
+        "eyebrow": "For existing patients",
+        "title": "Follow-up Consultation",
         "price": "₹1,000",
         "unit": "20–30 min",
         "features": [
-          "Medication Management",
-          "Progress Assessment",
-          "Pharmacy Coordination"
+          "Medication review",
+          "Progress assessment",
+          "Symptom follow-up",
+          "Treatment adjustment if required"
         ],
         "cta": {
           "label": "Book Follow-up",
@@ -139,46 +154,48 @@
       },
       {
         "id": "initial",
-        "eyebrow": "COMPREHENSIVE CARE",
+        "eyebrow": "",
         "title": "Initial Consultation",
         "price": "₹2,000",
         "unit": "45–60 min",
         "features": [
-          "Full Diagnostic Evaluation",
-          "Personalized Treatment Plan",
-          "Laboratory Review",
-          "Family History Analysis"
+          "Detailed psychiatric evaluation",
+          "Mental health history",
+          "Diagnosis and treatment planning",
+          "Medication guidance if required",
+          "Lifestyle and follow-up advice"
         ],
         "cta": {
-          "label": "Book Discovery",
+          "label": "Book Initial Consultation",
           "href": "#book-initial"
         },
         "highlighted": true,
-        "badge": "RECOMMENDED"
+        "badge": "First-Time Patients"
       },
       {
         "id": "priority",
-        "eyebrow": "URGENT SUPPORT",
-        "title": "Priority Plus",
+        "eyebrow": "For urgent support",
+        "title": "Priority Consultation",
         "price": "₹3,000",
-        "unit": "/ Session",
+        "unit": "No limit",
         "features": [
-          "Guaranteed 24-hr Booking",
-          "Extended 90-min Session",
-          "24/7 Portal Message Priority"
+          "Priority slot availability",
+          "Detailed concern assessment",
+          "Immediate treatment guidance",
+          "Follow-up planning if needed"
         ],
         "cta": {
-          "label": "Contact for Availability",
+          "label": "Check Availability",
           "href": "#book-priority"
         }
       }
     ]
   },
   "newsletter": {
-    "title": "Start your path to mental wellness today.",
-    "description": "Join our mailing list for weekly insights on mental health or book your first appointment now.",
-    "inputPlaceholder": "Your email address",
-    "buttonLabel": "Subscribe"
+    "title": "Take the first step toward feeling better.",
+    "description": "Connect with Dr. Jyotika Kanwar for private online psychiatric consultation and personalized treatment guidance.",
+    "inputPlaceholder": "",
+    "buttonLabel": "Book Consultation"
   },
   "footer": {
     "brand": "Brams Mind Care",
@@ -207,6 +224,268 @@
             "href": "#emergency"
           }
         ]
+      }
+    ]
+  },
+  "bookingSuccess": {
+    "title": "Booking Confirmed",
+    "subtitle": "Your consultation has been successfully booked. You will receive the meeting link via email / WhatsApp.",
+    "ctas": [
+      {
+        "id": "join",
+        "emoji": "🎥",
+        "label": "Join Consultation",
+        "href": "#",
+        "variant": "primary"
+      },
+      {
+        "id": "calendar",
+        "emoji": "📅",
+        "label": "Add to Calendar",
+        "href": "#",
+        "variant": "secondary"
+      },
+      {
+        "id": "receipt",
+        "emoji": "🧾",
+        "label": "Download Receipt",
+        "href": "#",
+        "variant": "secondary"
+      },
+      {
+        "id": "home",
+        "label": "← Back to Home",
+        "href": "/",
+        "variant": "text"
+      }
+    ],
+    "footerNote": "If you have any urgent concerns prior to your session, please contact our support desk directly at",
+    "supportEmail": "support@bramsmindcare.com",
+    "copyright": "© 2024 Brams Mind Care. Professional Psychiatric Care."
+  },
+  "bookingFailed": {
+    "title": "Payment Failed",
+    "body": "Your payment could not be completed. Don't worry — your appointment slot is still temporarily held.",
+    "ctas": [
+      {
+        "id": "retry",
+        "emoji": "🔄",
+        "label": "Retry Payment",
+        "href": "/book?plan={planId}",
+        "variant": "primary"
+      },
+      {
+        "id": "change",
+        "emoji": "💳",
+        "label": "Change Method",
+        "href": "/book?plan={planId}",
+        "variant": "secondary"
+      },
+      {
+        "id": "support",
+        "emoji": "💬",
+        "label": "Contact Support",
+        "href": "mailto:drjyotika@bramsmindcare.com",
+        "variant": "secondary"
+      }
+    ],
+    "supportEmail": "support@bramsmindcare.com",
+    "troubleshootTitle": "Troubleshooting",
+    "troubleshootBody": "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account."
+  },
+  "bookingStep1": {
+    "schedule": [
+      {
+        "day": 0,
+        "enabled": false,
+        "slots": []
+      },
+      {
+        "day": 1,
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s1-1",
+            "time": "10:00"
+          },
+          {
+            "id": "s1-2",
+            "time": "11:30"
+          },
+          {
+            "id": "s1-3",
+            "time": "13:30"
+          },
+          {
+            "id": "s1-4",
+            "time": "17:30"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s2-1",
+            "time": "10:00"
+          },
+          {
+            "id": "s2-2",
+            "time": "12:15"
+          },
+          {
+            "id": "s2-3",
+            "time": "14:00"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s3-1",
+            "time": "10:00"
+          },
+          {
+            "id": "s3-2",
+            "time": "11:30"
+          },
+          {
+            "id": "s3-3",
+            "time": "13:30"
+          },
+          {
+            "id": "s3-4",
+            "time": "17:30"
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s4-1",
+            "time": "10:00"
+          },
+          {
+            "id": "s4-2",
+            "time": "12:15"
+          },
+          {
+            "id": "s4-3",
+            "time": "14:00"
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s5-1",
+            "time": "10:00"
+          },
+          {
+            "id": "s5-2",
+            "time": "11:30"
+          },
+          {
+            "id": "s5-3",
+            "time": "14:00"
+          },
+          {
+            "id": "s5-4",
+            "time": "17:30"
+          }
+        ]
+      },
+      {
+        "day": 6,
+        "enabled": false,
+        "slots": []
+      }
+    ]
+  },
+  "bookingStep2": {
+    "fields": [
+      {
+        "id": "f-full_name",
+        "key": "full_name",
+        "label": "Full name",
+        "type": "text",
+        "placeholder": "Enter your full legal name",
+        "required": true,
+        "visible": true,
+        "width": "full"
+      },
+      {
+        "id": "f-age",
+        "key": "age",
+        "label": "Age",
+        "type": "number",
+        "placeholder": "28",
+        "required": false,
+        "visible": true,
+        "width": "half"
+      },
+      {
+        "id": "f-gender",
+        "key": "gender",
+        "label": "Gender",
+        "type": "select",
+        "placeholder": "",
+        "required": false,
+        "visible": true,
+        "width": "half",
+        "options": [
+          "Female",
+          "Male",
+          "Other",
+          "Prefer not to say"
+        ]
+      },
+      {
+        "id": "f-phone",
+        "key": "phone",
+        "label": "Phone number",
+        "type": "tel",
+        "placeholder": "+91 9876 543 210",
+        "required": true,
+        "visible": true,
+        "width": "half"
+      },
+      {
+        "id": "f-email",
+        "key": "email",
+        "label": "Email",
+        "type": "email",
+        "placeholder": "name@example.com",
+        "required": false,
+        "visible": true,
+        "width": "half"
+      },
+      {
+        "id": "f-city",
+        "key": "city",
+        "label": "City",
+        "type": "text",
+        "placeholder": "Current city of residence",
+        "required": false,
+        "visible": true,
+        "width": "full"
+      },
+      {
+        "id": "f-reason",
+        "key": "reason",
+        "label": "Reason for consultation",
+        "type": "textarea",
+        "placeholder": "Briefly describe what you'd like to discuss…",
+        "required": false,
+        "visible": true,
+        "width": "full"
       }
     ]
   }

@@ -1,6 +1,21 @@
+import type { Metadata } from "next";
 import { getSiteContent } from "../lib/api";
+import { SITE } from "../lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: { absolute: SITE.brand },
+  description: SITE.description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title:       SITE.brand,
+    description: SITE.description,
+    url:         SITE.url,
+    type:        "website",
+  },
+};
+
 import { TopNavBar } from "../components/TopNavBar";
 import { HeroSection } from "../components/HeroSection";
 import { SpecializedSupport } from "../components/SpecializedSupport";
@@ -8,13 +23,28 @@ import { HowItWorks } from "../components/HowItWorks";
 import { PricingPlans } from "../components/PricingPlans";
 import { NewsletterCTA } from "../components/NewsletterCTA";
 import { Footer } from "../components/Footer";
+import { FaqLd, ConsultationOffersLd } from "../components/JsonLd";
 
 export default async function Home() {
   const content = await getSiteContent();
 
   return (
     <>
-      <TopNavBar data={content.nav} />
+      <TopNavBar
+        data={content.nav}
+        ctaSlot={
+          <div className="topnav-cta-row">
+            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <a href={content.nav.cta.href} className="topnav-primary-cta">
+              {content.nav.cta.label}
+            </a>
+          </div>
+        }
+        mobileMenuItems={[
+          { label: "Login", href: "/patient/login" },
+          ...content.nav.links.map((l) => ({ label: l.label, href: l.href })),
+        ]}
+      />
       <main>
         <HeroSection data={content.hero} />
         <SpecializedSupport data={content.support} />
@@ -23,6 +53,10 @@ export default async function Home() {
         <NewsletterCTA data={content.newsletter} />
       </main>
       <Footer data={content.footer} />
+
+      {/* Homepage-specific structured data (AEO/GEO) */}
+      <FaqLd />
+      <ConsultationOffersLd />
     </>
   );
 }

@@ -1,29 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
+import type { DaySchedule } from "../../lib/content";
+import { StickyFooter } from "./StickyFooter";
+import { AlternativeRequestModal } from "./AlternativeRequestModal";
 import styles from "./BookingFlow.module.scss";
 import dtStyles from "./StepDateTime.module.scss";
 
-const TIME_SLOTS = [
-  "10:00 AM",
-  "11:30 AM",
-  "12:15 PM",
-  "01:30 PM",
-  "02:00 PM",
-  "05:30 PM",
-];
+// "10:00" (24h) → "10:00 AM" / "13:30" → "01:30 PM"
+function formatTime12(time: string): string {
+  const [hStr, minStr] = time.split(":");
+  let h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${String(h).padStart(2, "0")}:${minStr} ${ampm}`;
+}
 
-// Convert "10:00 AM" → "10:00:00"
-function to24h(label: string): string {
-  const m = label.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if (!m) return "00:00:00";
-  let h = parseInt(m[1], 10);
-  const min = m[2];
-  const ampm = m[3].toUpperCase();
-  if (ampm === "PM" && h !== 12) h += 12;
-  if (ampm === "AM" && h === 12) h = 0;
-  return `${String(h).padStart(2, "0")}:${min}:00`;
+// "10:00" → "10:00:00" (for DB storage)
+function toDbTime(time: string): string {
+  return `${time}:00`;
 }
 
 // ISO date for a given Date object (local timezone) → YYYY-MM-DD
@@ -34,8 +31,15 @@ function isoDate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+/** True when the weekday has slots and is marked enabled in the schedule. */
+function isDayAvailable(schedule: DaySchedule[], date: Date): boolean {
+  const ds = schedule.find((s) => s.day === date.getDay());
+  return !!(ds?.enabled && ds.slots.length > 0);
+}
+
 export function StepDateTime({
   plan,
+  schedule,
   selectedDate,
   selectedTime,
   onSelect,
@@ -43,6 +47,7 @@ export function StepDateTime({
   onNext,
 }: {
   plan: PlanInfo;
+  schedule: DaySchedule[];
   selectedDate: string | null;
   selectedTime: string | null;
   onSelect: (date: string, time: string) => void;
@@ -53,10 +58,32 @@ export function StepDateTime({
   today.setHours(0, 0, 0, 0);
 
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [altModalOpen, setAltModalOpen] = useState(false);
+  const slotsRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+
+  // Slots available for the currently selected date's weekday
+  const slotsForDate = useMemo(() => {
+    if (!selectedDate) return [];
+    const [y, mo, d] = selectedDate.split("-").map(Number);
+    const date = new Date(y, mo - 1, d);
+    const ds = schedule.find((s) => s.day === date.getDay());
+    return ds?.enabled ? (ds.slots ?? []) : [];
+  }, [selectedDate, schedule]);
+
+  // Auto-scroll to the slots card when a new date is picked (mobile only —
+  // on desktop the two cards are side-by-side and already in view).
+  function scrollToSlots(newIso: string) {
+    if (newIso === selectedDate) return;          // same date, no need to scroll
+    if (window.innerWidth >= 1024) return;        // desktop: slots already visible
+    const el = slotsRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
 
   return (
     <div>
@@ -94,17 +121,24 @@ export function StepDateTime({
           <div className={dtStyles.grid}>
             {days.map((d, i) => {
               if (!d) return <span key={i} className={dtStyles.empty} />;
-              const iso = isoDate(d);
-              const isPast    = d < today;
-              const isActive  = iso === selectedDate;
-              const isToday   = iso === isoDate(today);
+              const iso         = isoDate(d);
+              const isPast      = d < today;
+              const isAvailable = isDayAvailable(schedule, d);
+              const isDisabled  = isPast || !isAvailable;
+              const isActive    = iso === selectedDate;
+              const isToday     = iso === isoDate(today);
               return (
                 <button
                   key={i}
                   type="button"
-                  className={`${dtStyles.day} ${isActive ? dtStyles.dayActive : ""} ${isPast ? dtStyles.dayDisabled : ""} ${isToday ? dtStyles.dayToday : ""}`}
-                  disabled={isPast}
-                  onClick={() => onSelect(iso, selectedTime ?? "")}
+                  className={[
+                    dtStyles.day,
+                    isActive    ? dtStyles.dayActive    : "",
+                    isPast      ? dtStyles.dayDisabled  : !isAvailable ? dtStyles.dayUnavailable : "",
+                    isToday     ? dtStyles.dayToday     : "",
+                  ].join(" ")}
+                  disabled={isDisabled}
+                  onClick={() => { scrollToSlots(iso); onSelect(iso, ""); }}
                 >
                   {d.getDate()}
                 </button>
@@ -114,11 +148,11 @@ export function StepDateTime({
         </div>
 
         {/* Slots */}
-        <div className={dtStyles.slotsCard}>
+        <div ref={slotsRef} className={dtStyles.slotsCard}>
           <h3 className={dtStyles.slotsTitle}>Available Slots</h3>
           {selectedDate ? (
             <p className={dtStyles.slotsDate}>
-              {new Date(selectedDate).toLocaleDateString("en-IN", {
+              {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", {
                 weekday: "long",
                 month:   "short",
                 day:     "numeric",
@@ -128,45 +162,66 @@ export function StepDateTime({
             <p className={dtStyles.slotsHint}>Pick a date to see slots</p>
           )}
 
-          <div className={dtStyles.slotsGrid}>
-            {TIME_SLOTS.map((label) => {
-              const value = to24h(label);
-              const active = selectedTime === value;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
-                  disabled={!selectedDate}
-                  onClick={() => onSelect(selectedDate!, value)}
-                >
-                  <span className={dtStyles.slotTime}>{label}</span>
-                  <span className={dtStyles.slotDuration}>{plan.duration_minutes} min</span>
-                </button>
-              );
-            })}
-          </div>
+          {selectedDate && slotsForDate.length === 0 ? (
+            <p className={dtStyles.slotsHint}>No slots available on this day.</p>
+          ) : (
+            <div className={dtStyles.slotsGrid}>
+              {slotsForDate.map((slot) => {
+                const value  = toDbTime(slot.time);
+                const label  = formatTime12(slot.time);
+                const active = selectedTime === value;
+                return (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
+                    disabled={!selectedDate}
+                    onClick={() => onSelect(selectedDate!, value)}
+                  >
+                    <span className={dtStyles.slotTime}>{label}</span>
+                    <span className={dtStyles.slotDuration}>{plan.duration_minutes} min</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className={dtStyles.waitlistNote}>
             If you don&rsquo;t see availability that works for you,{" "}
-            <a href="#contact">request an alternative appointment</a>.
+            <button
+              type="button"
+              onClick={() => setAltModalOpen(true)}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                color: "inherit",
+                fontWeight: 600,
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontSize: "inherit",
+              }}
+            >
+              request an alternative appointment
+            </button>.
           </div>
+
+          {altModalOpen && (
+            <AlternativeRequestModal
+              plan={plan}
+              onClose={() => setAltModalOpen(false)}
+            />
+          )}
         </div>
       </div>
 
-      <div className={styles.actions}>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
-          ← Back to consultations
-        </button>
-        <button
-          type="button"
-          className={styles.primaryBtn}
-          disabled={!selectedDate || !selectedTime}
-          onClick={onNext}
-        >
-          Continue →
-        </button>
-      </div>
+      <StickyFooter
+        onBack={onBack}
+        backLabel="← Back to consultations"
+        onNext={onNext}
+        nextLabel="Continue →"
+        nextDisabled={!selectedDate || !selectedTime}
+      />
     </div>
   );
 }

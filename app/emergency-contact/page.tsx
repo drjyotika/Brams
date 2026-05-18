@@ -2,7 +2,14 @@ import { getPage } from "../../lib/pages";
 import { parsePageContent } from "../../lib/page-types";
 import { PublicPageShell } from "../../components/PublicPageShell";
 
-export const metadata = { title: "Emergency Contact — Brams Mind Care" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Emergency Contact",
+  description:
+    "Brams Mind Care is not an emergency service. If you are in crisis, contact your local emergency number or India's iCall helpline at +91-9152987821 immediately.",
+  alternates: { canonical: "/emergency-contact" },
+};
 
 export default async function EmergencyContactPage() {
   const page = await getPage("emergency-contact");
