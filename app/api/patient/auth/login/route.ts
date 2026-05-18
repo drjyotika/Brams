@@ -21,10 +21,16 @@ import {
  */
 export async function POST(req: Request) {
   try {
-    const { loginId, password } = (await req.json()) as {
-      loginId?: string;
-      password?: string;
-    };
+    let body: { loginId?: string; password?: string };
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Phone/email and password are required." },
+        { status: 400 },
+      );
+    }
+    const { loginId, password } = body;
 
     if (!loginId || !password) {
       return NextResponse.json(

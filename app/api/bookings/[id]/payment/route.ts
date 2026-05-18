@@ -8,12 +8,17 @@ import {
 
 type Ctx = { params: Promise<{ id: string }> };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // POST /api/bookings/[id]/payment
 // Verifies Razorpay signature and records the payment result.
 // Body: { gateway_payment_id, gateway_order_id, razorpay_signature }
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
     const { id } = await ctx.params;
+    if (!UUID_RE.test(id)) {
+      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    }
     const appointment = await getAppointmentById(id);
     if (!appointment) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });

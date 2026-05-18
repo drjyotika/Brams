@@ -4,6 +4,8 @@ import { getAppointmentById } from "../../../../../lib/bookings";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 let _rzp: Razorpay | null = null;
 function rzp(): Razorpay {
   if (_rzp) return _rzp;
@@ -20,6 +22,9 @@ function rzp(): Razorpay {
 export async function POST(_req: NextRequest, ctx: Ctx) {
   try {
     const { id } = await ctx.params;
+    if (!UUID_RE.test(id)) {
+      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    }
     const appointment = await getAppointmentById(id);
     if (!appointment) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
