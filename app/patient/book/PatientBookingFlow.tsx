@@ -15,6 +15,7 @@ import Link from "next/link";
 import type { DaySchedule } from "../../../lib/content";
 import { defaultContent } from "../../../lib/content";
 import { BramsLoader } from "../../../components/BramsLoader";
+import { StickyFooter } from "../../../components/BookingFlow/StickyFooter";
 import styles from "./book.module.scss";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -327,12 +328,12 @@ export function PatientBookingFlow() {
               </div>
             </div>
 
-            <div className={styles.actions}>
-              <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>← Back</button>
-              <button type="button" className={styles.primaryCta} disabled={!selectedDate || !selectedTime} onClick={() => setStep(3)}>
-                Continue
-              </button>
-            </div>
+            <StickyFooter
+              onBack={() => setStep(1)}
+              onNext={() => setStep(3)}
+              nextDisabled={!selectedDate || !selectedTime}
+              nextLabel="Continue →"
+            />
           </>
         )}
 
@@ -375,12 +376,13 @@ export function PatientBookingFlow() {
               </div>
             </div>
 
-            <div className={styles.actions}>
-              <button type="button" className={styles.backBtn} onClick={() => setStep(2)}>← Back</button>
-              <button type="button" className={styles.primaryCta} disabled={booking} onClick={confirmBooking}>
-                {booking ? "Booking…" : "Confirm Booking"}
-              </button>
-            </div>
+            <StickyFooter
+              onBack={() => setStep(2)}
+              onNext={confirmBooking}
+              nextDisabled={booking}
+              nextLoading={booking}
+              nextLabel="Confirm Booking →"
+            />
           </>
         )}
       </main>

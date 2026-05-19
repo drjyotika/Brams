@@ -119,6 +119,9 @@
   flex-shrink: 0;
   transition: background 120ms;
   position: relative;
+  // Must be above mobileMenuPanel (z-index 61) which shares the nav's
+  // stacking context, so the ✕ icon stays tappable while the drawer is open.
+  z-index: 65;
   // Icon bars are 18px and centered in a 40px button, so the visible
   // icon sits 11px inside the button. Pull the button left by the same
   // amount so the icon visually aligns with the page padding edge.

@@ -13,7 +13,8 @@
 .main {
   @include container;
   padding-top: 32px;
-  padding-bottom: 96px;
+  // Extra bottom padding on steps 2 & 3 to clear the sticky footer bar.
+  padding-bottom: 120px;
 }
 
 // ─── Step header ──────────────────────────────────────────────────────────────
