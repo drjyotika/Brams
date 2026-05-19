@@ -8,16 +8,23 @@
   color: $color-plum-deep;
   font-family: $font-display;
   font-weight: 600;
-  font-size: 16px;
-  padding: 10px 24px;
+  font-size: 14px;
+  padding: 8px 16px;
   border: none;
   border-radius: $radius-sm;
+  box-shadow: $shadow-card;
   cursor: pointer;
+  white-space: nowrap;
   transition: opacity 120ms ease, transform 120ms ease;
 
   &:hover {
     opacity: 0.92;
     transform: translateY(-1px);
+  }
+
+  @include md {
+    font-size: 16px;
+    padding: 10px 24px;
   }
 }
 
