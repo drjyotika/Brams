@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { StepDateTime } from "./StepDateTime";
 import { StepDetails }  from "./StepDetails";
-import { StepConfirm }  from "./StepConfirm";
 import { StepHeader }   from "./StepHeader";
 import { BramsLoader }  from "../BramsLoader";
 import type { BookingStep1Data, BookingStep2Data } from "../../lib/content";
@@ -32,7 +31,7 @@ export type PatientDetails = {
   reason: string;
 };
 
-export type Step = 1 | 2 | 3;
+export type Step = 1 | 2;
 
 export function BookingFlow() {
   const router = useRouter();
@@ -65,9 +64,6 @@ export function BookingFlow() {
     reason:    "",
   });
 
-  // Step 3 state
-  const [bookingId, setBookingId] = useState<string | null>(null);
-
   // Load plan info + booking flow config in parallel
   useEffect(() => {
     fetch(`/api/plans/${planId}`)
@@ -84,8 +80,7 @@ export function BookingFlow() {
       .catch(() => { /* keep defaults */ });
   }, [planId]);
 
-  // Smoothly scroll back to the top of the booking shell on step change,
-  // so users see the new step header — but never jump above the nav.
+  // Scroll to top on step change
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -134,45 +129,6 @@ export function BookingFlow() {
             details={details}
             onChange={setDetails}
             onBack={() => setStep(1)}
-            onSubmit={async () => {
-              // Submit booking, get appointment id
-              const res = await fetch("/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  plan_id:                 plan.id,
-                  scheduled_date:          selectedDate,
-                  scheduled_time:          selectedTime,
-                  reason_for_consultation: details.reason || undefined,
-                  patient: {
-                    full_name: details.full_name,
-                    age:       details.age ? parseInt(details.age, 10) : undefined,
-                    gender:    details.gender || undefined,
-                    phone:     details.phone,
-                    email:     details.email || undefined,
-                    city:      details.city || undefined,
-                  },
-                }),
-              });
-              if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.error || "Failed to create booking");
-              }
-              const data = await res.json();
-              setBookingId(data.id);
-              setStep(3);
-            }}
-          />
-        )}
-
-        {step === 3 && bookingId && (
-          <StepConfirm
-            plan={plan}
-            bookingId={bookingId}
-            scheduledDate={selectedDate!}
-            scheduledTime={selectedTime!}
-            patientName={details.full_name}
-            onBack={() => setStep(2)}
           />
         )}
       </main>

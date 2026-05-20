@@ -1,12 +1,10 @@
 "use client";
 
 /**
- * Patient-authenticated full-page booking flow.
- * Steps:
- *   1 — Plan selection
- *   2 — Date + time
- *   3 — Confirm (patient details pre-filled from session)
- *   4 — Success
+ * Patient-authenticated booking flow — 2 active steps.
+ *   Step 1 — Plan selection
+ *   Step 2 — Date, time, reason & summary → confirm
+ *   Step 3 — Success screen (not counted in progress)
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -40,7 +38,7 @@ type PatientInfo = {
   city:      string | null;
 };
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3; // 3 = success
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -81,12 +79,11 @@ function fmtDate(iso: string) {
   });
 }
 
-// ─── Step header ──────────────────────────────────────────────────────────────
+// ─── Step header meta (only for steps 1 & 2) ─────────────────────────────────
 
-const STEP_META: Record<Exclude<Step, 4>, { title: string; subtitle: string }> = {
-  1: { title: "Choose a Plan",         subtitle: "Pick a consultation plan that fits your needs." },
-  2: { title: "Choose Date & Time",    subtitle: "Find a slot that works for you. All sessions are conducted via a secure video platform." },
-  3: { title: "Review & Confirm",      subtitle: "Confirm your booking details. Your profile information is pre-filled." },
+const STEP_META: Record<1 | 2, { title: string; subtitle: string }> = {
+  1: { title: "Choose a Plan",            subtitle: "Pick a consultation plan that fits your needs." },
+  2: { title: "Date, Time & Confirm",     subtitle: "Select a slot, add any context for the session, then confirm your booking." },
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -94,12 +91,11 @@ const STEP_META: Record<Exclude<Step, 4>, { title: string; subtitle: string }> =
 export function PatientBookingFlow() {
   const router = useRouter();
 
-  // Page state
   const [step, setStep] = useState<Step>(1);
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Plan + schedule
+  // Plans + schedule
   const [plans, setPlans] = useState<Plan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [schedule, setSchedule] = useState<DaySchedule[]>(defaultContent.bookingStep1.schedule);
@@ -111,7 +107,7 @@ export function PatientBookingFlow() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  // Step 3 — reason
+  // Step 2 — reason + booking
   const [reason, setReason] = useState("");
   const [booking, setBooking] = useState(false);
   const [bookingErr, setBookingErr] = useState("");
@@ -156,6 +152,8 @@ export function PatientBookingFlow() {
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
+  const canConfirm = !booking && !!selectedDate && !!selectedTime;
+
   async function confirmBooking() {
     if (!patient || !selectedPlan || !selectedDate || !selectedTime) return;
     setBooking(true);
@@ -183,7 +181,7 @@ export function PatientBookingFlow() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Booking failed. Please try again.");
       }
-      setStep(4);
+      setStep(3);
     } catch (e) {
       setBookingErr((e as Error).message);
     } finally {
@@ -195,8 +193,8 @@ export function PatientBookingFlow() {
   if (authLoading || plansLoading) return <BramsLoader fullPage />;
   if (!patient) return null;
 
-  // ── Success step ──
-  if (step === 4) {
+  // ── Success screen (step 3) ──
+  if (step === 3) {
     return (
       <div className={styles.shell}>
         <main className={styles.main}>
@@ -209,7 +207,7 @@ export function PatientBookingFlow() {
             <div className={styles.successDetails}>
               <div><span>Plan</span><strong>{selectedPlan?.title}</strong></div>
               <div><span>Date</span><strong>{selectedDate && fmtDate(selectedDate)}</strong></div>
-              <div><span>Time</span><strong>{selectedTime && fmt12(selectedTime.slice(0,5))}</strong></div>
+              <div><span>Time</span><strong>{selectedTime && fmt12(selectedTime.slice(0, 5))}</strong></div>
             </div>
             <Link href="/patient" className={styles.primaryCta}>Back to Dashboard</Link>
           </div>
@@ -218,8 +216,8 @@ export function PatientBookingFlow() {
     );
   }
 
-  // ── Render ──
-  const meta = STEP_META[step as 1 | 2 | 3];
+  // ── Active step header ──
+  const meta = STEP_META[step as 1 | 2];
 
   return (
     <div className={styles.shell}>
@@ -227,12 +225,12 @@ export function PatientBookingFlow() {
         {/* Step header */}
         <div className={styles.stepHeader}>
           <div>
-            <span className={styles.stepEyebrow}>Step {step} of 3</span>
+            <span className={styles.stepEyebrow}>Step {step} of 2</span>
             <h1 className={styles.stepTitle}>{meta.title}</h1>
             <p className={styles.stepSubtitle}>{meta.subtitle}</p>
           </div>
           <div className={styles.progress}>
-            {[1, 2, 3].map(i => (
+            {[1, 2].map(i => (
               <span key={i} className={`${styles.progressDot} ${i <= step ? styles.progressDotActive : ""}`} />
             ))}
           </div>
@@ -263,9 +261,10 @@ export function PatientBookingFlow() {
           </div>
         )}
 
-        {/* ── Step 2: Date & time ── */}
+        {/* ── Step 2: Date & time + reason + summary ── */}
         {step === 2 && selectedPlan && (
           <>
+            {/* Calendar + Slots */}
             <div className={styles.layoutEqual}>
               {/* Calendar */}
               <div className={styles.card}>
@@ -273,7 +272,10 @@ export function PatientBookingFlow() {
                   <span className={styles.monthLabel}>{monthLabel}</span>
                   <span className={styles.calNav}>
                     {([["‹", -1], ["›", 1]] as const).map(([label, dir]) => (
-                      <button key={label} type="button" onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + dir, 1))} className={styles.calNavBtn}>
+                      <button key={label} type="button"
+                        onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + dir, 1))}
+                        className={styles.calNavBtn}
+                      >
                         {label}
                       </button>
                     ))}
@@ -328,19 +330,8 @@ export function PatientBookingFlow() {
               </div>
             </div>
 
-            <StickyFooter
-              onBack={() => setStep(1)}
-              onNext={() => setStep(3)}
-              nextDisabled={!selectedDate || !selectedTime}
-              nextLabel="Continue →"
-            />
-          </>
-        )}
-
-        {/* ── Step 3: Confirm ── */}
-        {step === 3 && selectedPlan && selectedDate && selectedTime && (
-          <>
-            <div className={styles.layoutEqual}>
+            {/* Reason + Summary */}
+            <div className={styles.layoutEqual} style={{ marginTop: 24 }}>
               {/* Reason */}
               <div className={styles.card}>
                 <label className={styles.label} htmlFor="reason">
@@ -361,8 +352,8 @@ export function PatientBookingFlow() {
               <div className={styles.summary}>
                 <h3 className={styles.summaryTitle}>Booking Summary</h3>
                 <div className={styles.summaryRow}><span>Plan</span><strong>{selectedPlan.title}</strong></div>
-                <div className={styles.summaryRow}><span>Date</span><strong>{fmtDate(selectedDate)}</strong></div>
-                <div className={styles.summaryRow}><span>Time</span><strong>{fmt12(selectedTime.slice(0,5))}</strong></div>
+                <div className={styles.summaryRow}><span>Date</span><strong>{selectedDate ? fmtDate(selectedDate) : "—"}</strong></div>
+                <div className={styles.summaryRow}><span>Time</span><strong>{selectedTime ? fmt12(selectedTime.slice(0, 5)) : "—"}</strong></div>
                 <div className={styles.summaryRow}><span>Duration</span><strong>{selectedPlan.duration_minutes} min</strong></div>
                 <div className={styles.summaryDivider} />
                 <div className={styles.summaryRow}><span>Name</span><strong>{patient.full_name}</strong></div>
@@ -377,9 +368,9 @@ export function PatientBookingFlow() {
             </div>
 
             <StickyFooter
-              onBack={() => setStep(2)}
+              onBack={() => setStep(1)}
               onNext={confirmBooking}
-              nextDisabled={booking}
+              nextDisabled={!canConfirm}
               nextLoading={booking}
               nextLabel="Confirm Booking →"
             />
