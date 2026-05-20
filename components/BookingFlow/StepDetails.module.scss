@@ -437,6 +437,22 @@ select.input {
   text-align: center;
 }
 
+// ─── Welcome-back banner ──────────────────────────────────────────────────────
+
+.welcomeBanner {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: $radius-sm;
+  color: #166534;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+
+  strong { font-weight: 700; }
+}
+
 // ─── Error ────────────────────────────────────────────────────────────────────
 
 .error {

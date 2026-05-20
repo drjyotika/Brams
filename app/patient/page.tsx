@@ -497,6 +497,17 @@ export default function PatientDashboard() {
                       Reschedule
                     </button>
                   )}
+                  {/* Receipt — only for paid appointments */}
+                  {a.payment_status === "paid" && (
+                    <a
+                      href={`/receipt/${a.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.rescheduleCardBtn}
+                    >
+                      🧾 Receipt
+                    </a>
+                  )}
                 </div>
               </div>
             );

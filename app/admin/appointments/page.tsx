@@ -159,11 +159,12 @@ export default function AppointmentsPage() {
                 <th>Status</th>
                 <th>Payment</th>
                 <th>Reports</th>
+                <th>Receipt</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 && (
-                <tr><td colSpan={9} className={styles.empty}>No appointments yet.</td></tr>
+                <tr><td colSpan={10} className={styles.empty}>No appointments yet.</td></tr>
               )}
               {sorted.map((a) => (
                 <Fragment key={a.id}>
@@ -189,11 +190,22 @@ export default function AppointmentsPage() {
                         </button>
                       )}
                     </td>
+                    <td>
+                      <a
+                        href={`/receipt/${a.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.editBtn}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        🧾 View
+                      </a>
+                    </td>
                   </tr>
 
                   {expanded.has(a.id) && (
                     <tr key={`${a.id}-uploads`}>
-                      <td colSpan={9} style={{ padding: 0, background: "#faf9fb" }}>
+                      <td colSpan={10} style={{ padding: 0, background: "#faf9fb" }}>
                         <div style={{ padding: "12px 16px" }}>
                           {loadingUploads.has(a.id) ? (
                             <span style={{ fontSize: 13, color: "#9b8fa0" }}>Loading reports…</span>

@@ -10,6 +10,16 @@ import dStyles from "./StepDetails.module.scss";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type WelcomeBackPatient = {
+  id:        string;
+  full_name: string;
+  phone:     string;
+  email:     string | null;
+  age:       number | null;
+  gender:    string | null;
+  city:      string | null;
+};
+
 type CouponResult = {
   discount_paise: number;
   final_paise:    number;
@@ -59,6 +69,8 @@ export function StepDetails({
   details,
   onChange,
   onBack,
+  skipEmailVerification = false,
+  successPath,
 }: {
   plan: PlanInfo;
   scheduledDate: string;
@@ -67,6 +79,10 @@ export function StepDetails({
   details: PatientDetails;
   onChange: (v: PatientDetails) => void;
   onBack: () => void;
+  /** When true the OTP widget is hidden and email is treated as already verified. */
+  skipEmailVerification?: boolean;
+  /** Override where the user is sent after payment (default: /book/success). */
+  successPath?: string;
 }) {
   const router = useRouter();
   const bookingIdRef = useRef<string | null>(null);
@@ -81,9 +97,25 @@ export function StepDetails({
   const [otpValue,      setOtpValue]      = useState("");
   const [otpVerifying,  setOtpVerifying]  = useState(false);
   const [otpError,      setOtpError]      = useState<string | null>(null);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [verifiedEmail, setVerifiedEmail] = useState("");   // the email that was verified
+  // When skipEmailVerification is true (patient flow) treat email as pre-verified.
+  const [emailVerified, setEmailVerified] = useState(skipEmailVerification);
+  const [verifiedEmail, setVerifiedEmail] = useState(skipEmailVerification ? details.email.toLowerCase() : "");
   const [resendTimer,   setResendTimer]   = useState(0);
+
+  // ── Welcome-back state (set after OTP verify when patient is found) ─────────
+  const [welcomeBack, setWelcomeBack] = useState<WelcomeBackPatient | null>(null);
+
+  // Ensure emailVerified stays in sync when skipEmailVerification prop is true.
+  // (Defensive guard against any timing edge on first render in patient flow.)
+  useEffect(() => {
+    if (skipEmailVerification && !emailVerified) {
+      setEmailVerified(true);
+    }
+    if (skipEmailVerification && !verifiedEmail && details.email) {
+      setVerifiedEmail(details.email.toLowerCase());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipEmailVerification]);
 
   // Countdown tick
   useEffect(() => {
@@ -138,7 +170,9 @@ export function StepDetails({
       return val.trim().length >= (f.key === "phone" ? 7 : 2);
     })
     && details.phone.trim().length >= 7
-    && emailVerified;  // OTP verification is the gate, not just format
+    // In patient flow (skipEmailVerification) the user is already authenticated —
+    // no OTP needed. In public flow, OTP verification is the gate.
+    && (skipEmailVerification || emailVerified);
 
   // ── OTP: send ─────────────────────────────────────────────────────────────
 
@@ -180,7 +214,11 @@ export function StepDetails({
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ email, otp: otpValue.trim() }),
       });
-      const data = await res.json();
+      const data = await res.json() as {
+        verified: boolean;
+        error?: string;
+        patient?: WelcomeBackPatient | null;
+      };
       if (!data.verified) {
         setOtpError(data.error || "Incorrect OTP. Please try again.");
       } else {
@@ -189,6 +227,21 @@ export function StepDetails({
         setOtpSent(false);
         setOtpValue("");
         setOtpError(null);
+
+        // ── Seamless pre-fill when returning patient is found ──
+        if (data.patient) {
+          const p = data.patient;
+          setWelcomeBack(p);
+          onChange({
+            ...details,
+            full_name: p.full_name || details.full_name,
+            phone:     p.phone     || details.phone,
+            email:     email,
+            age:       p.age    != null ? String(p.age) : details.age,
+            gender:    p.gender ?? details.gender,
+            city:      p.city   ?? details.city,
+          });
+        }
       }
     } catch {
       setOtpError("Network error. Please try again.");
@@ -328,13 +381,14 @@ export function StepDetails({
 
       // 5. Success redirect
       const params = new URLSearchParams({
-        id:   bookingId!,
-        plan: plan.title,
-        date: scheduledDate,
-        time: scheduledTime,
-        name: details.full_name,
+        id:       bookingId!,
+        plan:     plan.title,
+        date:     scheduledDate,
+        time:     scheduledTime,
+        name:     details.full_name,
+        duration: String(plan.duration_minutes),
       });
-      router.push(`/book/success?${params.toString()}`);
+      router.push(`${successPath ?? "/book/success"}?${params.toString()}`);
     } catch (e) {
       const msg = (e as Error).message;
       if (msg === "CANCELLED") { setPaying(false); return; }
@@ -353,6 +407,13 @@ export function StepDetails({
 
   return (
     <div>
+      {/* Welcome-back banner — shown when OTP reveals a returning patient */}
+      {welcomeBack && (
+        <div className={dStyles.welcomeBanner}>
+          👋 Welcome back, <strong>{welcomeBack.full_name}</strong>! We&apos;ve filled in your details from your previous visit.
+        </div>
+      )}
+
       <div className={styles.layout}>
         {/* ── Left: patient details form ── */}
         <div className={styles.card}>
@@ -365,96 +426,109 @@ export function StepDetails({
                     <div className={dStyles.field}>
                       <span className={dStyles.label}>Email *</span>
 
-                      {/* Email input row */}
-                      <div className={dStyles.emailRow}>
+                      {/* When OTP is skipped (patient flow) just show a plain input */}
+                      {skipEmailVerification ? (
                         <input
                           className={dStyles.input}
                           type="email"
                           value={details.email}
-                          onChange={(e) => handleEmailChange(e.target.value)}
+                          onChange={(e) => set("email", e.target.value)}
                           placeholder={f.placeholder || "name@example.com"}
-                          disabled={emailVerified}
-                          style={{ flex: 1 }}
                         />
-                        {emailVerified ? (
-                          <div className={dStyles.emailVerifiedActions}>
-                            <span className={dStyles.verifiedBadge}>✓ Verified</span>
-                            <button
-                              type="button"
-                              className={dStyles.changeEmailBtn}
-                              onClick={() => {
-                                setEmailVerified(false);
-                                setVerifiedEmail("");
-                                setOtpSent(false);
-                                setOtpValue("");
-                                setOtpError(null);
-                              }}
-                            >
-                              Change
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            className={dStyles.sendOtpBtn}
-                            onClick={sendOtp}
-                            disabled={!details.email.includes("@") || otpSending || otpSent}
-                          >
-                            {otpSending ? "Sending…" : otpSent ? "Code sent" : "Send OTP"}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* OTP entry — shown after code is sent */}
-                      {otpSent && !emailVerified && (
-                        <div className={dStyles.otpSection}>
-                          <p className={dStyles.otpHint}>
-                            Enter the 6-digit code sent to <strong>{details.email}</strong>
-                          </p>
-                          <div className={dStyles.otpRow}>
+                      ) : (
+                        <>
+                          {/* Email input row */}
+                          <div className={dStyles.emailRow}>
                             <input
-                              className={dStyles.otpInput}
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={6}
-                              placeholder="000000"
-                              value={otpValue}
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                                setOtpValue(v);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && otpValue.length === 6) verifyOtpCode();
-                              }}
-                              autoFocus
+                              className={dStyles.input}
+                              type="email"
+                              value={details.email}
+                              onChange={(e) => handleEmailChange(e.target.value)}
+                              placeholder={f.placeholder || "name@example.com"}
+                              disabled={emailVerified}
+                              style={{ flex: 1 }}
                             />
-                            <button
-                              type="button"
-                              className={dStyles.verifyOtpBtn}
-                              onClick={verifyOtpCode}
-                              disabled={otpValue.length < 6 || otpVerifying}
-                            >
-                              {otpVerifying ? "Verifying…" : "Verify"}
-                            </button>
+                            {emailVerified ? (
+                              <div className={dStyles.emailVerifiedActions}>
+                                <span className={dStyles.verifiedBadge}>✓ Verified</span>
+                                <button
+                                  type="button"
+                                  className={dStyles.changeEmailBtn}
+                                  onClick={() => {
+                                    setEmailVerified(false);
+                                    setVerifiedEmail("");
+                                    setOtpSent(false);
+                                    setOtpValue("");
+                                    setOtpError(null);
+                                  }}
+                                >
+                                  Change
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                className={dStyles.sendOtpBtn}
+                                onClick={sendOtp}
+                                disabled={!details.email.includes("@") || otpSending || otpSent}
+                              >
+                                {otpSending ? "Sending…" : otpSent ? "Code sent" : "Send OTP"}
+                              </button>
+                            )}
                           </div>
 
-                          {resendTimer > 0 ? (
-                            <p className={dStyles.resendNote}>
-                              Didn&apos;t receive it? Resend in {resendTimer}s
-                            </p>
-                          ) : (
-                            <button
-                              type="button"
-                              className={dStyles.resendBtn}
-                              onClick={sendOtp}
-                              disabled={otpSending}
-                            >
-                              {otpSending ? "Sending…" : "Resend OTP"}
-                            </button>
-                          )}
+                          {/* OTP entry — shown after code is sent */}
+                          {otpSent && !emailVerified && (
+                            <div className={dStyles.otpSection}>
+                              <p className={dStyles.otpHint}>
+                                Enter the 6-digit code sent to <strong>{details.email}</strong>
+                              </p>
+                              <div className={dStyles.otpRow}>
+                                <input
+                                  className={dStyles.otpInput}
+                                  type="text"
+                                  inputMode="numeric"
+                                  maxLength={6}
+                                  placeholder="000000"
+                                  value={otpValue}
+                                  onChange={(e) => {
+                                    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                                    setOtpValue(v);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && otpValue.length === 6) verifyOtpCode();
+                                  }}
+                                  autoFocus
+                                />
+                                <button
+                                  type="button"
+                                  className={dStyles.verifyOtpBtn}
+                                  onClick={verifyOtpCode}
+                                  disabled={otpValue.length < 6 || otpVerifying}
+                                >
+                                  {otpVerifying ? "Verifying…" : "Verify"}
+                                </button>
+                              </div>
 
-                          {otpError && <p className={dStyles.otpError}>{otpError}</p>}
-                        </div>
+                              {resendTimer > 0 ? (
+                                <p className={dStyles.resendNote}>
+                                  Didn&apos;t receive it? Resend in {resendTimer}s
+                                </p>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={dStyles.resendBtn}
+                                  onClick={sendOtp}
+                                  disabled={otpSending}
+                                >
+                                  {otpSending ? "Sending…" : "Resend OTP"}
+                                </button>
+                              )}
+
+                              {otpError && <p className={dStyles.otpError}>{otpError}</p>}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -531,10 +605,6 @@ export function StepDetails({
               <div className={dStyles.detailItem}>
                 <span className={dStyles.detailLabel}>Mode</span>
                 <span className={dStyles.detailValue}>Online Video Call</span>
-              </div>
-              <div className={dStyles.detailItem}>
-                <span className={dStyles.detailLabel}>Duration</span>
-                <span className={dStyles.detailValue}>{plan.duration_minutes} min</span>
               </div>
             </div>
           </div>

@@ -223,6 +223,41 @@
   &:hover { background: #d4d4d6; }
 }
 
+// Calendar + Receipt utility row
+.utilRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.utilBtn {
+  height: 52px;
+  background: $color-bg-muted;
+  border: 1.5px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  color: $color-ink;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &:hover:not(:disabled) {
+    background: $color-lilac-soft;
+    border-color: $color-plum;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
 .homeLink {
   display: flex;
   align-items: center;

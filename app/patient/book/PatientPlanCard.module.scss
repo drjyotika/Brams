@@ -1,0 +1,164 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/mixins" as *;
+
+// Grid matches homepage PricingPlans grid
+.planGrid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  margin-bottom: 48px;
+
+  @include md { grid-template-columns: repeat(2, 1fr); }
+  @include lg { grid-template-columns: repeat(3, 1fr); align-items: center; }
+}
+
+// Base card — matches PricingPlans .plan exactly
+.plan {
+  position: relative;
+  background: #fff;
+  border: 1px solid $color-lilac-line;
+  border-radius: $radius-xl;
+  padding: 41px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  cursor: pointer;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover {
+    box-shadow: 0 8px 32px rgba(116, 84, 117, 0.12);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid $color-plum;
+    outline-offset: 2px;
+  }
+}
+
+.eyebrow {
+  @include eyebrow;
+  color: $color-ink-muted;
+}
+
+.planTitle {
+  margin: 16px 0 8px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: $color-ink;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+
+.price {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 40px;
+  color: $color-ink;
+}
+
+.unit {
+  font-size: 14px;
+  color: $color-ink-soft;
+}
+
+.features {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-ink-soft;
+}
+
+.featureIcon {
+  color: $color-plum;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.selectBtn {
+  margin-top: auto;
+  border-radius: $radius-sm;
+  padding: 18px 2px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+  border: 2px solid rgba(207, 195, 204, 0.3);
+  color: $color-plum-deep;
+  background: #fff;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: $color-lilac;
+    border-color: $color-lilac;
+  }
+}
+
+// Featured card — dark plum background, matches homepage .planFeatured
+.planFeatured {
+  background: $color-plum;
+  color: #fff;
+  box-shadow: $shadow-recommended;
+  transform: scale(1.05);
+
+  &:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(116, 84, 117, 0.22);
+  }
+
+  .eyebrow   { color: $color-lilac; }
+  .planTitle { color: #fff; }
+  .price     { color: #fff; }
+
+  .unit,
+  .feature   { color: rgba(200, 162, 200, 0.8); }
+
+  .featureIcon { color: $color-lilac; }
+
+  .selectBtn {
+    background:   $color-lilac;
+    color:        $color-plum-deep;
+    border-color: transparent;
+
+    &:hover { background: #d6b3d6; }
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: $color-lime;
+  color: $color-lime-ink;
+  border-radius: $radius-pill;
+  padding: 4px 16px;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

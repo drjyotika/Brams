@@ -1,0 +1,308 @@
+@use "../../../styles/tokens" as *;
+@use "../../../styles/mixins" as *;
+
+// ─── Page chrome ──────────────────────────────────────────────────────────────
+
+.page {
+  min-height: 100vh;
+  background: $color-bg;
+  padding: 32px 16px 64px;
+
+  @include md { padding: 40px 24px 80px; }
+
+  @media print {
+    background: #fff;
+    padding: 0;
+  }
+}
+
+.loadingMsg,
+.errorMsg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 12px;
+  font-size: 16px;
+  color: $color-ink-soft;
+  text-align: center;
+}
+
+// Print / save bar — hidden during print
+.printBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto 20px;
+
+  @media print { display: none; }
+}
+
+.printBarNote {
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-ink-soft;
+}
+
+.printBtn {
+  padding: 10px 20px;
+  background: $color-plum;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+
+  &:hover { opacity: 0.88; }
+}
+
+// ─── Receipt card ─────────────────────────────────────────────────────────────
+
+.receipt {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-lg;
+  box-shadow: 0 4px 24px rgba(116, 84, 117, 0.06);
+  padding: 40px 36px;
+
+  @media print {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    max-width: none;
+    padding: 24px;
+  }
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+.receiptHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.clinicInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clinicName {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 24px;
+  color: $color-plum;
+  margin: 0;
+}
+
+.clinicTagline {
+  font-size: 13px;
+  color: $color-ink-soft;
+  margin: 0;
+}
+
+.clinicContact {
+  font-size: 12px;
+  color: $color-ink-muted;
+  margin: 0;
+}
+
+.receiptMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.receiptBadge {
+  display: inline-block;
+  background: $color-plum;
+  color: #fff;
+  border-radius: $radius-pill;
+  padding: 4px 14px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
+
+.receiptId {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 22px;
+  color: $color-ink;
+  margin: 4px 0 0;
+}
+
+.receiptDate {
+  font-size: 12px;
+  color: $color-ink-muted;
+  margin: 0;
+}
+
+// ─── Divider ──────────────────────────────────────────────────────────────────
+
+.divider {
+  height: 1px;
+  background: rgba(207, 195, 204, 0.35);
+  margin: 28px 0;
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: $color-ink-muted;
+  margin: 0;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(207, 195, 204, 0.25);
+  font-size: 14px;
+  gap: 16px;
+
+  &:last-child { border-bottom: none; }
+}
+
+.detailLabel {
+  color: $color-ink-muted;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  color: $color-ink;
+  font-weight: 600;
+  text-align: right;
+}
+
+// ─── Payment table ────────────────────────────────────────────────────────────
+
+.payTable {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(207, 195, 204, 0.3);
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.payRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: $color-ink-soft;
+  border-bottom: 1px solid rgba(207, 195, 204, 0.2);
+
+  &:last-child { border-bottom: none; }
+
+  span:last-child { font-weight: 600; color: $color-ink; }
+}
+
+.payRowDiscount {
+  color: #16a34a;
+  span { color: #16a34a !important; }
+}
+
+.payRowTotal {
+  background: $color-bg-muted;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 17px;
+  color: $color-ink;
+
+  span:last-child {
+    color: $color-plum;
+    font-weight: 800;
+    font-size: 20px;
+  }
+}
+
+.paymentIds {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paymentIdRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: $color-ink-muted;
+  margin: 0;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 11px;
+    background: $color-bg-muted;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: $color-ink;
+    word-break: break-all;
+  }
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+
+.receiptFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footerLine {
+  font-size: 13px;
+  color: $color-ink-soft;
+  margin: 0;
+  line-height: 1.5;
+
+  a {
+    color: $color-plum;
+    font-weight: 600;
+  }
+}
+
+.footerSmall {
+  font-size: 11px;
+  color: $color-ink-muted;
+  margin: 8px 0 0;
+  font-family: "SF Mono", "Fira Code", monospace;
+  word-break: break-all;
+}

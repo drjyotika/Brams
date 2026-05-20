@@ -179,7 +179,6 @@ export function StepDateTime({
                     onClick={() => onSelect(selectedDate!, value)}
                   >
                     <span className={dtStyles.slotTime}>{label}</span>
-                    <span className={dtStyles.slotDuration}>{plan.duration_minutes} min</span>
                   </button>
                 );
               })}
