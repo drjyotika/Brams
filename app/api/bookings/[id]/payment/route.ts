@@ -7,6 +7,7 @@ import {
   updateAppointment,
 } from "../../../../../lib/bookings";
 import { buildAppointmentConfirmationEmail, sendEmail } from "../../../../../lib/email";
+import { incrementCouponUsage } from "../../../../../lib/coupons";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -67,6 +68,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     });
 
     await updateAppointment(id, { payment_status: "paid", status: "confirmed" });
+
+    // Increment coupon usage count if one was applied (fire-and-forget).
+    if (appointment.coupon_code) {
+      incrementCouponUsage(appointment.coupon_code)
+        .catch((e) => console.error("[payment] coupon increment failed:", e));
+    }
 
     // Send appointment confirmation email (fire-and-forget).
     getPatientById(appointment.patient_id).then((patient) => {

@@ -14,6 +14,14 @@ type Upload = {
   file_size: number | null;
 };
 
+type CouponResult = {
+  discount_paise: number;
+  final_paise:    number;
+  code:           string;
+  discount_type:  "percent" | "fixed";
+  discount_value: number;
+};
+
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") { resolve(false); return; }
@@ -46,22 +54,60 @@ export function StepConfirm({
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploads, setUploads]     = useState<Upload[]>([]);
+  const [uploads,  setUploads]  = useState<Upload[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [paying, setPaying]       = useState(false);
-  const [error, setError]         = useState<string | null>(null);
+  const [paying,   setPaying]   = useState(false);
+  const [error,    setError]    = useState<string | null>(null);
+
+  // Coupon state
+  const [couponInput,   setCouponInput]   = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError,   setCouponError]   = useState<string | null>(null);
+  const [coupon,        setCoupon]        = useState<CouponResult | null>(null);
 
   const consultationFee = plan.price_paise;
-  const bookingFee      = 0;
-  const total           = consultationFee + bookingFee;
+  const discountPaise   = coupon?.discount_paise ?? 0;
+  const total           = (coupon?.final_paise ?? consultationFee);
 
   const dateLabel = new Date(scheduledDate).toLocaleDateString("en-IN", {
-    weekday: "short",
-    day:     "numeric",
-    month:   "short",
-    year:    "numeric",
+    weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
   const timeLabel = formatTime(scheduledTime);
+
+  // ─── Coupon apply ────────────────────────────────────────────────────────────
+
+  async function applyCoupon() {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError(null);
+    setCoupon(null);
+    try {
+      const res  = await fetch("/api/coupons/validate", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ code, amount_paise: consultationFee }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        setCouponError(data.error || "Invalid coupon.");
+      } else {
+        setCoupon(data as CouponResult);
+      }
+    } catch {
+      setCouponError("Could not validate coupon. Please try again.");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function removeCoupon() {
+    setCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  }
+
+  // ─── File upload ─────────────────────────────────────────────────────────────
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -90,6 +136,8 @@ export function StepConfirm({
     }
   };
 
+  // ─── Pay ─────────────────────────────────────────────────────────────────────
+
   const pay = async () => {
     setPaying(true);
     setError(null);
@@ -97,8 +145,12 @@ export function StepConfirm({
       const loaded = await loadRazorpayScript();
       if (!loaded) throw new Error("Could not load payment gateway (script blocked or offline)");
 
-      // Create Razorpay order on the server
-      const orderRes = await fetch(`/api/bookings/${bookingId}/order`, { method: "POST" });
+      // Create Razorpay order — pass coupon code for server-side validation
+      const orderRes = await fetch(`/api/bookings/${bookingId}/order`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ couponCode: coupon?.code ?? undefined }),
+      });
       if (!orderRes.ok) {
         const body = await orderRes.json().catch(() => ({}));
         throw new Error(`Order failed (${orderRes.status}): ${body.error || orderRes.statusText}`);
@@ -108,7 +160,6 @@ export function StepConfirm({
       };
       if (!keyId) throw new Error("Payment gateway key missing — contact support");
 
-      // Open Razorpay checkout modal and wait for result
       await new Promise<void>((resolve, reject) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rzp = new (window as any).Razorpay({
@@ -137,9 +188,7 @@ export function StepConfirm({
               });
               if (!verifyRes.ok) throw new Error("Payment verification failed. Contact support.");
               resolve();
-            } catch (e) {
-              reject(e);
-            }
+            } catch (e) { reject(e); }
           },
           modal: { ondismiss: () => reject(new Error("CANCELLED")) },
         });
@@ -160,10 +209,7 @@ export function StepConfirm({
       router.push(`/book/success?${params.toString()}`);
     } catch (e) {
       const msg = (e as Error).message;
-      if (msg === "CANCELLED") {
-        setPaying(false);
-        return;
-      }
+      if (msg === "CANCELLED") { setPaying(false); return; }
       console.error("[pay] failed:", e);
       setError(msg);
       const params = new URLSearchParams({ plan: plan.id, error: msg });
@@ -173,9 +219,12 @@ export function StepConfirm({
     }
   };
 
+  // ─── Render ──────────────────────────────────────────────────────────────────
+
   return (
     <div>
       <div className={styles.layout}>
+        {/* Left: booking details + upload */}
         <div className={cStyles.confirmCard}>
           <div className={cStyles.headerRow}>
             <div>
@@ -206,27 +255,15 @@ export function StepConfirm({
 
           <div className={cStyles.uploadSection}>
             <h4>Upload reports (optional)</h4>
-            <p className={cStyles.uploadHint}>
-              PDF, JPG, or PNG &mdash; up to 10 MB each.
-            </p>
-
+            <p className={cStyles.uploadHint}>PDF, JPG, or PNG &mdash; up to 10 MB each.</p>
             <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              multiple
-              hidden
-              onChange={(e) => handleUpload(e.target.files)}
+              ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png"
+              multiple hidden onChange={(e) => handleUpload(e.target.files)}
             />
-            <button
-              type="button"
-              className={cStyles.uploadBtn}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
+            <button type="button" className={cStyles.uploadBtn}
+              onClick={() => fileInputRef.current?.click()} disabled={uploading}>
               {uploading ? "Uploading…" : "+ Choose Files"}
             </button>
-
             {uploads.length > 0 && (
               <ul className={cStyles.uploadList}>
                 {uploads.map((u) => (
@@ -238,18 +275,55 @@ export function StepConfirm({
             )}
           </div>
 
-          <div className={cStyles.secureBadge}>🔒 100% Secure & Confidential</div>
+          <div className={cStyles.secureBadge}>🔒 100% Secure &amp; Confidential</div>
         </div>
 
+        {/* Right: payment summary */}
         <div className={cStyles.payCard}>
           <h3 className={cStyles.payHeading}>Payment Summary</h3>
 
           <Row label="Consultation Fee" value={formatINR(consultationFee)} />
-          {bookingFee > 0 && <Row label="Booking Fee" value={formatINR(bookingFee)} />}
+
+          {discountPaise > 0 && (
+            <Row
+              label={`Discount (${coupon!.discount_type === "percent" ? `${coupon!.discount_value}%` : formatINR(coupon!.discount_value)})`}
+              value={`− ${formatINR(discountPaise)}`}
+              discount
+            />
+          )}
 
           <div className={cStyles.divider} />
-
           <Row label="Total" value={formatINR(total)} strong />
+
+          {/* Coupon input */}
+          <div className={cStyles.couponSection}>
+            {coupon ? (
+              <div className={cStyles.couponApplied}>
+                <span>🏷️ <strong>{coupon.code}</strong> applied</span>
+                <button className={cStyles.couponRemove} onClick={removeCoupon}>Remove</button>
+              </div>
+            ) : (
+              <div className={cStyles.couponRow}>
+                <input
+                  className={cStyles.couponInput}
+                  placeholder="Coupon code"
+                  value={couponInput}
+                  onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") applyCoupon(); }}
+                  disabled={couponLoading}
+                  maxLength={30}
+                />
+                <button
+                  className={cStyles.couponApplyBtn}
+                  onClick={applyCoupon}
+                  disabled={couponLoading || !couponInput.trim()}
+                >
+                  {couponLoading ? "…" : "Apply"}
+                </button>
+              </div>
+            )}
+            {couponError && <p className={cStyles.couponError}>{couponError}</p>}
+          </div>
 
           {error && <p className={cStyles.error}>{error}</p>}
         </div>
@@ -266,19 +340,25 @@ export function StepConfirm({
   );
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({
+  label, value, strong, discount,
+}: {
+  label: string; value: string; strong?: boolean; discount?: boolean;
+}) {
   return (
     <div style={{
-      display:        "flex",
-      justifyContent: "space-between",
-      padding:        "8px 0",
-      fontSize:       strong ? 17 : 14,
-      fontWeight:     strong ? 700 : 400,
-      fontFamily:     strong ? "var(--font-display)" : undefined,
-      color:          strong ? "#1e1b24" : "#6b7280",
+      display: "flex", justifyContent: "space-between",
+      padding: "8px 0",
+      fontSize:   strong ? 17 : 14,
+      fontWeight: strong ? 700 : 400,
+      fontFamily: strong ? "var(--font-display)" : undefined,
+      color:      strong ? "#1e1b24" : "#6b7280",
     }}>
-      <span>{label}</span>
-      <span style={{ color: strong ? "#745475" : "#1e1b24", fontWeight: 600 }}>{value}</span>
+      <span style={{ color: discount ? "#16a34a" : undefined }}>{label}</span>
+      <span style={{
+        color:      discount ? "#16a34a" : strong ? "#745475" : "#1e1b24",
+        fontWeight: 600,
+      }}>{value}</span>
     </div>
   );
 }

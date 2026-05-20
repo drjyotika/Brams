@@ -58,8 +58,10 @@ export type Appointment = {
   total_paise: number;
   status: AppointmentStatus;
   payment_status: PaymentStatus;
-  meeting_link: string | null;
-  admin_notes: string | null;
+  meeting_link:   string | null;
+  admin_notes:    string | null;
+  coupon_code:    string | null;
+  discount_paise: number;
   created_at: Date;
   updated_at: Date;
 };
