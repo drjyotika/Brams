@@ -638,6 +638,34 @@ export function buildHelpRequestConfirmationEmail(input: {
   return { subject: `We received your request — ${BRAND.name}`, html, text };
 }
 
+// ─── Booking email OTP ───────────────────────────────────────────────────────
+
+export function buildBookingOtpEmail(input: {
+  email: string;
+  otp:   string;
+}): EmailMessage {
+  const subject   = `${input.otp} — your booking verification code`;
+  const preheader = `Your one-time code is ${input.otp}. Valid for 10 minutes.`;
+
+  const html = layout({
+    preheader,
+    heading: "Verify your email",
+    intro:   `Enter the code below to verify <strong>${escapeHtml(input.email)}</strong> and continue with your booking.`,
+    content: codeBlock("One-time code · expires in 10 minutes", input.otp)
+      + `<p style="margin:0;font-size:13px;color:${BRAND.mutedColor};text-align:center;">Do not share this code with anyone.</p>`,
+    footer:  `If you didn't request this, you can safely ignore this email.<br/>© ${new Date().getFullYear()} ${BRAND.name}.`,
+  });
+
+  const text = plainText({
+    heading: "Verify your email",
+    intro:   `Your booking verification code is: ${input.otp}`,
+    body:    "Valid for 10 minutes. Do not share this code with anyone.\n\nIf you didn't request this, ignore this email.",
+    footer:  `© ${new Date().getFullYear()} ${BRAND.name}`,
+  });
+
+  return { subject, html, text };
+}
+
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {

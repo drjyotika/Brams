@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PatientDetails, PlanInfo } from "./index";
 import type { BookingField } from "../../lib/content";
@@ -69,12 +69,28 @@ export function StepDetails({
   onBack: () => void;
 }) {
   const router = useRouter();
-
-  // Reuse existing booking on Razorpay cancel so we don't create duplicates
   const bookingIdRef = useRef<string | null>(null);
 
+  // Payment
   const [paying,   setPaying]   = useState(false);
   const [error,    setError]    = useState<string | null>(null);
+
+  // ── Email OTP state ────────────────────────────────────────────────────────
+  const [otpSent,       setOtpSent]       = useState(false);
+  const [otpSending,    setOtpSending]    = useState(false);
+  const [otpValue,      setOtpValue]      = useState("");
+  const [otpVerifying,  setOtpVerifying]  = useState(false);
+  const [otpError,      setOtpError]      = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState("");   // the email that was verified
+  const [resendTimer,   setResendTimer]   = useState(0);
+
+  // Countdown tick
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const t = setTimeout(() => setResendTimer((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendTimer]);
 
   // Coupon state
   const [couponInput,   setCouponInput]   = useState("");
@@ -91,21 +107,97 @@ export function StepDetails({
   });
   const timeLabel = formatTime(scheduledTime);
 
+  // ── Field helpers ──────────────────────────────────────────────────────────
+
   const set = (key: BookingField["key"], val: string) =>
     onChange({ ...details, [key]: val });
 
+  function handleEmailChange(newEmail: string) {
+    set("email", newEmail);
+    // If the email changes away from the verified one, reset verification
+    if (emailVerified && newEmail.trim().toLowerCase() !== verifiedEmail) {
+      setEmailVerified(false);
+      setVerifiedEmail("");
+      setOtpSent(false);
+      setOtpValue("");
+      setOtpError(null);
+      setResendTimer(0);
+    } else if (otpSent && newEmail.trim().toLowerCase() !== details.email.trim().toLowerCase()) {
+      // Email changed while OTP was pending — invalidate the pending OTP
+      setOtpSent(false);
+      setOtpValue("");
+      setOtpError(null);
+      setResendTimer(0);
+    }
+  }
+
   const visibleRequired = fields.filter((f) => f.visible && f.required);
   const canPay = !paying
-    // All admin-configured required fields must be filled
     && visibleRequired.every((f) => {
       const val = details[f.key] ?? "";
       return val.trim().length >= (f.key === "phone" ? 7 : 2);
     })
-    // Phone and email are always mandatory regardless of admin config
     && details.phone.trim().length >= 7
-    && details.email.trim().includes("@");
+    && emailVerified;  // OTP verification is the gate, not just format
 
-  // ─── Coupon ────────────────────────────────────────────────────────────────
+  // ── OTP: send ─────────────────────────────────────────────────────────────
+
+  async function sendOtp() {
+    const email = details.email.trim();
+    if (!email.includes("@")) return;
+    setOtpSending(true);
+    setOtpError(null);
+    try {
+      const res  = await fetch("/api/otp/send", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setOtpError(data.error || "Failed to send OTP. Please try again.");
+      } else {
+        setOtpSent(true);
+        setOtpValue("");
+        setResendTimer(60);
+      }
+    } catch {
+      setOtpError("Network error. Please try again.");
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  // ── OTP: verify ───────────────────────────────────────────────────────────
+
+  async function verifyOtpCode() {
+    const email = details.email.trim();
+    setOtpVerifying(true);
+    setOtpError(null);
+    try {
+      const res  = await fetch("/api/otp/verify", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email, otp: otpValue.trim() }),
+      });
+      const data = await res.json();
+      if (!data.verified) {
+        setOtpError(data.error || "Incorrect OTP. Please try again.");
+      } else {
+        setEmailVerified(true);
+        setVerifiedEmail(email.toLowerCase());
+        setOtpSent(false);
+        setOtpValue("");
+        setOtpError(null);
+      }
+    } catch {
+      setOtpError("Network error. Please try again.");
+    } finally {
+      setOtpVerifying(false);
+    }
+  }
+
+  // ── Coupon ────────────────────────────────────────────────────────────────
 
   async function applyCoupon() {
     const code = couponInput.trim();
@@ -138,7 +230,7 @@ export function StepDetails({
     setCouponError(null);
   }
 
-  // ─── Pay ───────────────────────────────────────────────────────────────────
+  // ── Pay ───────────────────────────────────────────────────────────────────
 
   const pay = async () => {
     if (!canPay) return;
@@ -175,11 +267,11 @@ export function StepDetails({
         bookingIdRef.current = bookingId;
       }
 
-      // 2. Load Razorpay script
+      // 2. Load Razorpay
       const loaded = await loadRazorpayScript();
       if (!loaded) throw new Error("Could not load payment gateway (script blocked or offline).");
 
-      // 3. Create Razorpay order (server-side coupon validation + discount applied)
+      // 3. Create Razorpay order (server validates coupon + applies discount)
       const orderRes = await fetch(`/api/bookings/${bookingId}/order`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -204,13 +296,9 @@ export function StepDetails({
           order_id:    orderId,
           name:        "Brams Mind Care",
           description: plan.title,
-          prefill:     {
-            name:    details.full_name,
-            contact: details.phone,
-            email:   details.email || undefined,
-          },
-          theme:   { color: "#745475" },
-          handler: async (response: {
+          prefill:     { name: details.full_name, contact: details.phone, email: details.email || undefined },
+          theme:       { color: "#745475" },
+          handler:     async (response: {
             razorpay_payment_id: string;
             razorpay_order_id:   string;
             razorpay_signature:  string;
@@ -238,7 +326,7 @@ export function StepDetails({
         rzp.open();
       });
 
-      // 5. Redirect to success
+      // 5. Success redirect
       const params = new URLSearchParams({
         id:   bookingId!,
         plan: plan.title,
@@ -249,11 +337,7 @@ export function StepDetails({
       router.push(`/book/success?${params.toString()}`);
     } catch (e) {
       const msg = (e as Error).message;
-      if (msg === "CANCELLED") {
-        // User dismissed Razorpay — stay on page, booking already exists, let them retry
-        setPaying(false);
-        return;
-      }
+      if (msg === "CANCELLED") { setPaying(false); return; }
       console.error("[pay] failed:", e);
       setError(msg);
       if (bookingIdRef.current) {
@@ -265,65 +349,172 @@ export function StepDetails({
     }
   };
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div>
       <div className={styles.layout}>
-        {/* Left: patient details form */}
+        {/* ── Left: patient details form ── */}
         <div className={styles.card}>
           <div className={dStyles.fieldsGrid}>
-            {fields.filter((f) => f.visible).map((f) => (
-              <div
-                key={f.id}
-                className={f.width === "full" ? dStyles.colFull : dStyles.colHalf}
-              >
-                <label className={dStyles.field}>
-                  <span className={dStyles.label}>
-                    {f.label}{f.required ? " *" : ""}
-                  </span>
+            {fields.filter((f) => f.visible).map((f) => {
+              // Email field gets a custom OTP-aware widget; always full-width
+              if (f.key === "email") {
+                return (
+                  <div key={f.id} className={dStyles.colFull}>
+                    <div className={dStyles.field}>
+                      <span className={dStyles.label}>Email *</span>
 
-                  {f.type === "select" ? (
-                    <select
-                      className={dStyles.input}
-                      value={details[f.key]}
-                      onChange={(e) => set(f.key, e.target.value)}
-                    >
-                      <option value="">Select…</option>
-                      {(f.options ?? []).map((opt) => (
-                        <option key={opt} value={opt.toLowerCase().replace(/\s+/g, "-")}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : f.type === "textarea" ? (
-                    <textarea
-                      className={dStyles.textarea}
-                      value={details[f.key]}
-                      onChange={(e) => set(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                      rows={4}
-                    />
-                  ) : (
-                    <input
-                      className={dStyles.input}
-                      type={f.type}
-                      value={details[f.key]}
-                      onChange={(e) => set(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                      required={f.required}
-                      min={f.type === "number" ? 1 : undefined}
-                      max={f.type === "number" ? 120 : undefined}
-                    />
-                  )}
-                </label>
-              </div>
-            ))}
+                      {/* Email input row */}
+                      <div className={dStyles.emailRow}>
+                        <input
+                          className={dStyles.input}
+                          type="email"
+                          value={details.email}
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                          placeholder={f.placeholder || "name@example.com"}
+                          disabled={emailVerified}
+                          style={{ flex: 1 }}
+                        />
+                        {emailVerified ? (
+                          <div className={dStyles.emailVerifiedActions}>
+                            <span className={dStyles.verifiedBadge}>✓ Verified</span>
+                            <button
+                              type="button"
+                              className={dStyles.changeEmailBtn}
+                              onClick={() => {
+                                setEmailVerified(false);
+                                setVerifiedEmail("");
+                                setOtpSent(false);
+                                setOtpValue("");
+                                setOtpError(null);
+                              }}
+                            >
+                              Change
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className={dStyles.sendOtpBtn}
+                            onClick={sendOtp}
+                            disabled={!details.email.includes("@") || otpSending || otpSent}
+                          >
+                            {otpSending ? "Sending…" : otpSent ? "Code sent" : "Send OTP"}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* OTP entry — shown after code is sent */}
+                      {otpSent && !emailVerified && (
+                        <div className={dStyles.otpSection}>
+                          <p className={dStyles.otpHint}>
+                            Enter the 6-digit code sent to <strong>{details.email}</strong>
+                          </p>
+                          <div className={dStyles.otpRow}>
+                            <input
+                              className={dStyles.otpInput}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={6}
+                              placeholder="000000"
+                              value={otpValue}
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                                setOtpValue(v);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && otpValue.length === 6) verifyOtpCode();
+                              }}
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              className={dStyles.verifyOtpBtn}
+                              onClick={verifyOtpCode}
+                              disabled={otpValue.length < 6 || otpVerifying}
+                            >
+                              {otpVerifying ? "Verifying…" : "Verify"}
+                            </button>
+                          </div>
+
+                          {resendTimer > 0 ? (
+                            <p className={dStyles.resendNote}>
+                              Didn&apos;t receive it? Resend in {resendTimer}s
+                            </p>
+                          ) : (
+                            <button
+                              type="button"
+                              className={dStyles.resendBtn}
+                              onClick={sendOtp}
+                              disabled={otpSending}
+                            >
+                              {otpSending ? "Sending…" : "Resend OTP"}
+                            </button>
+                          )}
+
+                          {otpError && <p className={dStyles.otpError}>{otpError}</p>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              // All other fields — generic render
+              return (
+                <div
+                  key={f.id}
+                  className={f.width === "full" ? dStyles.colFull : dStyles.colHalf}
+                >
+                  <label className={dStyles.field}>
+                    <span className={dStyles.label}>
+                      {f.label}{f.required ? " *" : ""}
+                    </span>
+
+                    {f.type === "select" ? (
+                      <select
+                        className={dStyles.input}
+                        value={details[f.key]}
+                        onChange={(e) => set(f.key, e.target.value)}
+                      >
+                        <option value="">Select…</option>
+                        {(f.options ?? []).map((opt) => (
+                          <option key={opt} value={opt.toLowerCase().replace(/\s+/g, "-")}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    ) : f.type === "textarea" ? (
+                      <textarea
+                        className={dStyles.textarea}
+                        value={details[f.key]}
+                        onChange={(e) => set(f.key, e.target.value)}
+                        placeholder={f.placeholder}
+                        rows={4}
+                      />
+                    ) : (
+                      <input
+                        className={dStyles.input}
+                        type={f.type}
+                        value={details[f.key]}
+                        onChange={(e) => set(f.key, e.target.value)}
+                        placeholder={f.placeholder}
+                        required={f.required}
+                        min={f.type === "number" ? 1 : undefined}
+                        max={f.type === "number" ? 120 : undefined}
+                      />
+                    )}
+                  </label>
+                </div>
+              );
+            })}
           </div>
+
           {error && <p className={dStyles.error}>{error}</p>}
         </div>
 
-        {/* Right: payment summary card */}
+        {/* ── Right: payment summary card ── */}
         <div className={dStyles.payCard}>
           {/* Booking details */}
           <div className={dStyles.bookingDetails}>
@@ -355,7 +546,9 @@ export function StepDetails({
           <PayRow label="Consultation Fee" value={formatINR(consultationFee)} />
           {discountPaise > 0 && (
             <PayRow
-              label={`Discount (${coupon!.discount_type === "percent" ? `${coupon!.discount_value}%` : formatINR(coupon!.discount_value * 100)})`}
+              label={`Discount (${coupon!.discount_type === "percent"
+                ? `${coupon!.discount_value}%`
+                : formatINR(coupon!.discount_value * 100)})`}
               value={`− ${formatINR(discountPaise)}`}
               discount
             />
