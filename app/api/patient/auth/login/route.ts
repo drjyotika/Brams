@@ -21,7 +21,7 @@ import {
  */
 export async function POST(req: Request) {
   try {
-    let body: { loginId?: string; password?: string };
+    let body: { loginId?: string; email?: string; password?: string };
     try {
       body = await req.json();
     } catch {
@@ -30,7 +30,10 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const { loginId, password } = body;
+    // Accept `email` as an alias for `loginId` so API callers using the
+    // natural field name get the same behaviour as the login form.
+    const { password } = body;
+    const loginId = body.loginId ?? body.email;
 
     if (!loginId || !password) {
       return NextResponse.json(

@@ -23,6 +23,7 @@ export async function GET() {
   ]);
 
   return NextResponse.json({
+    ok: true,
     env: {
       VERCEL: process.env.VERCEL ?? null,
       BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN ? "set" : "not set",
