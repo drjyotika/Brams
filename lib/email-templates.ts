@@ -31,7 +31,7 @@ const BRAND = {
   name:          "Brams Mind Care",
   tagline:       "Confidential, evidence-based psychiatric care.",
   logoUrl:       `${SITE_URL}/logo.png`,
-  supportEmail:  "support@bramsmindcare.com",
+  supportEmail:  "info@bramsmindcare.com",
   primaryColor:  "#745475",
   darkColor:     "#553757",
   inkColor:      "#1a1c1d",
@@ -479,13 +479,25 @@ export function buildNewsletterEmail(input: {
   headline:       string;
   /** Body paragraphs — array becomes multiple <p>s, string is treated as one. */
   body:           string | string[];
+  /** Optional full-width image above the body. */
+  imageUrl?:      string | null;
+  /** Alt text for the image (required for accessibility if imageUrl is set). */
+  imageAlt?:      string | null;
   /** Optional call-to-action. */
   cta?:           { label: string; url: string };
   /** If supplied, adds an "Unsubscribe" link in the footer. */
   unsubscribeUrl?: string;
 }): EmailMessage {
   const paragraphs = Array.isArray(input.body) ? input.body : [input.body];
-  const content = paragraphs
+
+  const imageBlock = input.imageUrl
+    ? `<div style="margin:0 0 20px;border-radius:10px;overflow:hidden;">
+         <img src="${escapeAttr(input.imageUrl)}" alt="${escapeAttr(input.imageAlt ?? "")}"
+           style="display:block;width:100%;max-width:100%;height:auto;" />
+       </div>`
+    : "";
+
+  const content = imageBlock + paragraphs
     .map(
       (p) =>
         `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:${BRAND.softColor};">${escapeHtmlAllowBreaks(p)}</p>`,

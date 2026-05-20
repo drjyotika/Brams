@@ -11,14 +11,16 @@ import { buildNewsletterEmail, sendEmail } from "../../../../lib/email";
  * specific list of email addresses if `recipientEmails` is provided.
  *
  * Body:
- *   subject         string   (required) email subject line
- *   preheader       string?  inbox preview text
- *   headline        string   (required) H1 inside the card
- *   body            string   (required) body text — blank lines = paragraph breaks
- *   ctaLabel        string?  CTA button label
- *   ctaUrl          string?  CTA button URL (required if ctaLabel provided)
- *   unsubscribeUrl  string?  unsubscribe link in footer
- *   recipientEmails string?  comma-separated list; omit to send to all patients
+ *   subject          string   (required)
+ *   preheader        string?
+ *   headline         string   (required)
+ *   body             string   (required) — blank lines = paragraph breaks
+ *   imageUrl         string?  — public image URL to embed above body
+ *   imageAlt         string?  — alt text for the image
+ *   ctaLabel         string?
+ *   ctaUrl           string?  (required if ctaLabel provided)
+ *   unsubscribeUrl   string?
+ *   recipientEmails  string?  — comma-separated; omit to send to all patients
  */
 export async function POST(req: NextRequest) {
   // Admin-only: verify session cookie
@@ -30,13 +32,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json() as {
-      subject:         string;
-      preheader?:      string;
-      headline:        string;
-      body:            string;
-      ctaLabel?:       string;
-      ctaUrl?:         string;
-      unsubscribeUrl?: string;
+      subject:          string;
+      preheader?:       string;
+      headline:         string;
+      body:             string;
+      imageUrl?:        string;
+      imageAlt?:        string;
+      ctaLabel?:        string;
+      ctaUrl?:          string;
+      unsubscribeUrl?:  string;
       recipientEmails?: string;
     };
 
@@ -83,6 +87,8 @@ export async function POST(req: NextRequest) {
           preheader:      body.preheader?.trim(),
           headline:       body.headline.trim(),
           body:           paragraphs,
+          imageUrl:       body.imageUrl?.trim() || null,
+          imageAlt:       body.imageAlt?.trim() || null,
           cta:            body.ctaLabel?.trim()
             ? { label: body.ctaLabel.trim(), url: body.ctaUrl!.trim() }
             : undefined,
@@ -104,8 +110,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      ok:    true,
-      total: recipients.length,
+      ok:     true,
+      total:  recipients.length,
       sent,
       failed: errors.length,
       errors: errors.length > 0 ? errors : undefined,

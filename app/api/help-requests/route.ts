@@ -10,8 +10,7 @@ import {
   buildHelpRequestConfirmationEmail,
   sendEmail,
 } from "../../../lib/email";
-
-const CLINIC_EMAIL = process.env.CLINIC_NOTIFICATION_EMAIL ?? "support@bramsmindcare.com";
+import { getEmailSettings } from "../../../lib/settings";
 
 export async function GET() {
   const rows = await getAllHelpRequests();
@@ -57,14 +56,16 @@ export async function POST(req: NextRequest) {
       name: name.trim(), phone: phone?.trim(), email: cleanEmail,
       issue: issueValue, message: message.trim(), source: source?.trim(),
     });
-    const emailJobs: Promise<unknown>[] = [
-      sendEmail({ to: CLINIC_EMAIL, subject: notifyTpl.subject, html: notifyTpl.html, text: notifyTpl.text }),
-    ];
-    if (cleanEmail) {
-      const confirmTpl = buildHelpRequestConfirmationEmail({ name: name.trim() });
-      emailJobs.push(sendEmail({ to: cleanEmail, subject: confirmTpl.subject, html: confirmTpl.html, text: confirmTpl.text }));
-    }
-    Promise.all(emailJobs).catch((e) => console.error("[help-requests] email failed:", e));
+    getEmailSettings().then((s) => {
+      const jobs: Promise<unknown>[] = [
+        sendEmail({ to: s.clinicEmail, subject: notifyTpl.subject, html: notifyTpl.html, text: notifyTpl.text }),
+      ];
+      if (cleanEmail) {
+        const confirmTpl = buildHelpRequestConfirmationEmail({ name: name.trim() });
+        jobs.push(sendEmail({ to: cleanEmail, subject: confirmTpl.subject, html: confirmTpl.html, text: confirmTpl.text }));
+      }
+      return Promise.all(jobs);
+    }).catch((e) => console.error("[help-requests] email failed:", e));
 
     return NextResponse.json(row);
   } catch (e) {

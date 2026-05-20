@@ -1,13 +1,11 @@
 // Email sending via Resend (https://resend.com).
 //
-// Required env vars:
-//   RESEND_API_KEY   API key from resend.com
-//   EMAIL_FROM       Sender address, e.g. "Brams Mind Care <info@bramsmindcare.com>"
-//                    Domain must be verified in the Resend dashboard.
-// Optional:
-//   EMAIL_REPLY_TO   Replies bounce here instead of the From address.
+// "From" and "Reply-To" are read from the DB settings table at send time
+// (60-second cache) so admins can change them without a redeploy.
+// Env vars EMAIL_FROM / EMAIL_REPLY_TO act as a fallback only.
 
 import { Resend } from "resend";
+import { getEmailSettings, EMAIL_DEFAULTS } from "./settings";
 
 type SendInput = {
   to:       string | string[];
@@ -28,9 +26,20 @@ function client(): Resend {
 export async function sendEmail(
   input: SendInput,
 ): Promise<{ ok: true; messageId?: string } | { ok: false; error: string }> {
+  // Resolve from/reply-to: DB settings → env var → hard default
+  let from    = process.env.EMAIL_FROM    ?? EMAIL_DEFAULTS.fromEmail;
+  let replyTo = input.replyTo ?? process.env.EMAIL_REPLY_TO;
+
+  try {
+    const settings = await getEmailSettings();
+    from    = settings.fromEmail;
+    replyTo = input.replyTo ?? settings.replyToEmail;
+  } catch { /* use env / default fallback */ }
+
   if (!process.env.RESEND_API_KEY) {
     console.warn(
       "\n[email] RESEND_API_KEY not set — logging message to console.\n" +
+      `        FROM:    ${from}\n` +
       `        TO:      ${Array.isArray(input.to) ? input.to.join(", ") : input.to}\n` +
       `        SUBJECT: ${input.subject}\n` +
       `        ${input.text.split("\n").join("\n        ")}\n`,
@@ -40,14 +49,14 @@ export async function sendEmail(
 
   try {
     const { data, error } = await client().emails.send({
-      from:     process.env.EMAIL_FROM ?? "Brams Mind Care <info@bramsmindcare.com>",
-      to:       Array.isArray(input.to) ? input.to : [input.to],
-      subject:  input.subject,
-      html:     input.html,
-      text:     input.text,
-      replyTo:  input.replyTo ?? process.env.EMAIL_REPLY_TO,
-      cc:       input.cc ? (Array.isArray(input.cc) ? input.cc : [input.cc]) : undefined,
-      bcc:      input.bcc ? (Array.isArray(input.bcc) ? input.bcc : [input.bcc]) : undefined,
+      from,
+      to:      Array.isArray(input.to) ? input.to : [input.to],
+      subject: input.subject,
+      html:    input.html,
+      text:    input.text,
+      replyTo,
+      cc:  input.cc  ? (Array.isArray(input.cc)  ? input.cc  : [input.cc])  : undefined,
+      bcc: input.bcc ? (Array.isArray(input.bcc) ? input.bcc : [input.bcc]) : undefined,
     });
 
     if (error) {

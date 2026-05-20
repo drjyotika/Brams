@@ -27,6 +27,7 @@ const NAV = [
     group: "Comms",
     items: [
       { label: "Newsletter", href: "/admin/newsletter" },
+      { label: "Settings",   href: "/admin/settings"   },
     ],
   },
   {

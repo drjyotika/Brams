@@ -5,8 +5,7 @@ import {
   buildContactConfirmationEmail,
   sendEmail,
 } from "../../../lib/email";
-
-const CLINIC_EMAIL = process.env.CLINIC_NOTIFICATION_EMAIL ?? "support@bramsmindcare.com";
+import { getEmailSettings } from "../../../lib/settings";
 
 export async function POST(req: Request) {
   try {
@@ -22,10 +21,10 @@ export async function POST(req: Request) {
     // Notify clinic + send user confirmation (fire-and-forget).
     const notifyTpl  = buildContactNotificationEmail({ name, email, phone, subject, message });
     const confirmTpl = buildContactConfirmationEmail({ name });
-    Promise.all([
-      sendEmail({ to: CLINIC_EMAIL, subject: notifyTpl.subject,  html: notifyTpl.html,  text: notifyTpl.text  }),
-      sendEmail({ to: email,        subject: confirmTpl.subject, html: confirmTpl.html, text: confirmTpl.text }),
-    ]).catch((e) => console.error("[api/contact] email failed:", e));
+    getEmailSettings().then((s) => Promise.all([
+      sendEmail({ to: s.clinicEmail, subject: notifyTpl.subject,  html: notifyTpl.html,  text: notifyTpl.text  }),
+      sendEmail({ to: email,         subject: confirmTpl.subject, html: confirmTpl.html, text: confirmTpl.text }),
+    ])).catch((e) => console.error("[api/contact] email failed:", e));
 
     return NextResponse.json({ ok: true });
   } catch (err) {
