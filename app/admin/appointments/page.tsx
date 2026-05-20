@@ -23,6 +23,7 @@ type Appointment = {
   total_paise: number;
   status: string;
   payment_status: string;
+  meeting_link: string | null;
   upload_count: number;
   created_at: string;
   patient: {
@@ -94,6 +95,10 @@ export default function AppointmentsPage() {
   const [uploadMap, setUploadMap] = useState<Record<string, Upload[]>>({});
   const [loadingUploads, setLoadingUploads] = useState<Set<string>>(new Set());
 
+  // Video link inline editing
+  const [linkEdit,   setLinkEdit]   = useState<Record<string, string>>({});
+  const [linkSaving, setLinkSaving] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     fetch("/api/appointments")
       .then((r) => r.json())
@@ -123,6 +128,35 @@ export default function AppointmentsPage() {
   function openFile(u: Upload) {
     if (!u.signed_url) return;
     window.open(u.signed_url, "_blank", "noopener,noreferrer");
+  }
+
+  function openLinkEdit(apptId: string, current: string | null) {
+    setLinkEdit((prev) => ({ ...prev, [apptId]: current ?? "" }));
+  }
+
+  function cancelLinkEdit(apptId: string) {
+    setLinkEdit((prev) => { const n = { ...prev }; delete n[apptId]; return n; });
+  }
+
+  async function saveMeetingLink(apptId: string) {
+    const url = (linkEdit[apptId] ?? "").trim();
+    setLinkSaving((prev) => new Set(prev).add(apptId));
+    try {
+      const res = await fetch(`/api/bookings/${apptId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meeting_link: url || null }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setRows((prev) =>
+        prev.map((r) => r.id === apptId ? { ...r, meeting_link: url || null } : r)
+      );
+      cancelLinkEdit(apptId);
+    } catch {
+      alert("Could not save meeting link. Please try again.");
+    } finally {
+      setLinkSaving((prev) => { const s = new Set(prev); s.delete(apptId); return s; });
+    }
   }
 
   return (
@@ -158,13 +192,14 @@ export default function AppointmentsPage() {
                 <th>Total</th>
                 <th>Status</th>
                 <th>Payment</th>
+                <th>Video Link</th>
                 <th>Reports</th>
                 <th>Receipt</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 && (
-                <tr><td colSpan={10} className={styles.empty}>No appointments yet.</td></tr>
+                <tr><td colSpan={11} className={styles.empty}>No appointments yet.</td></tr>
               )}
               {sorted.map((a) => (
                 <Fragment key={a.id}>
@@ -179,6 +214,71 @@ export default function AppointmentsPage() {
                     <td>₹{(a.total_paise / 100).toLocaleString("en-IN")}</td>
                     <td><Chip s={a.status} /></td>
                     <td><Chip s={a.payment_status} /></td>
+                    <td style={{ minWidth: 140 }}>
+                      {a.id in linkEdit ? (
+                        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                          <input
+                            type="url"
+                            value={linkEdit[a.id]}
+                            onChange={(e) =>
+                              setLinkEdit((prev) => ({ ...prev, [a.id]: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") saveMeetingLink(a.id);
+                              if (e.key === "Escape") cancelLinkEdit(a.id);
+                            }}
+                            placeholder="https://meet.google.com/…"
+                            autoFocus
+                            style={{
+                              width: 220, fontSize: 11, padding: "3px 6px",
+                              border: "1px solid #ccc", borderRadius: 4,
+                            }}
+                          />
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => saveMeetingLink(a.id)}
+                            disabled={linkSaving.has(a.id)}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            {linkSaving.has(a.id) ? "…" : "Save"}
+                          </button>
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => cancelLinkEdit(a.id)}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : a.meeting_link ? (
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <a
+                            href={a.meeting_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: 11, color: "#166534", fontWeight: 600 }}
+                            title={a.meeting_link}
+                          >
+                            ✅ Join
+                          </a>
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => openLinkEdit(a.id, a.meeting_link)}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => openLinkEdit(a.id, null)}
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          + Set link
+                        </button>
+                      )}
+                    </td>
                     <td>
                       {a.upload_count > 0 && (
                         <button
@@ -205,7 +305,7 @@ export default function AppointmentsPage() {
 
                   {expanded.has(a.id) && (
                     <tr key={`${a.id}-uploads`}>
-                      <td colSpan={10} style={{ padding: 0, background: "#faf9fb" }}>
+                      <td colSpan={11} style={{ padding: 0, background: "#faf9fb" }}>
                         <div style={{ padding: "12px 16px" }}>
                           {loadingUploads.has(a.id) ? (
                             <span style={{ fontSize: 13, color: "#9b8fa0" }}>Loading reports…</span>

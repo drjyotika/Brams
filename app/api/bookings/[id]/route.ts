@@ -27,12 +27,26 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 export async function PUT(req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   const body = await req.json();
-  await updateAppointment(id, {
-    status:         body.status,
-    payment_status: body.payment_status,
-    meeting_link:   body.meeting_link,
-    admin_notes:    body.admin_notes,
-  });
+
+  // meeting_link can be explicitly set to null (clear) — bypass COALESCE pattern
+  if ("meeting_link" in body) {
+    await sql`
+      UPDATE appointments
+      SET meeting_link = ${body.meeting_link ?? null}, updated_at = NOW()
+      WHERE id = ${id}
+    `;
+  }
+
+  // Other fields use the standard COALESCE-safe updater
+  const hasOtherFields = body.status || body.payment_status || body.admin_notes;
+  if (hasOtherFields) {
+    await updateAppointment(id, {
+      status:         body.status,
+      payment_status: body.payment_status,
+      admin_notes:    body.admin_notes,
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }
 
