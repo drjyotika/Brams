@@ -95,10 +95,15 @@ export function StepDetails({
     onChange({ ...details, [key]: val });
 
   const visibleRequired = fields.filter((f) => f.visible && f.required);
-  const canPay = !paying && visibleRequired.every((f) => {
-    const val = details[f.key] ?? "";
-    return val.trim().length >= (f.key === "phone" ? 7 : 2);
-  });
+  const canPay = !paying
+    // All admin-configured required fields must be filled
+    && visibleRequired.every((f) => {
+      const val = details[f.key] ?? "";
+      return val.trim().length >= (f.key === "phone" ? 7 : 2);
+    })
+    // Phone and email are always mandatory regardless of admin config
+    && details.phone.trim().length >= 7
+    && details.email.trim().includes("@");
 
   // ─── Coupon ────────────────────────────────────────────────────────────────
 

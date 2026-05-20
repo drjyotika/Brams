@@ -107,8 +107,9 @@ export function PatientBookingFlow() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  // Step 2 — reason + booking
+  // Step 2 — reason + contact email + booking
   const [reason, setReason] = useState("");
+  const [emailInput, setEmailInput] = useState("");
   const [booking, setBooking] = useState(false);
   const [bookingErr, setBookingErr] = useState("");
 
@@ -120,7 +121,12 @@ export function PatientBookingFlow() {
         if (!r.ok) return null;
         return r.json().catch(() => null);
       })
-      .then((data) => { if (data?.patient) setPatient(data.patient); })
+      .then((data) => {
+        if (data?.patient) {
+          setPatient(data.patient);
+          setEmailInput(data.patient.email ?? "");
+        }
+      })
       .catch(() => {})
       .finally(() => setAuthLoading(false));
 
@@ -152,7 +158,7 @@ export function PatientBookingFlow() {
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
-  const canConfirm = !booking && !!selectedDate && !!selectedTime;
+  const canConfirm = !booking && !!selectedDate && !!selectedTime && emailInput.includes("@");
 
   async function confirmBooking() {
     if (!patient || !selectedPlan || !selectedDate || !selectedTime) return;
@@ -170,7 +176,7 @@ export function PatientBookingFlow() {
           patient: {
             full_name: patient.full_name,
             phone:     patient.phone,
-            email:     patient.email ?? undefined,
+            email:     emailInput.trim() || undefined,
             age:       patient.age ?? undefined,
             gender:    patient.gender ?? undefined,
             city:      patient.city ?? undefined,
@@ -332,8 +338,22 @@ export function PatientBookingFlow() {
 
             {/* Reason + Summary */}
             <div className={styles.layoutEqual} style={{ marginTop: 24 }}>
-              {/* Reason */}
+              {/* Reason + Email */}
               <div className={styles.card}>
+                {/* Email — always required */}
+                <label className={styles.label} htmlFor="email">
+                  Contact Email <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={emailInput}
+                  onChange={e => setEmailInput(e.target.value)}
+                  placeholder="name@example.com"
+                  className={styles.textarea}
+                  style={{ minHeight: "unset", resize: "none", marginBottom: 16 }}
+                />
+
                 <label className={styles.label} htmlFor="reason">
                   Reason for consultation <span className={styles.optional}>(optional)</span>
                 </label>
@@ -341,7 +361,7 @@ export function PatientBookingFlow() {
                   id="reason"
                   value={reason}
                   onChange={e => setReason(e.target.value)}
-                  rows={5}
+                  rows={4}
                   placeholder="Briefly describe what brings you in today. This helps Dr. Jyotika prepare for your session."
                   className={styles.textarea}
                 />
@@ -358,7 +378,7 @@ export function PatientBookingFlow() {
                 <div className={styles.summaryDivider} />
                 <div className={styles.summaryRow}><span>Name</span><strong>{patient.full_name}</strong></div>
                 <div className={styles.summaryRow}><span>Phone</span><strong>{patient.phone}</strong></div>
-                {patient.email && <div className={styles.summaryRow}><span>Email</span><strong>{patient.email}</strong></div>}
+                {emailInput && <div className={styles.summaryRow}><span>Email</span><strong>{emailInput}</strong></div>}
                 <div className={styles.summaryDivider} />
                 <div className={styles.summaryTotal}>
                   <span>Total</span>
