@@ -24,6 +24,12 @@ const NAV = [
     ],
   },
   {
+    group: "Comms",
+    items: [
+      { label: "Newsletter", href: "/admin/newsletter" },
+    ],
+  },
+  {
     group: "Users",
     items: [
       { label: "All Users",   href: "/admin/users"        },

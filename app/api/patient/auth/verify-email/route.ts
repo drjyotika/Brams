@@ -5,6 +5,7 @@ import {
   verifyPatientToken,
 } from "../../../../../lib/auth";
 import { verifyEmailWithCode } from "../../../../../lib/patient-auth";
+import { buildWelcomeEmail, sendEmail } from "../../../../../lib/email";
 
 /**
  * POST /api/patient/auth/verify-email
@@ -30,6 +31,17 @@ export async function POST(req: Request) {
 
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    // Send welcome email after successful verification (fire-and-forget).
+    if (result.patient.email) {
+      const origin = new URL(req.url).origin;
+      const tpl = buildWelcomeEmail({
+        fullName: result.patient.full_name,
+        loginUrl: `${origin}/patient`,
+      });
+      sendEmail({ to: result.patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text })
+        .catch((e) => console.error("[verify-email] welcome email failed:", e));
     }
 
     // Defensive: if the caller is signed in but as a different patient, we

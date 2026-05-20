@@ -518,6 +518,114 @@ export function buildNewsletterEmail(input: {
   return { subject: input.subject, html, text };
 }
 
+// ─── 9. Clinic notification — contact form ───────────────────────────────────
+
+export function buildContactNotificationEmail(input: {
+  name:     string;
+  email:    string;
+  phone?:   string | null;
+  subject?: string | null;
+  message:  string;
+}): EmailMessage {
+  const subj = `New contact form message from ${input.name}`;
+
+  const rows = [
+    { label: "Name",    value: input.name },
+    { label: "Email",   value: input.email },
+    ...(input.phone   ? [{ label: "Phone",   value: input.phone }]   : []),
+    ...(input.subject ? [{ label: "Subject", value: input.subject }] : []),
+  ];
+
+  const html = layout({
+    preheader: `Contact form: ${input.name} — ${input.message.slice(0, 60)}`,
+    heading:   "New contact form submission",
+    content:
+      infoCard(rows) +
+      `<div style="background:#faf8fb;border:1px solid rgba(207,195,204,.25);border-radius:12px;padding:14px 18px;font-size:14px;color:#4c444b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(input.message)}</div>`,
+    footer: `This notification was sent to ${BRAND.supportEmail}.`,
+  });
+
+  const text = plainText({
+    heading: "New contact form submission",
+    body:    [...rows.map((r) => `${r.label}: ${r.value}`), "", "Message:", input.message].join("\n"),
+  });
+
+  return { subject: subj, html, text };
+}
+
+export function buildContactConfirmationEmail(input: {
+  name: string;
+}): EmailMessage {
+  const html = layout({
+    preheader: "We've received your message and will reply within 24 hours.",
+    heading:   "We've received your message",
+    intro:     `Hi <strong>${escapeHtml(input.name)}</strong>, thanks for reaching out to ${BRAND.name}. We've received your message and will get back to you within 24 hours.`,
+    content:   callout("info", `For urgent support, email <a href="mailto:${BRAND.supportEmail}" style="color:inherit;">${BRAND.supportEmail}</a> directly.`),
+    footer:    `© ${new Date().getFullYear()} ${BRAND.name}. ${BRAND.tagline}`,
+  });
+  const text = plainText({
+    heading: "We've received your message",
+    intro:   `Hi ${input.name}, thanks for reaching out to ${BRAND.name}.`,
+    body:    "We've received your message and will get back to you within 24 hours.",
+  });
+  return { subject: `We received your message — ${BRAND.name}`, html, text };
+}
+
+// ─── 10. Clinic notification — Need Help request ─────────────────────────────
+
+export function buildHelpRequestNotificationEmail(input: {
+  name:     string;
+  phone?:   string | null;
+  email?:   string | null;
+  issue?:   string | null;
+  message:  string;
+  source?:  string | null;
+}): EmailMessage {
+  const subj = `New help request from ${input.name}`;
+
+  const rows = [
+    { label: "Name",    value: input.name },
+    ...(input.phone  ? [{ label: "Phone",   value: input.phone }]  : []),
+    ...(input.email  ? [{ label: "Email",   value: input.email }]  : []),
+    ...(input.issue  ? [{ label: "Issue",   value: input.issue }]  : []),
+    ...(input.source ? [{ label: "Source",  value: input.source }] : []),
+  ];
+
+  const html = layout({
+    preheader: `Help request: ${input.name} — ${input.message.slice(0, 60)}`,
+    heading:   "New help request",
+    content:
+      infoCard(rows) +
+      `<div style="background:#faf8fb;border:1px solid rgba(207,195,204,.25);border-radius:12px;padding:14px 18px;font-size:14px;color:#4c444b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(input.message)}</div>`,
+    footer: `This notification was sent to ${BRAND.supportEmail}.`,
+  });
+
+  const text = plainText({
+    heading: "New help request",
+    body:    [...rows.map((r) => `${r.label}: ${r.value}`), "", "Message:", input.message].join("\n"),
+  });
+
+  return { subject: subj, html, text };
+}
+
+export function buildHelpRequestConfirmationEmail(input: {
+  name: string;
+}): EmailMessage {
+  const html = layout({
+    preheader: "We've got your message and will contact you shortly.",
+    heading:   "We're on it",
+    intro:     `Hi <strong>${escapeHtml(input.name)}</strong>, we've received your request for help. Someone from our team will reach out to you soon.`,
+    content:   callout("info", `For immediate support or emergencies, please call iCall at +91-9152987821 or visit your nearest emergency service.`),
+    footer:    `© ${new Date().getFullYear()} ${BRAND.name}. ${BRAND.tagline}`,
+  });
+  const text = plainText({
+    heading: "We're on it",
+    intro:   `Hi ${input.name}, we've received your help request.`,
+    body:    "Someone from our team will reach out to you soon.\n\nFor emergencies: iCall +91-9152987821.",
+  });
+  return { subject: `We received your request — ${BRAND.name}`, html, text };
+}
+
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {

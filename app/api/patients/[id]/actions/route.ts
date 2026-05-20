@@ -8,7 +8,13 @@ import {
   suspendPatient,
   unsuspendPatient,
 } from "../../../../../lib/patient-auth";
-import { buildVerificationEmail, sendEmail } from "../../../../../lib/email";
+import {
+  buildVerificationEmail,
+  buildSuspensionEmail,
+  buildAccountReactivatedEmail,
+  buildPasswordResetEmail,
+  sendEmail,
+} from "../../../../../lib/email";
 import { sql } from "../../../../../lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -41,10 +47,24 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     switch (body.action) {
       case "suspend": {
         await suspendPatient(id, body.reason ?? null);
+        if (patient.email) {
+          const tpl = buildSuspensionEmail({ fullName: patient.full_name, reason: body.reason });
+          sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text })
+            .catch((e) => console.error("[actions/suspend] email failed:", e));
+        }
         return NextResponse.json({ ok: true });
       }
       case "unsuspend": {
         await unsuspendPatient(id);
+        if (patient.email) {
+          const origin = new URL(req.url).origin;
+          const tpl = buildAccountReactivatedEmail({
+            fullName: patient.full_name,
+            loginUrl: `${origin}/patient/login`,
+          });
+          sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text })
+            .catch((e) => console.error("[actions/unsuspend] email failed:", e));
+        }
         return NextResponse.json({ ok: true });
       }
       case "reset_password": {
@@ -55,6 +75,16 @@ export async function POST(req: NextRequest, ctx: Ctx) {
           );
         }
         await setPatientPassword(id, body.password);
+        if (patient.email) {
+          const origin = new URL(req.url).origin;
+          const tpl = buildPasswordResetEmail({
+            fullName:     patient.full_name,
+            resetByAdmin: true,
+            loginUrl:     `${origin}/patient/login`,
+          });
+          sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text })
+            .catch((e) => console.error("[actions/reset_password] email failed:", e));
+        }
         return NextResponse.json({ ok: true });
       }
       case "clear_password": {

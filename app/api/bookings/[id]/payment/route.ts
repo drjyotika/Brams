@@ -2,9 +2,11 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   getAppointmentById,
+  getPatientById,
   recordPayment,
   updateAppointment,
 } from "../../../../../lib/bookings";
+import { buildAppointmentConfirmationEmail, sendEmail } from "../../../../../lib/email";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -65,6 +67,22 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     });
 
     await updateAppointment(id, { payment_status: "paid", status: "confirmed" });
+
+    // Send appointment confirmation email (fire-and-forget).
+    getPatientById(appointment.patient_id).then((patient) => {
+      if (!patient?.email) return;
+      const origin = new URL(req.url).origin;
+      const tpl = buildAppointmentConfirmationEmail({
+        fullName:        patient.full_name,
+        planTitle:       appointment.plan_title,
+        scheduledDate:   appointment.scheduled_date,
+        scheduledTime:   appointment.scheduled_time,
+        durationMinutes: appointment.duration_minutes,
+        meetingLink:     appointment.meeting_link,
+        manageUrl:       `${origin}/patient`,
+      });
+      return sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+    }).catch((e) => console.error("[payment] confirmation email failed:", e));
 
     return NextResponse.json({ payment });
   } catch (e) {

@@ -73,4 +73,8 @@ export {
   buildSuspensionEmail,
   buildAccountReactivatedEmail,
   buildNewsletterEmail,
+  buildContactNotificationEmail,
+  buildContactConfirmationEmail,
+  buildHelpRequestNotificationEmail,
+  buildHelpRequestConfirmationEmail,
 } from "./email-templates";
