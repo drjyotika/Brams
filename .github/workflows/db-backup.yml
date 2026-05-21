@@ -1,0 +1,66 @@
+name: Daily DB Backup
+
+# Runs a full schema + data dump of the Neon Postgres database every day at
+# 01:00 IST and uploads it (gzipped plain SQL) to S3 under backup/db/<date>/.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   DATABASE_URL           Neon DIRECT (non-pooled) connection string, with ?sslmode=require
+#   AWS_ACCESS_KEY_ID      IAM key with s3:PutObject on the target bucket/prefix
+#   AWS_SECRET_ACCESS_KEY  IAM secret
+#   AWS_REGION             e.g. ap-south-1 (Mumbai)
+#   S3_BUCKET              target bucket name (no s3:// prefix)
+
+on:
+  schedule:
+    - cron: "30 19 * * *"   # 19:30 UTC = 01:00 IST, daily
+  workflow_dispatch: {}      # allow manual runs from the Actions tab
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump database (schema + data) and gzip
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          DATE="$(TZ=Asia/Kolkata date +%F)"
+          TS="$(TZ=Asia/Kolkata date +%Y%m%dT%H%M%S)"
+          FILE="brams-${TS}.sql.gz"
+          echo "DATE=${DATE}" >> "$GITHUB_ENV"
+          echo "FILE=${FILE}" >> "$GITHUB_ENV"
+
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" \
+            --no-owner --no-privileges --format=plain \
+            | gzip -9 > "$FILE"
+
+          echo "Created ${FILE} ($(du -h "$FILE" | cut -f1))"
+          # Fail loudly if the dump is suspiciously tiny (e.g. auth/connection issue)
+          if [ "$(stat -c%s "$FILE")" -lt 1024 ]; then
+            echo "::error::Dump file is under 1 KB — likely failed. Aborting upload."
+            exit 1
+          fi
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          set -euo pipefail
+          DEST="s3://${S3_BUCKET}/backup/db/${DATE}/${FILE}"
+          aws s3 cp "$FILE" "$DEST" --no-progress
+          echo "Uploaded to ${DEST}"
