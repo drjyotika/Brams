@@ -4,6 +4,7 @@ import { Manrope, Inter } from "next/font/google";
 import "../styles/globals.scss";
 import { SITE } from "../lib/seo";
 import { OrganizationLd, PhysicianLd, WebsiteLd } from "../components/JsonLd";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -111,6 +112,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <PhysicianLd />
         <WebsiteLd />
       </body>
+      {/* Google Analytics 4 — only loads when NEXT_PUBLIC_GA_ID is configured */}
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }

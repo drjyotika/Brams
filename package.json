@@ -15,6 +15,7 @@
     "@aws-sdk/client-s3": "^3.1045.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@next/third-parties": "^15.5.18",
     "@vercel/blob": "^2.3.3",
     "googleapis": "^172.0.0",
     "lucide-react": "^0.460.0",
