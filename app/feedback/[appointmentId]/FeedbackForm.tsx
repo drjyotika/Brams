@@ -93,6 +93,32 @@ export function FeedbackForm({ appointmentId }: { appointmentId: string }) {
       <p style={{ color: "#71717a", fontSize: 15, lineHeight: 1.6 }}>
         Your feedback means a lot to Dr. Jyotika and helps improve care for everyone.
       </p>
+
+      {/* Google review nudge */}
+      <div style={{
+        margin: "24px 0 0", padding: "20px", borderRadius: 14,
+        background: "#f9f5f9", border: "1px solid rgba(116,84,117,0.12)",
+      }}>
+        <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#1a1c1d", fontSize: 15 }}>
+          Loved your session?
+        </p>
+        <p style={{ margin: "0 0 14px", color: "#71717a", fontSize: 13, lineHeight: 1.5 }}>
+          A quick Google review helps others find the right care. It only takes a minute.
+        </p>
+        <a
+          href="https://g.page/r/CWzRmEwT8zdWEBM/review"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block", padding: "10px 22px",
+            background: "#745475", color: "#fff", borderRadius: 10,
+            fontSize: 14, fontWeight: 600, textDecoration: "none",
+          }}
+        >
+          ⭐ Leave a Google Review
+        </a>
+      </div>
+
       <p style={{ color: "#9b8fa0", fontSize: 13, marginTop: 20 }}>
         Brams Mind Care · <a href="mailto:info@bramsmindcare.com" style={{ color: "#745475" }}>info@bramsmindcare.com</a>
       </p>
