@@ -54,8 +54,11 @@ export async function createMeetEvent({
   const calendar = google.calendar({ version: "v3", auth: client });
 
   // Build start/end in IST (UTC+05:30)
-  const datePart = scheduledDate.slice(0, 10);
-  const timePart = scheduledTime.slice(0, 5);            // "HH:MM"
+  // DB may return DATE as a JS Date object — normalise to string first
+  const dateStr   = typeof scheduledDate === "string" ? scheduledDate : (scheduledDate as Date).toISOString();
+  const timeStr   = typeof scheduledTime === "string" ? scheduledTime : String(scheduledTime);
+  const datePart  = dateStr.slice(0, 10);
+  const timePart  = timeStr.slice(0, 5);                // "HH:MM"
   const startISO = `${datePart}T${timePart}:00+05:30`;
 
   const startMs  = new Date(startISO).getTime();

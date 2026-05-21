@@ -35,9 +35,10 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
 
     return NextResponse.json({ meeting_link: meetLink });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error("[generate-meet]", err);
     return NextResponse.json(
-      { error: "Could not create Google Meet. Check GOOGLE_REFRESH_TOKEN is set." },
+      { error: msg },
       { status: 500 }
     );
   }
