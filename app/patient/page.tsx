@@ -142,6 +142,14 @@ export default function PatientDashboard() {
 
   useEffect(() => { void fetchMe(); }, [fetchMe]);
 
+  // Honor ?tab= deep links (used by the shared patient hamburger menu)
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (tab && ["dashboard", "appointments", "reports", "profile"].includes(tab)) {
+      setActiveTab(tab as ActiveTab);
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/patient/reports")
       .then(r => r.ok ? r.json() : [])

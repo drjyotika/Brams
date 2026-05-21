@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-import { TopNavBar } from "../../../../components/TopNavBar";
+import { PatientTopNav } from "../../../../components/PatientTopNav";
 import { BramsLoader } from "../../../../components/BramsLoader";
-import { defaultContent } from "../../../../lib/content";
 import { PatientRescheduleFlow } from "./PatientRescheduleFlow";
 
 export const metadata = { title: "Reschedule Appointment — Brams Mind Care" };
@@ -12,7 +11,7 @@ export default async function PatientReschedulePage({ params }: Ctx) {
   const { id } = await params;
   return (
     <>
-      <TopNavBar data={defaultContent.nav} hideLinks />
+      <PatientTopNav />
       <Suspense fallback={<BramsLoader fullPage />}>
         <PatientRescheduleFlow appointmentId={id} />
       </Suspense>

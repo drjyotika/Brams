@@ -1,8 +1,7 @@
 import { Suspense } from "react";
-import { TopNavBar } from "../../../components/TopNavBar";
+import { PatientTopNav } from "../../../components/PatientTopNav";
 import { NeedHelpButton } from "../../../components/NeedHelpButton";
 import { BramsLoader } from "../../../components/BramsLoader";
-import { defaultContent } from "../../../lib/content";
 import { PatientBookingFlow } from "./PatientBookingFlow";
 
 export const metadata = { title: "Book a Session — Brams Mind Care" };
@@ -10,12 +9,7 @@ export const metadata = { title: "Book a Session — Brams Mind Care" };
 export default function PatientBookPage() {
   return (
     <>
-      <TopNavBar
-        data={defaultContent.nav}
-        hideLinks
-        ctaSlot={<NeedHelpButton source="patient-booking-flow" />}
-        mobileMenuItems={[]}
-      />
+      <PatientTopNav ctaSlot={<NeedHelpButton source="patient-booking-flow" />} />
       <Suspense fallback={<BramsLoader fullPage />}>
         <PatientBookingFlow />
       </Suspense>
