@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackFeedback } from "../../../lib/analytics";
 
 type State = "loading" | "form" | "already_done" | "submitted" | "error";
 
@@ -36,6 +37,7 @@ export function FeedbackForm({ appointmentId }: { appointmentId: string }) {
         body:    JSON.stringify({ rating, comments }),
       });
       if (!res.ok) throw new Error("Failed");
+      trackFeedback(rating);
       setState("submitted");
     } catch {
       setErrMsg("Something went wrong. Please try again.");

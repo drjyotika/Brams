@@ -6,6 +6,7 @@ import styles from "./patient.module.scss";
 import { BramsLoader } from "../../components/BramsLoader";
 import { TopNavBar } from "../../components/TopNavBar";
 import { defaultContent } from "../../lib/content";
+import { trackJoinCall } from "../../lib/analytics";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -307,6 +308,7 @@ export default function PatientDashboard() {
                     target="_blank"
                     rel="noreferrer"
                     className={styles.joinBtn}
+                    onClick={trackJoinCall}
                   >
                     Join Meeting
                   </a>
@@ -490,7 +492,7 @@ export default function PatientDashboard() {
                       {payingId === a.id ? "Processing…" : `Pay ₹${(a.total_paise / 100).toLocaleString("en-IN")}`}
                     </button>
                   ) : a.meeting_link ? (
-                    <a href={a.meeting_link} target="_blank" rel="noreferrer" className={styles.primaryBtn}>
+                    <a href={a.meeting_link} target="_blank" rel="noreferrer" className={styles.primaryBtn} onClick={trackJoinCall}>
                       Join
                     </a>
                   ) : (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { BookingSuccessData } from "../../lib/content";
+import { trackAddToCalendar } from "../../lib/analytics";
 import styles from "./BookingStatus.module.scss";
 
 function formatDate(iso: string): string {
@@ -136,6 +137,7 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
       name,
     });
     downloadICS(ics, `brams-appointment-${displayId}.ics`);
+    trackAddToCalendar();
   }
 
   return (

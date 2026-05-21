@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { PlanInfo } from "./index";
+import { trackLead } from "../../lib/analytics";
 // Reuse the same modal chrome + form styles as NeedHelpButton
 import styles from "../NeedHelpButton/NeedHelpButton.module.scss";
 
@@ -85,6 +86,7 @@ function ModalBody({ plan, onClose }: Props) {
         throw new Error(body.error || "Failed to submit");
       }
       setSubmitted(true);
+      trackLead("alternative_slot");
     } catch (e) {
       setError((e as Error).message);
     } finally {

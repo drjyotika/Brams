@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { trackLead } from "../../lib/analytics";
 import styles from "./ContactForm.module.scss";
 
 export function ContactForm() {
@@ -20,6 +21,7 @@ export function ContactForm() {
         body: JSON.stringify(form),
       });
       setStatus(res.ok ? "ok" : "err");
+      if (res.ok) trackLead("contact_form");
     } catch { setStatus("err"); }
   };
 

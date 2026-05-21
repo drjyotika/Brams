@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { DaySchedule } from "../../../../lib/content";
 import { defaultContent } from "../../../../lib/content";
 import { BramsLoader } from "../../../../components/BramsLoader";
+import { trackReschedule } from "../../../../lib/analytics";
 import styles from "../../book/book.module.scss";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -130,6 +131,7 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Failed to reschedule.");
       }
+      trackReschedule();
       setDone(true);
     } catch (e) {
       setError((e as Error).message);

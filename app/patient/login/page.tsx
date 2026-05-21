@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { trackLogin } from "../../../lib/analytics";
 import styles from "./login.module.scss";
 
 type Mode = "login" | "forgot";
@@ -37,6 +38,7 @@ export default function PatientLoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        trackLogin();
         router.replace(data.email_verified === false ? "/patient/verify" : "/patient");
       } else {
         setError(data.error ?? "Login failed. Please try again.");

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { HELP_ISSUE_OPTIONS } from "../../lib/help-types";
+import { trackLead } from "../../lib/analytics";
 import styles from "./NeedHelpButton.module.scss";
 
 export function NeedHelpButton({ source }: { source?: string }) {
@@ -85,6 +86,7 @@ function HelpModal({
         throw new Error(body.error || "Failed to submit");
       }
       setSubmitted(true);
+      trackLead("need_help");
     } catch (e) {
       setError((e as Error).message);
     } finally {

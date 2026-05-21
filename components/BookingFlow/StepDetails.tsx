@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { PatientDetails, PlanInfo } from "./index";
 import type { BookingField } from "../../lib/content";
 import { StickyFooter } from "./StickyFooter";
+import { trackBeginCheckout, trackPurchase, trackPaymentFailed, trackCouponApplied } from "../../lib/analytics";
 import styles from "./BookingFlow.module.scss";
 import dStyles from "./StepDetails.module.scss";
 
@@ -269,6 +270,7 @@ export function StepDetails({
         setCouponError(data.error || "Invalid coupon.");
       } else {
         setCoupon(data as CouponResult);
+        trackCouponApplied(code);
       }
     } catch {
       setCouponError("Could not validate coupon. Please try again.");
@@ -289,6 +291,7 @@ export function StepDetails({
     if (!canPay) return;
     setPaying(true);
     setError(null);
+    trackBeginCheckout(plan.title, plan.price_paise);
     try {
       // 1. Create booking — reuse if already created (e.g. after Razorpay cancel)
       let bookingId = bookingIdRef.current;
@@ -367,6 +370,7 @@ export function StepDetails({
                 }),
               });
               if (!verifyRes.ok) throw new Error("Payment verification failed. Please contact support.");
+              trackPurchase(bookingId!, plan.title, plan.price_paise);
               resolve();
             } catch (e) { reject(e); }
           },
@@ -374,6 +378,7 @@ export function StepDetails({
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rzp.on("payment.failed", (res: any) => {
+          trackPaymentFailed(plan.title);
           reject(new Error(res.error?.description || "Payment failed. Please try again."));
         });
         rzp.open();
