@@ -715,6 +715,13 @@
   resolved "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-15.5.15.tgz"
   integrity sha512-6PvFO2Tzt10GFK2Ro9tAVEtacMqRmTarYMFKAnV2vYMdwWc73xzmDQyAV7SwEdMhzmiRoo7+m88DuiXlJlGeaw==
 
+"@next/third-parties@^15.5.18":
+  version "15.5.18"
+  resolved "https://registry.npmjs.org/@next/third-parties/-/third-parties-15.5.18.tgz"
+  integrity sha512-Kp51CbeHgYelpkasFI1gAeAeMPfMTctLcmVIfE2MiRRfC6oYbR3+lO4S0NbNRppOZ7RkbB5P6uW/qOewxth6iA==
+  dependencies:
+    third-party-capital "1.0.20"
+
 "@nodable/entities@^2.1.0", "@nodable/entities@2.1.0":
   version "2.1.0"
   resolved "https://registry.npmjs.org/@nodable/entities/-/entities-2.1.0.tgz"
@@ -2889,7 +2896,7 @@ natural-compare@^1.4.0:
   resolved "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-next@^15.1.0:
+"next@^13.0.0 || ^14.0.0 || ^15.0.0", next@^15.1.0:
   version "15.5.15"
   resolved "https://registry.npmjs.org/next/-/next-15.5.15.tgz"
   integrity sha512-VSqCrJwtLVGwAVE0Sb/yikrQfkwkZW9p+lL/J4+xe+G3ZA+QnWPqgcfH1tDUEuk9y+pthzzVFp4L/U8JerMfMQ==
@@ -3559,6 +3566,11 @@ svix@1.92.2:
   integrity sha512-ZmuA3UVvlnF9EgxlzmPtF7CKjQb64Z6OFlyfdDfU0sdcC7dJa+3aOYX5B9mA+RS6ch1AxBa4UP/l6KmqfGtWBQ==
   dependencies:
     standardwebhooks "1.0.0"
+
+third-party-capital@1.0.20:
+  version "1.0.20"
+  resolved "https://registry.npmjs.org/third-party-capital/-/third-party-capital-1.0.20.tgz"
+  integrity sha512-oB7yIimd8SuGptespDAZnNkzIz+NWaJCu2RMsbs4Wmp9zSDUM8Nhi3s2OOcqYuv3mN4hitXc8DVx+LyUmbUDiA==
 
 throttleit@^2.1.0:
   version "2.1.0"
