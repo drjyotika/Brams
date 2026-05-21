@@ -181,7 +181,15 @@ export async function createAppointment(input: {
   return rows[0] as Appointment;
 }
 
+/** RFC 4122 UUID matcher — guards against non-UUID ids hitting the DB. */
+export function isUuid(id: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 export async function getAppointmentById(id: string): Promise<Appointment | null> {
+  // A malformed id would throw a Postgres "invalid input syntax for uuid"
+  // error (HTTP 500). Treat it as simply "not found" instead.
+  if (!isUuid(id)) return null;
   const rows = await sql`SELECT * FROM appointments WHERE id = ${id} LIMIT 1`;
   return (rows[0] as Appointment) ?? null;
 }

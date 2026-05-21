@@ -666,6 +666,40 @@ export function buildBookingOtpEmail(input: {
   return { subject, html, text };
 }
 
+// ─── Feedback request email ──────────────────────────────────────────────────
+
+export function buildFeedbackRequestEmail(input: {
+  patientName:   string;
+  planTitle:     string;
+  scheduledDate: string;
+  feedbackUrl:   string;
+}): EmailMessage {
+  const firstName = input.patientName.split(" ")[0];
+  const subject   = `How was your consultation with Dr. Jyotika? — ${BRAND.name}`;
+  const preheader = `We'd love to hear how your session went. It only takes 30 seconds.`;
+
+  const stars = `
+    <div style="text-align:center;font-size:28px;margin:0 0 20px;">⭐⭐⭐⭐⭐</div>`;
+
+  const html = layout({
+    preheader,
+    heading: "How was your consultation?",
+    intro:   `Hi <strong>${escapeHtml(firstName)}</strong>, thank you for your session with Dr. Jyotika Kanwar (${escapeHtml(input.planTitle)} on ${escapeHtml(input.scheduledDate)}). Your feedback helps us improve care for everyone.`,
+    content: stars + `<p style="margin:0 0 20px;font-size:14px;color:${BRAND.softColor};text-align:center;">Takes less than 30 seconds. Completely confidential.</p>`,
+    cta:     { label: "Share Your Feedback", url: input.feedbackUrl },
+    footer:  `Your feedback is anonymous and will never be shared without your consent.<br/>© ${new Date().getFullYear()} ${BRAND.name}.`,
+  });
+
+  const text = plainText({
+    heading: "How was your consultation?",
+    intro:   `Hi ${firstName},\n\nThank you for your session with Dr. Jyotika Kanwar.\nWe'd love to hear how it went — it only takes 30 seconds.`,
+    cta:     { label: "Share Your Feedback", url: input.feedbackUrl },
+    footer:  `Your feedback is confidential.\n${BRAND.name} · ${BRAND.supportEmail}`,
+  });
+
+  return { subject, html, text };
+}
+
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {

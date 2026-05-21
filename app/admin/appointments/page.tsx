@@ -34,6 +34,8 @@ type Appointment = {
   uploads?: Upload[];
 };
 
+const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled", "no_show"];
+
 type SortKey =
   | "date_desc" | "date_asc"
   | "created_desc" | "created_asc"
@@ -98,7 +100,8 @@ export default function AppointmentsPage() {
   // Video link inline editing
   const [linkEdit,   setLinkEdit]   = useState<Record<string, string>>({});
   const [linkSaving, setLinkSaving] = useState<Set<string>>(new Set());
-  const [meetGenerating, setMeetGenerating] = useState<Set<string>>(new Set());
+  const [meetGenerating,  setMeetGenerating]  = useState<Set<string>>(new Set());
+  const [statusSaving,    setStatusSaving]    = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/appointments")
@@ -137,6 +140,36 @@ export default function AppointmentsPage() {
 
   function cancelLinkEdit(apptId: string) {
     setLinkEdit((prev) => { const n = { ...prev }; delete n[apptId]; return n; });
+  }
+
+  async function changeStatus(apptId: string, newStatus: string) {
+    setStatusSaving((prev) => new Set(prev).add(apptId));
+    try {
+      const res  = await fetch(`/api/admin/appointments/${apptId}/status`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+
+      setRows((prev) => prev.map((r) => {
+        if (r.id !== apptId) return r;
+        return {
+          ...r,
+          status:       newStatus,
+          meeting_link: data.meeting_link ?? r.meeting_link,
+        };
+      }));
+
+      if (data.meet_error) {
+        alert(`Status updated, but Meet link failed: ${data.meet_error}`);
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Could not update status.");
+    } finally {
+      setStatusSaving((prev) => { const s = new Set(prev); s.delete(apptId); return s; });
+    }
   }
 
   async function generateMeet(apptId: string) {
@@ -229,7 +262,23 @@ export default function AppointmentsPage() {
                     <td style={{ whiteSpace: "nowrap" }}>{fmtDate(a.scheduled_date)}</td>
                     <td>{a.scheduled_time.slice(0, 5)}</td>
                     <td>₹{(a.total_paise / 100).toLocaleString("en-IN")}</td>
-                    <td><Chip s={a.status} /></td>
+                    <td>
+                      <select
+                        value={a.status}
+                        disabled={statusSaving.has(a.id)}
+                        onChange={(e) => changeStatus(a.id, e.target.value)}
+                        style={{
+                          fontSize: 12, fontWeight: 700, borderRadius: 999,
+                          padding: "3px 10px", border: "1.5px solid #d1c4d2",
+                          background: "#fff", cursor: "pointer", outline: "none",
+                          opacity: statusSaving.has(a.id) ? 0.5 : 1,
+                        }}
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td><Chip s={a.payment_status} /></td>
                     <td style={{ minWidth: 140 }}>
                       {a.id in linkEdit ? (

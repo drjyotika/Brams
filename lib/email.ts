@@ -86,4 +86,5 @@ export {
   buildContactConfirmationEmail,
   buildHelpRequestNotificationEmail,
   buildHelpRequestConfirmationEmail,
+  buildFeedbackRequestEmail,
 } from "./email-templates";

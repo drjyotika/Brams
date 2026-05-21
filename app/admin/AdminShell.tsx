@@ -28,6 +28,7 @@ const NAV = [
     items: [
       { label: "Newsletter", href: "/admin/newsletter" },
       { label: "Coupons",    href: "/admin/coupons"    },
+      { label: "Feedback",   href: "/admin/feedback"   },
       { label: "Settings",   href: "/admin/settings"   },
     ],
   },

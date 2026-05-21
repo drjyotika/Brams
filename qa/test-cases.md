@@ -1,6 +1,6 @@
 # Brams Mind Care — QC / QA Test Cases
 
-Last updated: 2026-05-17
+Last updated: 2026-05-21
 Target environment by default: **production** (`https://bramsmindcare.com`)
 Run via the `/test-qc` slash command or by invoking the `qa-tester` subagent.
 
@@ -57,11 +57,15 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 | **D2** | automated | critical | `/book` HTML contains "Step 1 of 3" and "Choose Date & Time" |
 | **D3** | automated | major | `/book` shows Login link in header on desktop |
 | **D4** | manual | critical | Date picker shows current month with future dates clickable |
-| **D5** | manual | critical | Pick a slot → Continue → Step 2 (Details) form loads |
-| **D6** | manual | critical | Fill details → Continue → Step 3 (Confirm) shows plan + total |
-| **D7** | manual | critical | Click "Pay" → Razorpay modal opens (uses test mode key `rzp_test_SqVZf1MmyKwXlt`) |
-| **D8** | manual | critical | Pay with test card `4111 1111 1111 1111`, CVV `123`, future expiry → success page |
-| **D9** | manual | major | Close modal without paying → stays on Step 3, no navigation |
+| **D5** | manual | critical | Pick a slot → slot button shows **time only** (e.g. "10:00 AM") with **no "X min" duration text** |
+| **D6** | manual | critical | Pick a slot → Continue → Step 2 (Details) form loads |
+| **D7** | manual | critical | Fill details → Continue → Step 3 (Confirm) shows plan + total; payment summary card has **no Duration row** |
+| **D8** | manual | critical | Click "Pay" → Razorpay modal opens (uses test mode key `rzp_test_SqVZf1MmyKwXlt`) |
+| **D9** | manual | critical | Pay with test card `4111 1111 1111 1111`, CVV `123`, future expiry → success page |
+| **D10** | manual | critical | Success page shows **"📅 Add to Calendar"** and **"🧾 Download Receipt"** buttons |
+| **D11** | manual | major | "Add to Calendar" downloads a `.ics` file with correct date, time and Meet link (if set) |
+| **D12** | manual | major | Close modal without paying → stays on Step 3, no navigation |
+| **D13** | manual | major | OTP verify for returning patient → form pre-fills with saved details + welcome banner appears |
 
 ## E. Payment APIs
 
@@ -143,7 +147,8 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 | **G12** | manual | critical | Each row shows: plan title, date/time, payment status pill, action buttons |
 | **G13** | manual | critical | "Reschedule" button navigates to `/patient/reschedule/[id]` (full page, NOT modal) |
 | **G14** | manual | major | "Join" link visible only when meeting_link is set on appointment |
-| **G15** | manual | minor | Cancelled / completed appointments are visually distinguished (greyed, badge) |
+| **G15** | manual | major | **"🧾 Receipt"** button visible for paid appointments; opens `/receipt/[bookingId]` in new tab |
+| **G16** | manual | minor | Cancelled / completed appointments are visually distinguished (greyed, badge) |
 
 ### G.4 — Reports tab
 
@@ -213,6 +218,18 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 | **H4** | manual | major | Patients tab: guest-status patients show Reset/Clear Password actions |
 | **H5** | manual | major | Appointments tab: no React key warnings in console |
 | **H6** | manual | minor | "Back to homepage" link has NO ← arrow (just text) |
+| **H7** | manual | critical | Appointments tab: Status column shows a **dropdown** (pending/confirmed/completed/cancelled/no_show) |
+| **H8** | manual | critical | Change status to **"confirmed"** → Meet link auto-generates, Video Link column updates to **"✅ Join"** without page refresh |
+| **H9** | manual | critical | Change status to **"completed"** → feedback email sent to patient (check inbox within 1 min) |
+| **H10** | manual | major | Video Link column: **"🎥 Generate Meet"** button (blue) and **"Paste link"** button shown when no link set |
+| **H11** | manual | major | "Paste link" inline editor: input + Save + ✕; Enter key saves, Escape cancels |
+| **H12** | manual | major | Once link is set: **"✅ Join"** (clickable) + **"Edit"** button; Edit allows changing the link |
+| **H13** | manual | major | Receipt column: **"🧾 View"** opens `/receipt/[bookingId]` in new tab for every appointment |
+| **H14** | automated | major | `GET /admin/feedback` returns 200 (within admin shell) |
+| **H15** | manual | major | Admin nav Comms section contains **"Feedback"** link → `/admin/feedback` |
+| **H16** | manual | major | Feedback page: shows all submitted feedbacks with patient name, plan, date, star rating, comments |
+| **H17** | manual | major | Feedback page: shows average rating chip (e.g. "⭐ 4.5 avg") when feedbacks exist |
+| **H18** | manual | minor | Feedback page: empty state shows friendly message when no feedbacks yet |
 
 ## I. SEO / AEO / GEO
 
@@ -242,3 +259,62 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 | **K2** | automated | major | Production build has no source maps exposed (`*.map` 404s) |
 | **K3** | automated | minor | Homepage HTML response < 500 KB |
 | **K4** | automated | minor | Response includes `cache-control` header (any value) |
+
+---
+
+## M. Booking Receipt
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **M1** | automated | critical | `GET /receipt/FAKE-ID` returns 200 (page loads — API returns error gracefully inside) |
+| **M2** | automated | critical | `GET /api/receipt/FAKE-ID` returns 404 with `{ error }` JSON |
+| **M3** | manual | critical | Valid receipt URL `/receipt/[bookingId]` shows: clinic header, RECEIPT badge, booking ID (first 8 chars uppercased) |
+| **M4** | manual | critical | Receipt shows **Patient Details**: name, phone, email (if set), age, gender, city |
+| **M5** | manual | critical | Receipt shows **Appointment Details**: plan, date, time, mode ("Online Video Call"), status — **no Duration row** |
+| **M6** | manual | critical | Receipt shows **Payment Summary**: consultation fee, discount (if any), amount paid |
+| **M7** | manual | critical | Receipt shows Payment IDs (gateway_payment_id, gateway_order_id) when payment exists |
+| **M8** | manual | major | **"🖨️ Print / Save as PDF"** button opens browser print dialog |
+| **M9** | manual | major | Print button and top bar are **hidden** in print/PDF preview (only receipt body prints) |
+| **M10** | manual | major | Date on receipt shows correctly as "Monday, 19 May 2026" (not "Invalid Date") |
+| **M11** | manual | minor | Receipt footer shows clinic contact email as a mailto link |
+
+---
+
+## N. Google Meet / Video Call Flow
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **N1** | automated | major | `POST /api/admin/appointments/FAKE-ID/generate-meet` returns 404 |
+| **N2** | automated | major | `PATCH /api/admin/appointments/FAKE-ID/status` with invalid status returns 400 |
+| **N3** | manual | critical | Admin: change status to **"confirmed"** on appointment without a link → Meet link auto-generates within 5s |
+| **N4** | manual | critical | Auto-generated Meet link starts with `https://meet.google.com/` |
+| **N5** | manual | critical | After auto-generation: Video Link column shows **"✅ Join"** (clickable) without page refresh |
+| **N6** | manual | critical | Patient dashboard shows **"Join Call"** button after Meet link is set |
+| **N7** | manual | critical | "Join Call" button links to the correct `meet.google.com` URL |
+| **N8** | manual | major | Google Calendar (drjyotika@bramsmindcare.com) shows a new event with patient name, plan title, date/time |
+| **N9** | manual | major | If patient has email on file → they receive a Google Calendar invite |
+| **N10** | manual | major | Changing status to "confirmed" when link **already exists** → does **not** overwrite existing link |
+| **N11** | manual | major | Manual "🎥 Generate Meet" button (for already-confirmed appointments with no link) generates link on click |
+| **N12** | manual | minor | If Meet generation fails (e.g. invalid token) → status still updates, alert shows specific error |
+
+---
+
+## O. Feedback Flow
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **O1** | automated | critical | `GET /feedback/FAKE-ID` returns 200 (page loads, shows error state gracefully) |
+| **O2** | automated | critical | `GET /api/feedback/FAKE-ID` returns 404 with `{ error }` JSON |
+| **O3** | manual | critical | Admin marks appointment **"completed"** → patient receives feedback email within 1 min |
+| **O4** | manual | critical | Feedback email contains **"Share Your Feedback"** CTA button linking to `/feedback/[appointmentId]` |
+| **O5** | manual | critical | Feedback page loads correctly from email link; shows plan title and Dr. Jyotika's name |
+| **O6** | manual | critical | Star rating: click star 4 → shows "Very Good" label; all stars 1–4 highlight |
+| **O7** | manual | critical | Submit without selecting a star → button stays disabled |
+| **O8** | manual | critical | Select rating + (optional) comments → Submit → thank you screen shown |
+| **O9** | manual | critical | Revisiting the same feedback URL after submission → shows **"Already submitted"** screen |
+| **O10** | manual | major | Feedback appears in **Admin → Feedback** table immediately after submission |
+| **O11** | manual | major | Admin feedback table shows: patient name, plan, date, star rating, label (e.g. "Excellent"), comments |
+| **O12** | manual | major | Average rating chip updates correctly after new feedbacks are added |
+| **O13** | manual | major | Feedback with no comments shows italic *"No comments"* in admin table |
+| **O14** | manual | minor | Feedback page is mobile-friendly (stars tappable, textarea resizable, button full-width) |
+| **O15** | manual | minor | Feedback page shows Brams Mind Care logo at top |
