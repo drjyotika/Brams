@@ -98,6 +98,7 @@ export default function AppointmentsPage() {
   // Video link inline editing
   const [linkEdit,   setLinkEdit]   = useState<Record<string, string>>({});
   const [linkSaving, setLinkSaving] = useState<Set<string>>(new Set());
+  const [meetGenerating, setMeetGenerating] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/appointments")
@@ -136,6 +137,22 @@ export default function AppointmentsPage() {
 
   function cancelLinkEdit(apptId: string) {
     setLinkEdit((prev) => { const n = { ...prev }; delete n[apptId]; return n; });
+  }
+
+  async function generateMeet(apptId: string) {
+    setMeetGenerating((prev) => new Set(prev).add(apptId));
+    try {
+      const res  = await fetch(`/api/admin/appointments/${apptId}/generate-meet`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      setRows((prev) =>
+        prev.map((r) => r.id === apptId ? { ...r, meeting_link: data.meeting_link } : r)
+      );
+    } catch (err: unknown) {
+      alert((err instanceof Error ? err.message : "Could not generate Meet link. Is GOOGLE_REFRESH_TOKEN set?"));
+    } finally {
+      setMeetGenerating((prev) => { const s = new Set(prev); s.delete(apptId); return s; });
+    }
   }
 
   async function saveMeetingLink(apptId: string) {
@@ -251,7 +268,7 @@ export default function AppointmentsPage() {
                           </button>
                         </div>
                       ) : a.meeting_link ? (
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                           <a
                             href={a.meeting_link}
                             target="_blank"
@@ -270,13 +287,23 @@ export default function AppointmentsPage() {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          className={styles.editBtn}
-                          onClick={() => openLinkEdit(a.id, null)}
-                          style={{ whiteSpace: "nowrap" }}
-                        >
-                          + Set link
-                        </button>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => generateMeet(a.id)}
+                            disabled={meetGenerating.has(a.id)}
+                            style={{ whiteSpace: "nowrap", background: "#4285f4", color: "#fff", border: "none" }}
+                          >
+                            {meetGenerating.has(a.id) ? "Creating…" : "🎥 Generate Meet"}
+                          </button>
+                          <button
+                            className={styles.editBtn}
+                            onClick={() => openLinkEdit(a.id, null)}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            Paste link
+                          </button>
+                        </div>
                       )}
                     </td>
                     <td>

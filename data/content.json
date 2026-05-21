@@ -43,7 +43,7 @@
     },
     "badge": {
       "label": "M.B.B.S. | MD Psychiatry, PGIMER Chandigarh",
-      "quote": "Confidential | Evidence-based | Patient-first care"
+      "quote": "Confidential • Evidence-based • Patient-first care"
     }
   },
   "support": {
@@ -205,11 +205,11 @@
         "links": [
           {
             "label": "Privacy Policy",
-            "href": "#privacy"
+            "href": "https://bramsmindcare.com/privacy-policy"
           },
           {
             "label": "Confidentiality Agreement",
-            "href": "#confidentiality"
+            "href": "https://bramsmindcare.com/confidentiality"
           }
         ]
       },
@@ -217,11 +217,11 @@
         "links": [
           {
             "label": "Terms of Service",
-            "href": "#terms"
+            "href": "https://bramsmindcare.com/terms"
           },
           {
             "label": "Emergency Contact",
-            "href": "#emergency"
+            "href": "https://bramsmindcare.com/emergency-contact"
           }
         ]
       }
@@ -233,35 +233,33 @@
     "ctas": [
       {
         "id": "join",
-        "emoji": "🎥",
-        "label": "Join Consultation",
-        "href": "#",
+        "label": "Back to Home",
+        "href": "https://bramsmindcare.com/",
         "variant": "primary"
       },
       {
         "id": "calendar",
-        "emoji": "📅",
         "label": "Add to Calendar",
         "href": "#",
         "variant": "secondary"
       },
       {
         "id": "receipt",
-        "emoji": "🧾",
         "label": "Download Receipt",
         "href": "#",
         "variant": "secondary"
-      },
-      {
-        "id": "home",
-        "label": "← Back to Home",
-        "href": "/",
-        "variant": "text"
       }
     ],
     "footerNote": "If you have any urgent concerns prior to your session, please contact our support desk directly at",
-    "supportEmail": "support@bramsmindcare.com",
-    "copyright": "© 2024 Brams Mind Care. Professional Psychiatric Care."
+    "supportEmail": "drjyotika@bramsmindcare.com",
+    "copyright": "© 2024 Brams Mind Care. Professional Psychiatric Care.",
+    "primaryCta": {
+      "label": "Join Consultation",
+      "href": "#"
+    },
+    "calendarLabel": "Add to Calendar",
+    "receiptLabel": "Download Receipt",
+    "homeLabel": "Back to Home"
   },
   "bookingFailed": {
     "title": "Payment Failed",
@@ -269,21 +267,18 @@
     "ctas": [
       {
         "id": "retry",
-        "emoji": "🔄",
         "label": "Retry Payment",
         "href": "/book?plan={planId}",
         "variant": "primary"
       },
       {
         "id": "change",
-        "emoji": "💳",
         "label": "Change Method",
         "href": "/book?plan={planId}",
         "variant": "secondary"
       },
       {
         "id": "support",
-        "emoji": "💬",
         "label": "Contact Support",
         "href": "mailto:drjyotika@bramsmindcare.com",
         "variant": "secondary"
@@ -291,7 +286,10 @@
     ],
     "supportEmail": "support@bramsmindcare.com",
     "troubleshootTitle": "Troubleshooting",
-    "troubleshootBody": "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account."
+    "troubleshootBody": "Please check your internet connection or contact your bank if the issue persists. No charges have been made to your account.",
+    "retryLabel": "Retry Payment",
+    "changeMethodLabel": "Change Method",
+    "supportLabel": "Contact Support"
   },
   "bookingStep1": {
     "schedule": [
@@ -305,19 +303,27 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s1-1",
+            "id": "s1-0",
             "time": "10:00"
           },
           {
-            "id": "s1-2",
+            "id": "s1-1",
             "time": "11:30"
           },
           {
+            "id": "s1-2",
+            "time": "13:00"
+          },
+          {
             "id": "s1-3",
-            "time": "13:30"
+            "time": "14:30"
           },
           {
             "id": "s1-4",
+            "time": "16:00"
+          },
+          {
+            "id": "s1-5",
             "time": "17:30"
           }
         ]
@@ -327,16 +333,28 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s2-1",
+            "id": "s2-0",
             "time": "10:00"
           },
           {
+            "id": "s2-1",
+            "time": "11:30"
+          },
+          {
             "id": "s2-2",
-            "time": "12:15"
+            "time": "13:00"
           },
           {
             "id": "s2-3",
-            "time": "14:00"
+            "time": "14:30"
+          },
+          {
+            "id": "s2-4",
+            "time": "16:00"
+          },
+          {
+            "id": "s2-5",
+            "time": "17:30"
           }
         ]
       },
@@ -345,19 +363,27 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s3-1",
+            "id": "s3-0",
             "time": "10:00"
           },
           {
-            "id": "s3-2",
+            "id": "s3-1",
             "time": "11:30"
           },
           {
+            "id": "s3-2",
+            "time": "13:00"
+          },
+          {
             "id": "s3-3",
-            "time": "13:30"
+            "time": "14:30"
           },
           {
             "id": "s3-4",
+            "time": "16:00"
+          },
+          {
+            "id": "s3-5",
             "time": "17:30"
           }
         ]
@@ -367,16 +393,28 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s4-1",
+            "id": "s4-0",
             "time": "10:00"
           },
           {
+            "id": "s4-1",
+            "time": "11:30"
+          },
+          {
             "id": "s4-2",
-            "time": "12:15"
+            "time": "13:00"
           },
           {
             "id": "s4-3",
-            "time": "14:00"
+            "time": "14:30"
+          },
+          {
+            "id": "s4-4",
+            "time": "16:00"
+          },
+          {
+            "id": "s4-5",
+            "time": "17:30"
           }
         ]
       },
@@ -385,19 +423,27 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s5-1",
+            "id": "s5-0",
             "time": "10:00"
           },
           {
-            "id": "s5-2",
+            "id": "s5-1",
             "time": "11:30"
           },
           {
+            "id": "s5-2",
+            "time": "13:00"
+          },
+          {
             "id": "s5-3",
-            "time": "14:00"
+            "time": "14:30"
           },
           {
             "id": "s5-4",
+            "time": "16:00"
+          },
+          {
+            "id": "s5-5",
             "time": "17:30"
           }
         ]
