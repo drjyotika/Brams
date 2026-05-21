@@ -36,3 +36,6 @@ yarn-error.log*
 # Admin runtime state — defaults live in lib/content.ts
 data/content.json
 .env*.local
+
+# Local DB backups (contain data, never commit)
+backups/
