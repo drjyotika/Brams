@@ -21,12 +21,14 @@ export async function middleware(req: NextRequest) {
   }
 
   // ─── Patient guard ─────────────────────────────────────────────────────────
-  // /patient/login and /patient/verify must stay reachable while signed-out
-  // so a magic-link click from email can complete verification.
+  // /patient/login, /patient/verify and /patient/reset-password must stay
+  // reachable while signed-out so a magic-link or password-reset link clicked
+  // from email can complete verification / set a new password.
   if (
     pathname.startsWith("/patient") &&
     !pathname.startsWith("/patient/login") &&
-    !pathname.startsWith("/patient/verify")
+    !pathname.startsWith("/patient/verify") &&
+    !pathname.startsWith("/patient/reset-password")
   ) {
     const token = req.cookies.get(PATIENT_SESSION_COOKIE)?.value;
     if (token && (await verifyPatientToken(token))) return NextResponse.next();
