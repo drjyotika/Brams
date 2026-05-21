@@ -6,7 +6,7 @@
 export const SITE = {
   url:         "https://bramsmindcare.com",
   name:        "Brams Mind Care",
-  brand:       "Brams Mind Care — Dr. Jyotika Kanwar",
+  brand:       "Brams Mind Care - Dr. Jyotika Kanwar",
   tagline:     "Confidential psychiatric care, online from anywhere in India.",
   description:
     "Evidence-based online psychiatric care by Dr. Jyotika Kanwar — board-certified psychiatrist. Confidential video consultations for anxiety, depression, ADHD, and trauma, available across India.",

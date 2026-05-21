@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
     default:  SITE.brand,
-    template: `%s — ${SITE.name}`,
+    template: `%s - ${SITE.name}`,
   },
   description: SITE.description,
   applicationName: SITE.name,
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
         url:    SITE.ogImage,
         width:  1200,
         height: 630,
-        alt:    "Dr. Jyotika Kanwar — Brams Mind Care",
+        alt:    "Dr. Jyotika Kanwar - Brams Mind Care",
       },
     ],
   },
@@ -85,8 +85,11 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon:     [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
-    shortcut: "/icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico",
     apple:    "/icon.png",
   },
   manifest: "/manifest.webmanifest",
