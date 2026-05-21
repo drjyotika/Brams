@@ -318,3 +318,27 @@ When run by the agent, **manual** cases are listed in the report as `SKIPPED —
 | **O13** | manual | major | Feedback with no comments shows italic *"No comments"* in admin table |
 | **O14** | manual | minor | Feedback page is mobile-friendly (stars tappable, textarea resizable, button full-width) |
 | **O15** | manual | minor | Feedback page shows Brams Mind Care logo at top |
+
+## P. Analytics / GA4 Events
+
+Custom events are sent via `lib/analytics.ts` (`sendGAEvent` from `@next/third-parties/google`). GA4 Measurement ID: **`G-S0TVR1C0Z7`** (set in prod via `NEXT_PUBLIC_GA_ID`). To verify manual cases, open **GA4 → Reports → Realtime → Event count by Event name** (or DebugView) in a second window while performing each action.
+
+| ID | Type | Severity | Check |
+|---|---|---|---|
+| **P1** | automated | critical | Production homepage HTML / network loads the GA4 tag — `gtag/js?id=G-S0TVR1C0Z7` (or `googletagmanager.com/gtag`) is referenced |
+| **P2** | automated | major | GA4 only loads in prod: tag is gated on `NEXT_PUBLIC_GA_ID`, so it must be absent when the env var is unset (no hard-coded ID outside the env-gated `<GoogleAnalytics>`) |
+| **P3** | automated | minor | GA tag does **not** block render — present near `</html>`, page still returns 200 and full HTML |
+| **P4** | manual | critical | Click **Pay** in booking → `begin_checkout` fires with `item_name`, `value` (INR rupees), `currency: "INR"` |
+| **P5** | manual | critical | Payment succeeds → `purchase` fires with `transaction_id` (bookingId), `item_name`, `value`, `currency: "INR"` |
+| **P6** | manual | major | Razorpay payment fails/closed-with-error → `payment_failed` fires with `item_name` |
+| **P7** | manual | major | Apply a valid coupon → `coupon_applied` fires with `coupon` = code |
+| **P8** | manual | major | Submit **Contact form** → `generate_lead` fires with `lead_source: "contact_form"` |
+| **P9** | manual | major | Submit **Need Help** → `generate_lead` fires with `lead_source: "need_help"` |
+| **P10** | manual | major | Submit **Request Alternative Slot** → `generate_lead` fires with `lead_source: "alternative_slot"` |
+| **P11** | manual | critical | Successful patient login → `login` fires with `method: "password"` |
+| **P12** | manual | major | Booking success → **Add to Calendar** → `add_to_calendar` fires |
+| **P13** | manual | major | Patient dashboard → click **Join Meeting / Join** → `join_call` fires (both Join links) |
+| **P14** | manual | major | Complete a reschedule → `reschedule` fires |
+| **P15** | manual | major | Submit feedback → `feedback_submitted` fires with `rating` (1–5) |
+| **P16** | manual | minor | All custom events appear under **GA4 → Realtime → Events** within ~30s of the action |
+| **P17** | manual | minor | Enhanced Measurement auto-events still fire: `page_view` on navigation, `scroll`, outbound `click` |
