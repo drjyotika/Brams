@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./TopNavBar.module.scss";
 
 export type MobileMenuItem = {
@@ -22,6 +22,8 @@ export function MobileMenu({
   ariaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const panelRef     = useRef<HTMLElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
 
   // Lock body scroll while open + close on Escape
   useEffect(() => {
@@ -34,6 +36,21 @@ export function MobileMenu({
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
+  }, [open]);
+
+  // Close when clicking/tapping anywhere outside the panel (incl. the nav bar,
+  // which sits above the backdrop and so isn't caught by it). The hamburger is
+  // excluded so its own toggle isn't double-fired.
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (panelRef.current?.contains(target)) return;
+      if (hamburgerRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
   // Auto-close on resize past mobile breakpoint
@@ -67,6 +84,7 @@ export function MobileMenu({
   return (
     <>
       <button
+        ref={hamburgerRef}
         type="button"
         className={styles.hamburger}
         aria-label={ariaLabel}
@@ -85,7 +103,7 @@ export function MobileMenu({
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
-          <nav className={styles.mobileMenuPanel} aria-label="Mobile menu">
+          <nav ref={panelRef} className={styles.mobileMenuPanel} aria-label="Mobile menu">
             {items.map(renderItem)}
           </nav>
         </>
