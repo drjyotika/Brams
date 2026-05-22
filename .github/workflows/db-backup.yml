@@ -58,7 +58,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-          S3_BUCKETS3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
           set -euo pipefail
           DEST="s3://${S3_BUCKET}/backup/db/${DATE}/${FILE}"
