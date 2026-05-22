@@ -24,12 +24,12 @@ export async function PublicPageShell({ title, children }: { title: string; chil
         data={nav}
         ctaSlot={
           <div className="topnav-cta-row">
-            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <a href="/patient/login" className="topnav-login-link">Patient Login</a>
             <a href={nav.cta.href} className="topnav-primary-cta">{nav.cta.label}</a>
           </div>
         }
         mobileMenuItems={[
-          { label: "Login", href: "/patient/login" },
+          { label: "Patient Login", href: "/patient/login" },
           ...nav.links.map((l) => ({ label: l.label, href: l.href })),
         ]}
       />

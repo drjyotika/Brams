@@ -34,14 +34,14 @@ export default async function Home() {
         data={content.nav}
         ctaSlot={
           <div className="topnav-cta-row">
-            <a href="/patient/login" className="topnav-login-link">Login</a>
+            <a href="/patient/login" className="topnav-login-link">Patient Login</a>
             <a href={content.nav.cta.href} className="topnav-primary-cta">
               {content.nav.cta.label}
             </a>
           </div>
         }
         mobileMenuItems={[
-          { label: "Login", href: "/patient/login" },
+          { label: "Patient Login", href: "/patient/login" },
           ...content.nav.links.map((l) => ({ label: l.label, href: l.href })),
         ]}
       />
