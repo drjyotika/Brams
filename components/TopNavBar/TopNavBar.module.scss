@@ -153,17 +153,6 @@
 
 // ─── Mobile menu panel ───────────────────────────────────────────────────────
 
-.mobileMenuBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(30, 27, 36, 0.5);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  z-index: 60;
-
-  @include md { display: none; }
-}
-
 .mobileMenuPanel {
   position: fixed;
   top: 72px;

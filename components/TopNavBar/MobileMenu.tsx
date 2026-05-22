@@ -97,16 +97,9 @@ export function MobileMenu({
       </button>
 
       {open && (
-        <>
-          <div
-            className={styles.mobileMenuBackdrop}
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-          <nav ref={panelRef} className={styles.mobileMenuPanel} aria-label="Mobile menu">
-            {items.map(renderItem)}
-          </nav>
-        </>
+        <nav ref={panelRef} className={styles.mobileMenuPanel} aria-label="Mobile menu">
+          {items.map(renderItem)}
+        </nav>
       )}
     </>
   );
