@@ -303,12 +303,12 @@
         "enabled": true,
         "slots": [
           {
-            "id": "s1-0",
-            "time": "10:00"
+            "id": "s1-1",
+            "time": "09:00"
           },
           {
-            "id": "s1-1",
-            "time": "11:30"
+            "id": "s1-0",
+            "time": "11:00"
           },
           {
             "id": "s1-2",
@@ -316,15 +316,15 @@
           },
           {
             "id": "s1-3",
-            "time": "14:30"
+            "time": "15:00"
           },
           {
             "id": "s1-4",
-            "time": "16:00"
+            "time": "17:00"
           },
           {
             "id": "s1-5",
-            "time": "17:30"
+            "time": "19:00"
           }
         ]
       },
@@ -334,11 +334,11 @@
         "slots": [
           {
             "id": "s2-0",
-            "time": "10:00"
+            "time": "09:00"
           },
           {
             "id": "s2-1",
-            "time": "11:30"
+            "time": "11:00"
           },
           {
             "id": "s2-2",
@@ -346,15 +346,15 @@
           },
           {
             "id": "s2-3",
-            "time": "14:30"
+            "time": "15:00"
           },
           {
             "id": "s2-4",
-            "time": "16:00"
+            "time": "17:00"
           },
           {
             "id": "s2-5",
-            "time": "17:30"
+            "time": "19:00"
           }
         ]
       },
@@ -364,11 +364,11 @@
         "slots": [
           {
             "id": "s3-0",
-            "time": "10:00"
+            "time": "09:00"
           },
           {
             "id": "s3-1",
-            "time": "11:30"
+            "time": "11:00"
           },
           {
             "id": "s3-2",
@@ -376,15 +376,15 @@
           },
           {
             "id": "s3-3",
-            "time": "14:30"
+            "time": "15:00"
           },
           {
             "id": "s3-4",
-            "time": "16:00"
+            "time": "17:00"
           },
           {
             "id": "s3-5",
-            "time": "17:30"
+            "time": "19:00"
           }
         ]
       },
@@ -394,11 +394,11 @@
         "slots": [
           {
             "id": "s4-0",
-            "time": "10:00"
+            "time": "21:00"
           },
           {
             "id": "s4-1",
-            "time": "11:30"
+            "time": "11:00"
           },
           {
             "id": "s4-2",
@@ -406,15 +406,15 @@
           },
           {
             "id": "s4-3",
-            "time": "14:30"
+            "time": "15:00"
           },
           {
             "id": "s4-4",
-            "time": "16:00"
+            "time": "17:00"
           },
           {
             "id": "s4-5",
-            "time": "17:30"
+            "time": "19:00"
           }
         ]
       },
@@ -424,11 +424,11 @@
         "slots": [
           {
             "id": "s5-0",
-            "time": "10:00"
+            "time": "09:00"
           },
           {
             "id": "s5-1",
-            "time": "11:30"
+            "time": "11:00"
           },
           {
             "id": "s5-2",
@@ -436,22 +436,31 @@
           },
           {
             "id": "s5-3",
-            "time": "14:30"
+            "time": "15:00"
           },
           {
             "id": "s5-4",
-            "time": "16:00"
+            "time": "17:00"
           },
           {
             "id": "s5-5",
-            "time": "17:30"
+            "time": "19:00"
           }
         ]
       },
       {
         "day": 6,
-        "enabled": false,
-        "slots": []
+        "enabled": true,
+        "slots": [
+          {
+            "id": "s6-1779362682018",
+            "time": "09:00"
+          },
+          {
+            "id": "s6-1779362684576",
+            "time": "11:00"
+          }
+        ]
       }
     ]
   },
@@ -462,7 +471,7 @@
         "key": "full_name",
         "label": "Full name",
         "type": "text",
-        "placeholder": "Enter your full legal name",
+        "placeholder": "Enter your full name",
         "required": true,
         "visible": true,
         "width": "full"
@@ -472,7 +481,7 @@
         "key": "age",
         "label": "Age",
         "type": "number",
-        "placeholder": "28",
+        "placeholder": "Enter your age here",
         "required": false,
         "visible": true,
         "width": "half"
@@ -498,7 +507,7 @@
         "key": "phone",
         "label": "Phone number",
         "type": "tel",
-        "placeholder": "+91 9876 543 210",
+        "placeholder": "Enter your mobile number",
         "required": true,
         "visible": true,
         "width": "half"
@@ -508,8 +517,8 @@
         "key": "email",
         "label": "Email",
         "type": "email",
-        "placeholder": "name@example.com",
-        "required": false,
+        "placeholder": "Enter your email id",
+        "required": true,
         "visible": true,
         "width": "half"
       },
