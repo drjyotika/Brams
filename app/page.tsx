@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     description: SITE.description,
     url:         SITE.url,
     type:        "website",
+    // Must be re-declared here: a page-level openGraph block replaces the
+    // root layout's, so without this the og:image would be dropped.
+    images: [{ url: SITE.ogImage, width: 1200, height: 630, alt: SITE.brand }],
   },
 };
 
