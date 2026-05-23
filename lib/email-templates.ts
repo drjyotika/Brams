@@ -305,6 +305,47 @@ export function buildAppointmentConfirmationEmail(input: {
   return { subject, html, text };
 }
 
+// ─── 3b. Clinic notification — new booking ───────────────────────────────────
+
+export function buildAppointmentAdminNotificationEmail(input: {
+  bookingId:       string;
+  patientName:     string;
+  patientEmail?:   string | null;
+  patientPhone?:   string | null;
+  planTitle:       string;
+  scheduledDate:   string;
+  scheduledTime:   string;
+  durationMinutes: number;
+  amountPaise?:    number | null;
+}): EmailMessage {
+  const subj = `New booking — ${input.patientName} · ${formatDate(input.scheduledDate)} at ${formatTime12(input.scheduledTime)}`;
+
+  const rows = [
+    { label: "Booking ID",   value: input.bookingId.slice(0, 8).toUpperCase() },
+    { label: "Patient",      value: input.patientName },
+    ...(input.patientEmail ? [{ label: "Email", value: input.patientEmail }] : []),
+    ...(input.patientPhone ? [{ label: "Phone", value: input.patientPhone }] : []),
+    { label: "Consultation", value: input.planTitle },
+    { label: "Date",         value: formatDate(input.scheduledDate) },
+    { label: "Time",         value: `${formatTime12(input.scheduledTime)} (${input.durationMinutes} min)` },
+    ...(input.amountPaise != null ? [{ label: "Amount paid", value: `₹${(input.amountPaise / 100).toFixed(2)}` }] : []),
+  ];
+
+  const html = layout({
+    preheader: `New booking from ${input.patientName} on ${formatDate(input.scheduledDate)}.`,
+    heading:   "New appointment booked",
+    content:   infoCard(rows),
+    footer:    `Automated booking notification from ${BRAND.name}.`,
+  });
+
+  const text = plainText({
+    heading: "New appointment booked",
+    body:    rows.map((r) => `${r.label}: ${r.value}`).join("\n"),
+  });
+
+  return { subject: subj, html, text };
+}
+
 // ─── 4. Appointment reminder ─────────────────────────────────────────────────
 
 export function buildAppointmentReminderEmail(input: {

@@ -194,6 +194,23 @@ export async function getAppointmentById(id: string): Promise<Appointment | null
   return (rows[0] as Appointment) ?? null;
 }
 
+/**
+ * Returns the list of already-taken `scheduled_time` values (HH:MM:SS) for a
+ * given date, so the booking UI can hide slots that are no longer available.
+ * A slot counts as taken once it's confirmed/completed or paid for, and is not
+ * cancelled/no-show.
+ */
+export async function getBookedTimes(date: string): Promise<string[]> {
+  const rows = await sql`
+    SELECT DISTINCT scheduled_time::text AS t
+    FROM appointments
+    WHERE scheduled_date = ${date}
+      AND status NOT IN ('cancelled', 'no_show')
+      AND (payment_status = 'paid' OR status IN ('confirmed', 'completed'))
+  `;
+  return rows.map((r) => (r as { t: string }).t);
+}
+
 export async function getAppointmentsForPatient(patient_id: string): Promise<Appointment[]> {
   const rows = await sql`
     SELECT * FROM appointments

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlanInfo } from "./index";
 import type { DaySchedule } from "../../lib/content";
 import { StickyFooter } from "./StickyFooter";
@@ -37,6 +37,27 @@ function isDayAvailable(schedule: DaySchedule[], date: Date): boolean {
   return !!(ds?.enabled && ds.slots.length > 0);
 }
 
+// "10:30" → 630 (minutes since midnight)
+function toMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// Current date + minutes in IST (the clinic's timezone), so past-slot filtering
+// is correct regardless of the visitor's local timezone.
+function istNowParts(): { dateStr: string; minutes: number } {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00";
+  return {
+    dateStr: `${get("year")}-${get("month")}-${get("day")}`,
+    minutes: parseInt(get("hour"), 10) * 60 + parseInt(get("minute"), 10),
+  };
+}
+
 export function StepDateTime({
   plan,
   schedule,
@@ -59,20 +80,48 @@ export function StepDateTime({
 
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [altModalOpen, setAltModalOpen] = useState(false);
+  const [bookedTimes, setBookedTimes] = useState<Set<string>>(new Set());
   const slotsRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
-  // Slots available for the currently selected date's weekday
+  // Fetch already-booked times for the selected date so they can be hidden.
+  useEffect(() => {
+    if (!selectedDate) { setBookedTimes(new Set()); return; }
+    let cancelled = false;
+    fetch(`/api/availability?date=${selectedDate}`)
+      .then((r) => (r.ok ? r.json() : { booked: [] }))
+      .then((d: { booked?: string[] }) => {
+        if (!cancelled) setBookedTimes(new Set(d.booked ?? []));
+      })
+      .catch(() => { if (!cancelled) setBookedTimes(new Set()); });
+    return () => { cancelled = true; };
+  }, [selectedDate]);
+
+  // Slots available for the currently selected date's weekday, minus any that
+  // are in the past (today, IST) or already booked.
   const slotsForDate = useMemo(() => {
     if (!selectedDate) return [];
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const date = new Date(y, mo - 1, d);
     const ds = schedule.find((s) => s.day === date.getDay());
-    return ds?.enabled ? (ds.slots ?? []) : [];
-  }, [selectedDate, schedule]);
+    let slots = ds?.enabled ? (ds.slots ?? []) : [];
+
+    // Hide times that have already passed when the selected date is today (IST).
+    const istNow = istNowParts();
+    if (selectedDate === istNow.dateStr) {
+      slots = slots.filter((s) => toMinutes(s.time) > istNow.minutes);
+    }
+
+    // Hide times already booked for this date.
+    if (bookedTimes.size > 0) {
+      slots = slots.filter((s) => !bookedTimes.has(toDbTime(s.time)));
+    }
+
+    return slots;
+  }, [selectedDate, schedule, bookedTimes]);
 
   // Auto-scroll to the slots card when a new date is picked (mobile only —
   // on desktop the two cards are side-by-side and already in view).

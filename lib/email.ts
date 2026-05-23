@@ -77,6 +77,7 @@ export {
   buildForgotPasswordEmail,
   buildWelcomeEmail,
   buildAppointmentConfirmationEmail,
+  buildAppointmentAdminNotificationEmail,
   buildAppointmentReminderEmail,
   buildPasswordResetEmail,
   buildSuspensionEmail,

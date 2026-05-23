@@ -6,7 +6,14 @@ import {
   recordPayment,
   updateAppointment,
 } from "../../../../../lib/bookings";
-import { buildAppointmentConfirmationEmail, sendEmail } from "../../../../../lib/email";
+import {
+  buildAppointmentConfirmationEmail,
+  buildAppointmentAdminNotificationEmail,
+  sendEmail,
+} from "../../../../../lib/email";
+
+// Clinic addresses that should receive a copy of every new booking.
+const CLINIC_NOTIFY = ["drjyotika@bramsmindcare.com", "info@bramsmindcare.com"];
 import { incrementCouponUsage } from "../../../../../lib/coupons";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -75,21 +82,44 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         .catch((e) => console.error("[payment] coupon increment failed:", e));
     }
 
-    // Send appointment confirmation email (fire-and-forget).
-    getPatientById(appointment.patient_id).then((patient) => {
-      if (!patient?.email) return;
-      const origin = new URL(req.url).origin;
-      const tpl = buildAppointmentConfirmationEmail({
-        fullName:        patient.full_name,
+    // Send confirmation (patient) + notification (clinic) emails.
+    // Awaited — on serverless, un-awaited work after the response is returned
+    // can be killed before the email actually sends. Wrapped so an email
+    // failure never breaks the (already-recorded) payment confirmation.
+    try {
+      const patient = await getPatientById(appointment.patient_id);
+      const origin  = new URL(req.url).origin;
+
+      // 1) Patient confirmation
+      if (patient?.email) {
+        const tpl = buildAppointmentConfirmationEmail({
+          fullName:        patient.full_name,
+          planTitle:       appointment.plan_title,
+          scheduledDate:   appointment.scheduled_date,
+          scheduledTime:   appointment.scheduled_time,
+          durationMinutes: appointment.duration_minutes,
+          meetingLink:     appointment.meeting_link,
+          manageUrl:       `${origin}/patient`,
+        });
+        await sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+      }
+
+      // 2) Clinic notification → drjyotika@ + info@
+      const adminTpl = buildAppointmentAdminNotificationEmail({
+        bookingId:       id,
+        patientName:     patient?.full_name ?? "Unknown",
+        patientEmail:    patient?.email,
+        patientPhone:    patient?.phone,
         planTitle:       appointment.plan_title,
         scheduledDate:   appointment.scheduled_date,
         scheduledTime:   appointment.scheduled_time,
         durationMinutes: appointment.duration_minutes,
-        meetingLink:     appointment.meeting_link,
-        manageUrl:       `${origin}/patient`,
+        amountPaise:     appointment.total_paise,
       });
-      return sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
-    }).catch((e) => console.error("[payment] confirmation email failed:", e));
+      await sendEmail({ to: CLINIC_NOTIFY, subject: adminTpl.subject, html: adminTpl.html, text: adminTpl.text });
+    } catch (e) {
+      console.error("[payment] booking emails failed:", e);
+    }
 
     return NextResponse.json({ payment });
   } catch (e) {

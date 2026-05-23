@@ -178,7 +178,6 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
                   {dateLabel} &bull; {timeLabel}
                 </p>
               </div>
-              <span style={{ fontSize: 28 }} aria-hidden>📅</span>
             </div>
           </div>
         </div>
@@ -193,23 +192,6 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
             </a>
           ))}
 
-          {/* Secondary CTAs — shown in a flex row */}
-          {data.ctas.some((c) => c.variant === "secondary") && (
-            <div className={styles.secondaryRow}>
-              {data.ctas.filter((c) => c.variant === "secondary").map((cta) =>
-                cta.href && cta.href !== "#" ? (
-                  <a key={cta.id} href={cta.href} className={styles.secondaryBtn}>
-                    {cta.emoji && `${cta.emoji} `}{cta.label}
-                  </a>
-                ) : (
-                  <button key={cta.id} type="button" className={styles.secondaryBtn}>
-                    {cta.emoji && `${cta.emoji} `}{cta.label}
-                  </button>
-                )
-              )}
-            </div>
-          )}
-
           {/* ── Calendar + Receipt row (always shown) ── */}
           <div className={styles.utilRow}>
             <button
@@ -218,7 +200,7 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
               onClick={handleAddToCalendar}
               disabled={!date || !time}
             >
-              📅 Add to Calendar
+              Add to Calendar
             </button>
 
             {bookingId && (
@@ -228,7 +210,7 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
                 rel="noopener noreferrer"
                 className={styles.utilBtn}
               >
-                🧾 Download Receipt
+                Download Receipt
               </a>
             )}
           </div>
