@@ -1,47 +1,49 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trackLogin } from "../../../lib/analytics";
 import styles from "./login.module.scss";
 
-type Mode = "login" | "forgot";
+type Step = "email" | "otp";
 
 export default function PatientLoginPage() {
   const router = useRouter();
 
-  const [mode,       setMode]       = useState<Mode>("login");
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState("");
-  const [forgotSent, setForgotSent] = useState(false);
+  const [step,        setStep]        = useState<Step>("email");
+  const [email,       setEmail]       = useState("");
+  const [otp,         setOtp]         = useState("");
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
 
-  // Sign-in fields
-  const [loginId,  setLoginId]  = useState("");
-  const [password, setPassword] = useState("");
+  // Resend countdown
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const t = setTimeout(() => setResendTimer((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendTimer]);
 
-  // Forgot password field
-  const [forgotId, setForgotId] = useState("");
-
-  const switchMode = (m: Mode) => { setError(""); setForgotSent(false); setMode(m); };
-
-  // ── Sign in ──────────────────────────────────────────────────────────────────
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
+  // ── Send the login code ────────────────────────────────────────────────────
+  const sendCode = async (e?: FormEvent) => {
+    e?.preventDefault();
     setError("");
+    if (!email.includes("@")) { setError("Please enter a valid email address."); return; }
     setLoading(true);
     try {
-      const res  = await fetch("/api/patient/auth/login", {
+      const res  = await fetch("/api/otp/send", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ loginId, password }),
+        body:    JSON.stringify({ email: email.trim() }),
       });
       const data = await res.json();
-      if (res.ok) {
-        trackLogin();
-        router.replace(data.email_verified === false ? "/patient/verify" : "/patient");
+      if (res.ok && data.ok) {
+        setStep("otp");
+        setOtp("");
+        setResendTimer(60);
       } else {
-        setError(data.error ?? "Login failed. Please try again.");
+        setError(data.error ?? "Couldn't send the code. Please try again.");
       }
     } catch {
       setError("Network error. Please try again.");
@@ -50,18 +52,27 @@ export default function PatientLoginPage() {
     }
   };
 
-  // ── Forgot password ───────────────────────────────────────────────────────────
-  const handleForgot = async (e: FormEvent) => {
+  // ── Verify the code → sign in ──────────────────────────────────────────────
+  const verifyCode = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await fetch("/api/patient/auth/forgot-password", {
+      const res  = await fetch("/api/otp/verify", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ loginId: forgotId }),
+        body:    JSON.stringify({ email: email.trim(), otp: otp.trim() }),
       });
-      setForgotSent(true);
+      const data = await res.json();
+      if (!data.verified) {
+        setError(data.error ?? "Incorrect or expired code. Please try again.");
+      } else if (data.patient) {
+        trackLogin();
+        router.replace("/patient");
+      } else {
+        // OTP valid, but no patient account exists for this email yet.
+        setError("No account found for this email. Please book an appointment to get started.");
+      }
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -75,117 +86,86 @@ export default function PatientLoginPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Brams Mind Care" className={styles.logo} />
 
-        <h1 className={styles.title}>
-          {mode === "login" ? "Welcome back" : "Reset password"}
-        </h1>
+        <h1 className={styles.title}>Welcome back</h1>
         <p className={styles.subtitle}>
-          {mode === "login"
-            ? "Sign in to view your appointments and records."
-            : "We'll send a reset link to your email."}
+          {step === "email"
+            ? "Enter your email and we'll send you a secure sign-in code."
+            : "Enter the 6-digit code we just emailed you."}
         </p>
 
-        {/* ── Sign in form ── */}
-        {mode === "login" && (
-          <form className={styles.form} onSubmit={handleLogin} noValidate>
+        {/* ── Step 1: email ── */}
+        {step === "email" && (
+          <form className={styles.form} onSubmit={sendCode} noValidate>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="loginId">Email</label>
+              <label className={styles.label} htmlFor="email">Email</label>
               <input
-                id="loginId"
+                id="email"
                 type="email"
                 autoComplete="email"
                 required
                 className={styles.input}
                 placeholder="you@example.com"
-                value={loginId}
-                onChange={e => setLoginId(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <label className={styles.label} htmlFor="password">Password</label>
-                <button
-                  type="button"
-                  className={styles.linkBtn}
-                  style={{ fontSize: 11 }}
-                  onClick={() => switchMode("forgot")}
-                  disabled={loading}
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className={styles.input}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                disabled={loading}
+                autoFocus
               />
             </div>
 
             {error && <p className={styles.error}>{error}</p>}
 
-            <button
-              type="submit"
-              className={styles.button}
-              disabled={loading || !loginId || !password}
-            >
-              {loading ? "Signing in…" : "Sign In"}
+            <button type="submit" className={styles.button} disabled={loading || !email.includes("@")}>
+              {loading ? "Sending…" : "Send sign-in code"}
             </button>
           </form>
         )}
 
-        {/* ── Forgot password form ── */}
-        {mode === "forgot" && (
-          forgotSent ? (
-            <div style={{ textAlign: "center", width: "100%", paddingTop: 8 }}>
-              <div style={{ fontSize: 40, marginBottom: 14 }}>📬</div>
-              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Check your inbox</p>
-              <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
-                If an account exists for that email, we&apos;ve sent a reset link. It expires in 30 minutes.
-              </p>
-              <button type="button" className={styles.linkBtn} onClick={() => switchMode("login")}>
-                ← Back to sign in
-              </button>
+        {/* ── Step 2: OTP ── */}
+        {step === "otp" && (
+          <form className={styles.form} onSubmit={verifyCode} noValidate>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="otp">
+                Code sent to <strong>{email}</strong>
+              </label>
+              <input
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                className={styles.input}
+                placeholder="000000"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                disabled={loading}
+                autoFocus
+              />
             </div>
-          ) : (
-            <form className={styles.form} onSubmit={handleForgot} noValidate>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="forgotId">Email</label>
-                <input
-                  id="forgotId"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className={styles.input}
-                  placeholder="you@example.com"
-                  value={forgotId}
-                  onChange={e => setForgotId(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
 
-              {error && <p className={styles.error}>{error}</p>}
+            {error && <p className={styles.error}>{error}</p>}
 
-              <button
-                type="submit"
-                className={styles.button}
-                disabled={loading || !forgotId.trim()}
-              >
-                {loading ? "Sending…" : "Send reset link"}
-              </button>
+            <button type="submit" className={styles.button} disabled={loading || otp.length < 6}>
+              {loading ? "Signing in…" : "Verify & sign in"}
+            </button>
 
-              <p className={styles.switchHint}>
-                <button type="button" className={styles.linkBtn} onClick={() => switchMode("login")}>
-                  ← Back to sign in
+            <p className={styles.switchHint}>
+              {resendTimer > 0 ? (
+                <span style={{ color: "#9b8fa0" }}>Resend code in {resendTimer}s</span>
+              ) : (
+                <button type="button" className={styles.linkBtn} onClick={() => sendCode()} disabled={loading}>
+                  Resend code
                 </button>
-              </p>
-            </form>
-          )
+              )}
+              {"  ·  "}
+              <button
+                type="button"
+                className={styles.linkBtn}
+                onClick={() => { setStep("email"); setOtp(""); setError(""); }}
+              >
+                Change email
+              </button>
+            </p>
+          </form>
         )}
 
         <Link href="/" className={styles.backHome}>Back to homepage</Link>
