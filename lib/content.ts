@@ -385,7 +385,7 @@ export const defaultContent: SiteContent = {
   },
   bookingFailed: {
     title: "Payment Failed",
-    body: "Your payment could not be completed. Don't worry — your appointment slot is still temporarily held.",
+    body: "Your payment could not be completed. Don't worry, your appointment slot is still temporarily held.",
     ctas: [
       { id: "retry",   emoji: "🔄", label: "Retry Payment",    href: "/book?plan={planId}", variant: "primary"   },
       { id: "change",  emoji: "💳", label: "Change Method",    href: "/book?plan={planId}", variant: "secondary" },
