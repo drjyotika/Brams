@@ -13,7 +13,7 @@ export const SITE = {
   shortDescription:
     "Online psychiatric consultations across India by Dr. Jyotika Kanwar — anxiety, depression, ADHD, trauma.",
   logo:        "/logo.png",
-  ogImage:     "/hero.png",
+  ogImage:     "/og.png",
   locale:      "en_IN",
   language:    "en",
   themeColor:  "#745475",
