@@ -665,12 +665,10 @@ function AccountManagementPanel({
 }) {
   const [busy,           setBusy]           = useState<string | null>(null);
   const [msg,            setMsg]            = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const [newPwd,         setNewPwd]         = useState("");
   const [showDeleteFlow, setShowDeleteFlow] = useState(false);
 
-  const suspended = !!patient.is_suspended;
-  const verified  = !!patient.email_verified;
-  const hasPwd    = !!patient.password_hash;
+  const suspended  = !!patient.is_suspended;
+  const hasAccount = !!patient.email; // patients sign in via email OTP
 
   async function doAction(action: string, payload: Record<string, unknown> = {}, prompt?: string) {
     if (prompt && !window.confirm(prompt)) return;
@@ -689,7 +687,6 @@ function AccountManagementPanel({
         setMsg({ kind: "ok", text: "Done." });
         const r = await fetch(`/api/patients/${patient.id}`);
         if (r.ok) { const next = await r.json(); onUpdated(next.patient); }
-        if (action === "reset_password") setNewPwd("");
       }
     } catch (e) {
       setMsg({ kind: "err", text: (e as Error).message });
@@ -736,8 +733,7 @@ function AccountManagementPanel({
 
       {/* Status row */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12, marginBottom: 16 }}>
-        <Chip label={hasPwd ? "Registered" : "Guest (no account)"} tone={hasPwd ? "ok" : "neutral"} />
-        {hasPwd && <Chip label={verified ? "Email verified" : "Email unverified"} tone={verified ? "ok" : "warn"} />}
+        <Chip label={hasAccount ? "Account · OTP login" : "No email on file"} tone={hasAccount ? "ok" : "neutral"} />
         {suspended && <Chip label="Suspended" tone="err" />}
         {patient.last_login_at && (
           <span style={{ fontSize: 11, color: "#9b8fa0", alignSelf: "center" }}>
@@ -759,25 +755,10 @@ function AccountManagementPanel({
             {busy === "unsuspend" ? "Unsuspending…" : "Unsuspend account"}
           </button>
         ) : (
-          <button className={styles.danger} disabled={!hasPwd || busy === "suspend"} onClick={suspend}>
+          <button className={styles.danger} disabled={!hasAccount || busy === "suspend"} onClick={suspend}>
             {busy === "suspend" ? "Suspending…" : "Suspend account"}
           </button>
         )}
-
-        {hasPwd && !verified && (
-          <>
-            <button className={styles.secondary} disabled={busy === "send_verification"} onClick={() => doAction("send_verification")}>
-              {busy === "send_verification" ? "Sending…" : "Resend verification email"}
-            </button>
-            <button className={styles.secondary} disabled={busy === "mark_email_verified"} onClick={() => doAction("mark_email_verified", {}, "Manually mark this patient's email as verified?")}>
-              {busy === "mark_email_verified" ? "Marking…" : "Mark email verified"}
-            </button>
-          </>
-        )}
-
-        <button className={styles.secondary} disabled={busy === "clear_password"} onClick={() => doAction("clear_password", {}, "Clear this patient's password? They'll need to register again to log in.")}>
-          {busy === "clear_password" ? "Clearing…" : "Clear password"}
-        </button>
 
         <button className={styles.danger} disabled={busy === "delete"} onClick={handleDeleteClick}>
           {busy === "delete" ? "Deleting…" : "Delete patient"}
@@ -811,33 +792,6 @@ function AccountManagementPanel({
           )}
         </div>
       )}
-
-      {/* Set / reset password — available for guests too */}
-      <div style={{ marginTop: 18, padding: 14, background: "#faf9fb", border: "1px solid rgba(207,195,204,.3)", borderRadius: 10 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b24", marginBottom: 8 }}>
-          {hasPwd ? "Reset password" : "Set initial password"}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            type="text"
-            className={styles.input}
-            placeholder="New password (min 6 chars)"
-            value={newPwd}
-            onChange={(e) => setNewPwd(e.target.value)}
-            style={{ flex: 1 }}
-          />
-          <button
-            className={styles.primary}
-            disabled={newPwd.length < 6 || busy === "reset_password"}
-            onClick={() => doAction("reset_password", { password: newPwd }, hasPwd ? "Set a new password for this patient?" : "Create a password for this guest patient?")}
-          >
-            {busy === "reset_password" ? "Saving…" : hasPwd ? "Set password" : "Create password"}
-          </button>
-        </div>
-        <p style={{ fontSize: 11, color: "#9b8fa0", marginTop: 6, marginBottom: 0 }}>
-          Share the password with the patient securely. They can change it after logging in.
-        </p>
-      </div>
 
       {msg && (
         <p style={{

@@ -38,6 +38,14 @@ export async function POST(req: NextRequest) {
     const patient = await findPatientByLogin(email).catch(() => null);
 
     if (patient) {
+      // Suspended patients cannot sign in (OTP login) or verify for booking.
+      if (patient.is_suspended) {
+        return NextResponse.json(
+          { verified: false, error: "This account has been suspended. Please contact support." },
+          { status: 403 },
+        );
+      }
+
       await recordPatientLogin(patient.id).catch(() => {});
       const token = await createPatientToken(patient.id);
 
