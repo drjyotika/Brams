@@ -142,30 +142,20 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
     return () => { cancelled = true; };
   }, [selectedDate]);
 
+  // All weekday slots. Past/booked slots are shown disabled (greyed), not hidden.
   const slotsForDate = useMemo(() => {
     if (!selectedDate) return [];
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const ds = schedule.find(s => s.day === new Date(y, mo - 1, d).getDay());
-    let slots = ds?.enabled ? (ds.slots ?? []) : [];
+    return ds?.enabled ? (ds.slots ?? []) : [];
+  }, [selectedDate, schedule]);
 
-    // Hide times that have already passed when the selected date is today (IST).
-    const istNow = istNowParts();
-    if (selectedDate === istNow.dateStr) {
-      slots = slots.filter(s => toMinutes(s.time) > istNow.minutes);
-    }
-
-    // Hide times already booked for this date — but keep this appointment's own
-    // current slot visible when viewing its date.
-    const ownTime = appointment && selectedDate === appointment.scheduled_date.slice(0, 10)
-      ? appointment.scheduled_time
-      : null;
-    slots = slots.filter(s => {
-      const v = `${s.time}:00`;
-      return v === ownTime || !bookedTimes.has(v);
-    });
-
-    return slots;
-  }, [selectedDate, schedule, bookedTimes, appointment]);
+  // For marking which slots are unavailable.
+  const istNow = istNowParts();
+  const isTodaySelected = !!selectedDate && selectedDate === istNow.dateStr;
+  const ownTime = appointment && selectedDate === appointment.scheduled_date.slice(0, 10)
+    ? appointment.scheduled_time
+    : null;
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
@@ -296,13 +286,21 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
             ) : (
               <div className={styles.slotList}>
                 {slotsForDate.map(slot => {
-                  const value = `${slot.time}:00`;
-                  const isActive = selectedTime === value;
+                  const value      = `${slot.time}:00`;
+                  const isActive   = selectedTime === value;
+                  const isOwn      = value === ownTime;
+                  const isBooked   = bookedTimes.has(value) && !isOwn;
+                  const isPast     = isTodaySelected && toMinutes(slot.time) <= istNow.minutes;
+                  const isDisabled = isBooked || isPast;
                   return (
-                    <button key={slot.id} type="button" onClick={() => setSelectedTime(value)}
+                    <button key={slot.id} type="button"
+                      disabled={isDisabled}
+                      onClick={() => { if (!isDisabled) setSelectedTime(value); }}
                       className={`${styles.slotBtn} ${isActive ? styles.slotBtnActive : ""}`}>
                       <span>{fmt12(slot.time)}</span>
-                      <span className={styles.slotMeta}>{appointment.duration_minutes} min</span>
+                      <span className={styles.slotMeta}>
+                        {isBooked ? "Already booked" : isPast ? "Unavailable" : `${appointment.duration_minutes} min`}
+                      </span>
                     </button>
                   );
                 })}

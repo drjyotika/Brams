@@ -100,28 +100,19 @@ export function StepDateTime({
     return () => { cancelled = true; };
   }, [selectedDate]);
 
-  // Slots available for the currently selected date's weekday, minus any that
-  // are in the past (today, IST) or already booked.
+  // All slots for the currently selected date's weekday. Past/booked slots are
+  // NOT removed — they're shown disabled (greyed out) with a status label.
   const slotsForDate = useMemo(() => {
     if (!selectedDate) return [];
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const date = new Date(y, mo - 1, d);
     const ds = schedule.find((s) => s.day === date.getDay());
-    let slots = ds?.enabled ? (ds.slots ?? []) : [];
+    return ds?.enabled ? (ds.slots ?? []) : [];
+  }, [selectedDate, schedule]);
 
-    // Hide times that have already passed when the selected date is today (IST).
-    const istNow = istNowParts();
-    if (selectedDate === istNow.dateStr) {
-      slots = slots.filter((s) => toMinutes(s.time) > istNow.minutes);
-    }
-
-    // Hide times already booked for this date.
-    if (bookedTimes.size > 0) {
-      slots = slots.filter((s) => !bookedTimes.has(toDbTime(s.time)));
-    }
-
-    return slots;
-  }, [selectedDate, schedule, bookedTimes]);
+  // For marking which of those slots are unavailable.
+  const istNow = istNowParts();
+  const isTodaySelected = !!selectedDate && selectedDate === istNow.dateStr;
 
   // Auto-scroll to the slots card when a new date is picked (mobile only —
   // on desktop the two cards are side-by-side and already in view).
@@ -216,18 +207,26 @@ export function StepDateTime({
           ) : (
             <div className={dtStyles.slotsGrid}>
               {slotsForDate.map((slot) => {
-                const value  = toDbTime(slot.time);
-                const label  = formatTime12(slot.time);
-                const active = selectedTime === value;
+                const value    = toDbTime(slot.time);
+                const label    = formatTime12(slot.time);
+                const active   = selectedTime === value;
+                const isBooked = bookedTimes.has(value);
+                const isPast   = isTodaySelected && toMinutes(slot.time) <= istNow.minutes;
+                const isDisabled = isBooked || isPast;
                 return (
                   <button
                     key={slot.id}
                     type="button"
                     className={`${dtStyles.slot} ${active ? dtStyles.slotActive : ""}`}
-                    disabled={!selectedDate}
-                    onClick={() => onSelect(selectedDate!, value)}
+                    disabled={!selectedDate || isDisabled}
+                    onClick={() => { if (!isDisabled) onSelect(selectedDate!, value); }}
                   >
                     <span className={dtStyles.slotTime}>{label}</span>
+                    {isBooked ? (
+                      <span className={dtStyles.slotDuration}>Already booked</span>
+                    ) : isPast ? (
+                      <span className={dtStyles.slotDuration}>Unavailable</span>
+                    ) : null}
                   </button>
                 );
               })}

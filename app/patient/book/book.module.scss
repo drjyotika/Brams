@@ -287,9 +287,14 @@
   font-family: inherit;
   transition: border-color 120ms, background 120ms;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: $color-plum;
     background: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   span:first-child {
