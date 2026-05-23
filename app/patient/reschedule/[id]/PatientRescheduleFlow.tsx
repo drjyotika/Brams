@@ -291,7 +291,8 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
                   const isOwn      = value === ownTime;
                   const isBooked   = bookedTimes.has(value) && !isOwn;
                   const isPast     = isTodaySelected && toMinutes(slot.time) <= istNow.minutes;
-                  const isDisabled = isBooked || isPast;
+                  // Patient's own current slot is not re-bookable.
+                  const isDisabled = isOwn || isBooked || isPast;
                   return (
                     <button key={slot.id} type="button"
                       disabled={isDisabled}
@@ -299,7 +300,10 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
                       className={`${styles.slotBtn} ${isActive ? styles.slotBtnActive : ""}`}>
                       <span>{fmt12(slot.time)}</span>
                       <span className={styles.slotMeta}>
-                        {isBooked ? "Already booked" : isPast ? "Unavailable" : `${appointment.duration_minutes} min`}
+                        {isOwn ? "Your current booking time"
+                          : isBooked ? "Already booked"
+                          : isPast ? "Unavailable"
+                          : `${appointment.duration_minutes} min`}
                       </span>
                     </button>
                   );
