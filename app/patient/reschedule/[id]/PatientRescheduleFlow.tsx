@@ -44,6 +44,26 @@ function isDayAvailable(schedule: DaySchedule[], date: Date) {
   return !!(ds?.enabled && ds.slots.length > 0);
 }
 
+// "10:30" → 630 (minutes since midnight)
+function toMinutes(time: string) {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// Current date + minutes in IST (the clinic's timezone).
+function istNowParts(): { dateStr: string; minutes: number } {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? "00";
+  return {
+    dateStr: `${get("year")}-${get("month")}-${get("day")}`,
+    minutes: parseInt(get("hour"), 10) * 60 + parseInt(get("minute"), 10),
+  };
+}
+
 function fmt12(time: string) {
   const [hStr, m] = time.split(":");
   let h = parseInt(hStr, 10);
@@ -73,6 +93,7 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
   const [viewMonth,    setViewMonth]    = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [bookedTimes,  setBookedTimes]  = useState<Set<string>>(new Set());
 
   const [submitting, setSubmitting] = useState(false);
   const [error,      setError]      = useState("");
@@ -108,12 +129,43 @@ export function PatientRescheduleFlow({ appointmentId }: { appointmentId: string
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
 
+  // Fetch already-booked times for the selected date so they can be hidden.
+  useEffect(() => {
+    if (!selectedDate) { setBookedTimes(new Set()); return; }
+    let cancelled = false;
+    fetch(`/api/availability?date=${selectedDate}`)
+      .then(r => (r.ok ? r.json() : { booked: [] }))
+      .then((d: { booked?: string[] }) => {
+        if (!cancelled) setBookedTimes(new Set(d.booked ?? []));
+      })
+      .catch(() => { if (!cancelled) setBookedTimes(new Set()); });
+    return () => { cancelled = true; };
+  }, [selectedDate]);
+
   const slotsForDate = useMemo(() => {
     if (!selectedDate) return [];
     const [y, mo, d] = selectedDate.split("-").map(Number);
     const ds = schedule.find(s => s.day === new Date(y, mo - 1, d).getDay());
-    return ds?.enabled ? (ds.slots ?? []) : [];
-  }, [selectedDate, schedule]);
+    let slots = ds?.enabled ? (ds.slots ?? []) : [];
+
+    // Hide times that have already passed when the selected date is today (IST).
+    const istNow = istNowParts();
+    if (selectedDate === istNow.dateStr) {
+      slots = slots.filter(s => toMinutes(s.time) > istNow.minutes);
+    }
+
+    // Hide times already booked for this date — but keep this appointment's own
+    // current slot visible when viewing its date.
+    const ownTime = appointment && selectedDate === appointment.scheduled_date.slice(0, 10)
+      ? appointment.scheduled_time
+      : null;
+    slots = slots.filter(s => {
+      const v = `${s.time}:00`;
+      return v === ownTime || !bookedTimes.has(v);
+    });
+
+    return slots;
+  }, [selectedDate, schedule, bookedTimes, appointment]);
 
   const monthLabel = viewMonth.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
