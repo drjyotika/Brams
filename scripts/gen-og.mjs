@@ -25,7 +25,7 @@ const bg = Buffer.from(`
         fill="#553757">Confidential online psychiatric care across India</text>
   <text x="${W / 2}" y="478" text-anchor="middle"
         font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="400"
-        fill="#8a7d8c">Anxiety · Depression · ADHD · Trauma — by video, from anywhere</text>
+        fill="#8a7d8c">Anxiety · Depression · ADHD · Trauma · by video, from anywhere</text>
 </svg>`);
 
 // Logo scaled to 720px wide, centered in the upper half.

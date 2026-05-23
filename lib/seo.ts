@@ -9,9 +9,9 @@ export const SITE = {
   brand:       "Brams Mind Care - Dr. Jyotika Kanwar",
   tagline:     "Confidential psychiatric care, online from anywhere in India.",
   description:
-    "Evidence-based online psychiatric care by Dr. Jyotika Kanwar — board-certified psychiatrist. Confidential video consultations for anxiety, depression, ADHD, and trauma, available across India.",
+    "Evidence-based online psychiatric care by Dr. Jyotika Kanwar, board-certified psychiatrist. Confidential video consultations for anxiety, depression, ADHD, and trauma, available across India.",
   shortDescription:
-    "Online psychiatric consultations across India by Dr. Jyotika Kanwar — anxiety, depression, ADHD, trauma.",
+    "Online psychiatric consultations across India by Dr. Jyotika Kanwar: anxiety, depression, ADHD, trauma.",
   logo:        "/logo.png",
   ogImage:     "/og.png",
   locale:      "en_IN",
