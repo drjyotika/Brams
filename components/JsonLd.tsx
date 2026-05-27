@@ -1,4 +1,4 @@
-import { SITE, DOCTOR } from "../lib/seo";
+import { SITE, DOCTOR, SOCIAL_PROFILES } from "../lib/seo";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -47,7 +47,7 @@ export function OrganizationLd() {
       "Trauma Therapy",
       "Medication Management",
     ],
-    sameAs: [] as string[], // populate with social profiles when available
+    sameAs: SOCIAL_PROFILES,
   };
   return <Script data={data} />;
 }

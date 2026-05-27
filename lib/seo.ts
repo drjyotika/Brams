@@ -36,6 +36,19 @@ export const DOCTOR = {
     "Board-certified consultant psychiatrist offering confidential, evidence-based online care for anxiety, depression, ADHD, trauma, and related mental health conditions across India.",
 } as const;
 
+/**
+ * Profiles that corroborate the brand's identity, emitted as schema.org
+ * `sameAs`. A strong entity signal for SEO / AEO / GEO — the more
+ * authoritative profiles listed, the more confidently answer engines treat
+ * Brams Mind Care as a real, verified entity.
+ *
+ * Add Instagram / Facebook / Practo / LinkedIn / YouTube URLs here as they go
+ * live — one line each, no other code changes needed.
+ */
+export const SOCIAL_PROFILES: string[] = [
+  "https://share.google/hqdWQYI1x3T3WjKht", // Google Business Profile
+];
+
 /** Routes that should be indexed by search engines. */
 export const PUBLIC_ROUTES = [
   "/",
