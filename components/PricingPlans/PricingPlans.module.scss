@@ -43,6 +43,19 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  transition:
+    transform  280ms var(--ease-out-quart),
+    box-shadow 280ms var(--ease-out-quart);
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px -12px rgba(116, 84, 117, 0.16);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover { transform: none; }
+  }
 }
 
 .eyebrow {
@@ -115,10 +128,32 @@
   border: 2px solid rgba(207, 195, 204, 0.2);
   color: $color-ink-soft;
   background: #fff;
-  transition: background 120ms ease;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background  200ms ease,
+    color       200ms ease,
+    border-color 200ms ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(116, 84, 117, 0.06) 50%,
+      transparent 65%
+    );
+    background-size: 250% 100%;
+    background-position: -200% center;
+    transition: background-position 500ms var(--ease-out-expo);
+  }
 
   &:hover {
     background: $color-bg-muted;
+
+    &::after { background-position: 200% center; }
   }
 }
 
@@ -128,6 +163,11 @@
   color: #fff;
   box-shadow: $shadow-recommended;
   transform: scale(1.05);
+
+  &:hover {
+    transform: scale(1.05) translateY(-6px);
+    box-shadow: 0 32px 56px -12px rgba(116, 84, 117, 0.42);
+  }
 
   .eyebrow {
     color: $color-lilac;

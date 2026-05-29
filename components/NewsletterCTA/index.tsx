@@ -8,7 +8,11 @@ export type NewsletterCTAProps = {
 export function NewsletterCTA({ data }: NewsletterCTAProps) {
   return (
     <div className={styles.outer}>
-      <section className={styles.cta} aria-labelledby="cta-title">
+      <section
+        className={styles.cta}
+        aria-labelledby="cta-title"
+        data-reveal="scale-up"
+      >
         <div className={styles.body}>
           <h2 id="cta-title" className={styles.title}>
             {data.title}

@@ -8,30 +8,39 @@ export function PricingPlans({ data }: PricingPlansProps) {
   return (
     <section className={styles.section} id="consultations" aria-labelledby="pricing-title">
       <div className={styles.inner}>
-        <header className={styles.head}>
+
+        <header className={styles.head} data-reveal>
           <h2 id="pricing-title" className={styles.title}>
             {data.title}
           </h2>
         </header>
 
-        <div className={styles.grid}>
+        {/* Stagger: each plan card cascades in */}
+        <div className={styles.grid} data-reveal-stagger>
           {data.plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
         </div>
+
       </div>
     </section>
   );
 }
 
 function PlanCard({ plan }: { plan: PricingPlan }) {
-  const cls = [styles.plan, plan.highlighted ? styles.planFeatured : ""].filter(Boolean).join(" ");
-  const btnCls = [styles.button, !plan.highlighted && plan.id === "follow-up" ? styles.basicBtn : ""]
+  const cls = [styles.plan, plan.highlighted ? styles.planFeatured : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  const btnCls = [
+    styles.button,
+    !plan.highlighted && plan.id === "follow-up" ? styles.basicBtn : "",
+  ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <article className={cls}>
+    <article className={cls} data-reveal>
       {plan.badge && <span className={styles.badge}>{plan.badge}</span>}
       <span className={styles.eyebrow}>{plan.eyebrow}</span>
       <h3 className={styles.planTitle}>{plan.title}</h3>

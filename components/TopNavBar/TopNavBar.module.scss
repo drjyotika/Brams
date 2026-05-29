@@ -57,10 +57,30 @@
   font-weight: 500;
   font-size: 16px;
   color: $color-ink-muted;
-  transition: color 120ms ease;
+  position: relative;
+  transition: color 180ms ease;
+
+  // Underline that reveals left-to-right on hover, retracts right-to-left on leave
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: $color-plum;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 240ms var(--ease-out-quart);
+  }
 
   &:hover {
     color: $color-ink;
+
+    &::after {
+      transform: scaleX(1);
+      transform-origin: left center;
+    }
   }
 }
 
@@ -87,12 +107,35 @@
   padding: 8px 16px;
   border-radius: $radius-sm;
   box-shadow: $shadow-card;
-  transition: transform 120ms ease;
+  position: relative;
+  overflow: hidden;
   white-space: nowrap;
   text-decoration: none;
+  transition:
+    transform  180ms var(--ease-out-quart),
+    box-shadow 180ms var(--ease-out-quart);
 
-  &:hover {
-    transform: translateY(-1px);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 65%
+    );
+    background-size: 250% 100%;
+    background-position: -200% center;
+    transition: background-position 500ms var(--ease-out-expo);
+  }
+
+  &:hover,
+  &:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -4px rgba(116, 84, 117, 0.35);
+
+    &::after { background-position: 200% center; }
   }
 
   @include md {

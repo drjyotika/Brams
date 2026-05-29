@@ -4,8 +4,8 @@ import styles from "./HowItWorks.module.scss";
 
 const BG_CLASS: Record<StepCard["iconBg"], string> = {
   lilac: styles.bgLilac,
-  sky: styles.bgSky,
-  lime: styles.bgLime,
+  sky:   styles.bgSky,
+  lime:  styles.bgLime,
 };
 
 export type HowItWorksProps = { data: HowItWorksData };
@@ -14,16 +14,17 @@ export function HowItWorks({ data }: HowItWorksProps) {
   return (
     <section className={styles.section} id="approach" aria-labelledby="how-title">
       <div className={styles.inner}>
-        <header className={styles.head}>
+
+        <header className={styles.head} data-reveal>
           <h2 id="how-title" className={styles.title}>
             {data.title}
           </h2>
           <p className={styles.description}>{data.description}</p>
         </header>
 
-        <div className={styles.grid}>
+        <div className={styles.grid} data-reveal-stagger="slow">
           {data.steps.map((step) => (
-            <div key={step.id} className={styles.step}>
+            <div key={step.id} className={styles.step} data-reveal>
               <span className={styles.bigNumber} aria-hidden>
                 {step.number}
               </span>
@@ -42,6 +43,7 @@ export function HowItWorks({ data }: HowItWorksProps) {
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

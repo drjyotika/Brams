@@ -3,13 +3,13 @@ import { Icon } from "../Icon";
 import styles from "./SpecializedSupport.module.scss";
 
 const TONE_CLASS: Record<SupportTone, string> = {
-  sky: styles.toneSky,
+  sky:   styles.toneSky,
   lilac: styles.toneLilac,
   muted: styles.toneMuted,
-  dark: styles.toneDark,
-  lime: styles.toneLime,
-  sand: styles.toneSand,
-  mint: styles.toneMint,
+  dark:  styles.toneDark,
+  lime:  styles.toneLime,
+  sand:  styles.toneSand,
+  mint:  styles.toneMint,
 };
 
 export type SpecializedSupportProps = { data: SupportData };
@@ -18,7 +18,8 @@ export function SpecializedSupport({ data }: SpecializedSupportProps) {
   return (
     <section className={styles.section} id="services" aria-labelledby="support-title">
       <div className={styles.inner}>
-        <header className={styles.head}>
+
+        <header className={styles.head} data-reveal="fade-right">
           <div className={styles.headText}>
             <h2 id="support-title" className={styles.title}>
               {data.title}
@@ -27,11 +28,13 @@ export function SpecializedSupport({ data }: SpecializedSupportProps) {
           </div>
         </header>
 
-        <div className={styles.grid}>
+        {/* Stagger: each card reveals with a slight delay after its predecessor */}
+        <div className={styles.grid} data-reveal-stagger>
           {data.cards.map((card) => (
             <Card key={card.id} card={card} />
           ))}
         </div>
+
       </div>
     </section>
   );
@@ -41,7 +44,7 @@ function Card({ card }: { card: SupportCard }) {
   const cls = [styles.card, TONE_CLASS[card.tone]].filter(Boolean).join(" ");
 
   return (
-    <article className={cls}>
+    <article className={cls} data-reveal>
       <span className={styles.icon}>
         <Icon name={card.iconName} size={28} />
       </span>

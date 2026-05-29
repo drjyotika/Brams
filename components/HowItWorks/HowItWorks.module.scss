@@ -91,14 +91,14 @@
   opacity: 0.25;
   user-select: none;
   margin-left: auto;
-  // Optical alignment — pull the right edge so the digit sits flush with
-  // the card's right padding without a visual gap.
   margin-right: -4px;
 
   @include md {
     display: none;
   }
 }
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
 
 .card {
   position: relative;
@@ -110,7 +110,24 @@
   flex-direction: column;
   gap: 16px;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+  transition:
+    transform  280ms var(--ease-out-quart),
+    box-shadow 280ms var(--ease-out-quart),
+    filter     280ms ease;
+
+  &:hover {
+    transform: translateY(-4px) translateX(4px);
+    box-shadow: -4px 14px 36px -10px rgba(116, 84, 117, 0.16);
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.06));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover { transform: none; }
+  }
 }
+
+// ─── Icon box ─────────────────────────────────────────────────────────────────
 
 .iconBox {
   width: 64px;
@@ -120,21 +137,14 @@
   align-items: center;
   justify-content: center;
   color: $color-plum-deep;
+  flex-shrink: 0;
 }
 
-.bgLilac {
-  background: $color-lilac;
-}
+.bgLilac { background: $color-lilac; }
+.bgSky   { background: $color-sky; color: #43627e; }
+.bgLime  { background: $color-lime; color: $color-lime-ink; }
 
-.bgSky {
-  background: $color-sky;
-  color: #43627e;
-}
-
-.bgLime {
-  background: $color-lime;
-  color: $color-lime-ink;
-}
+// ─── Text ─────────────────────────────────────────────────────────────────────
 
 .stepTitle {
   margin: 16px 0 0;

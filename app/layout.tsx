@@ -4,6 +4,7 @@ import { Manrope, Inter } from "next/font/google";
 import "../styles/globals.scss";
 import { SITE } from "../lib/seo";
 import { OrganizationLd, PhysicianLd, WebsiteLd } from "../components/JsonLd";
+import { MotionObserver } from "../components/motion/MotionObserver";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 const manrope = Manrope({
@@ -114,6 +115,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <OrganizationLd />
         <PhysicianLd />
         <WebsiteLd />
+        {/* Scroll-reveal IntersectionObserver — sets html.motion-ready */}
+        <MotionObserver />
       </body>
       {/* Google Analytics 4 — only loads when NEXT_PUBLIC_GA_ID is configured */}
       {process.env.NEXT_PUBLIC_GA_ID && (

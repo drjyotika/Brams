@@ -1,0 +1,130 @@
+// ─── CSS motion tokens ─────────────────────────────────────────────────────────
+:root {
+  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-circ:   cubic-bezier(0, 0.55, 0.45, 1);
+  --ease-in-quart:   cubic-bezier(0.5, 0, 0.75, 0);
+}
+
+// ─── Reveal keyframes ──────────────────────────────────────────────────────────
+// Each variant has its own keyframe so animations are self-contained and
+// do NOT conflict with component-level hover `transition` declarations.
+
+@keyframes brams-reveal-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes brams-reveal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes brams-reveal-right {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes brams-reveal-left {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes brams-reveal-scale {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes brams-reveal-scale-up {
+  from { opacity: 0; transform: scale(0.93) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+// ─── Hero entrance keyframes (above-fold) ──────────────────────────────────────
+
+@keyframes brams-fade-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes brams-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes brams-fade-right {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes brams-scale-in {
+  from { opacity: 0; transform: scale(0.86) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+// ─── Hero entrance helpers ─────────────────────────────────────────────────────
+.hero-eyebrow-enter  { animation: brams-fade-right 0.7s var(--ease-out-expo)  0.10s both; }
+.hero-title-enter    { animation: brams-fade-up    0.85s var(--ease-out-expo) 0.25s both; }
+.hero-desc-enter     { animation: brams-fade-up    0.85s var(--ease-out-expo) 0.42s both; }
+.hero-actions-enter  { animation: brams-fade-up    0.70s var(--ease-out-expo) 0.58s both; }
+.hero-portrait-enter { animation: brams-fade-in    1.00s var(--ease-out-expo) 0.15s both; }
+.hero-badge-enter    { animation: brams-scale-in   0.65s var(--ease-spring)   0.72s both; }
+
+// ─── Scroll-reveal system ──────────────────────────────────────────────────────
+// Strategy: animation-based (not transition-based) so component hover transitions
+// can never override the opacity reveal.
+//
+// • html.motion-ready is set by MotionObserver on mount.
+// • .is-visible is added by IntersectionObserver when the element enters view.
+// • fill-mode: both → keeps `from` state during animation-delay, keeps `to` after.
+
+// Hidden state — matches each keyframe's `from` so there's no layout jump
+html.motion-ready [data-reveal]             { opacity: 0; transform: translateY(28px); }
+html.motion-ready [data-reveal="fade"]      { opacity: 0; transform: none; }
+html.motion-ready [data-reveal="fade-right"]{ opacity: 0; transform: translateX(-28px); }
+html.motion-ready [data-reveal="fade-left"] { opacity: 0; transform: translateX(28px); }
+html.motion-ready [data-reveal="scale"]     { opacity: 0; transform: scale(0.94); }
+html.motion-ready [data-reveal="scale-up"]  { opacity: 0; transform: scale(0.93) translateY(20px); }
+
+// Revealed state — animation overrides everything, including hover transitions
+html.motion-ready [data-reveal].is-visible             { animation: brams-reveal-up       0.7s var(--ease-out-expo) both; }
+html.motion-ready [data-reveal="fade"].is-visible      { animation: brams-reveal-fade      0.7s var(--ease-out-expo) both; }
+html.motion-ready [data-reveal="fade-right"].is-visible{ animation: brams-reveal-right     0.7s var(--ease-out-expo) both; }
+html.motion-ready [data-reveal="fade-left"].is-visible { animation: brams-reveal-left      0.7s var(--ease-out-expo) both; }
+html.motion-ready [data-reveal="scale"].is-visible     { animation: brams-reveal-scale     0.7s var(--ease-out-expo) both; }
+html.motion-ready [data-reveal="scale-up"].is-visible  { animation: brams-reveal-scale-up  0.7s var(--ease-spring)   both; }
+
+// ─── Stagger delays ────────────────────────────────────────────────────────────
+// animation-delay is a sub-property of `animation` and can be overridden
+// independently via higher-specificity rules.
+
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(1) { animation-delay:   0ms; }
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(2) { animation-delay: 110ms; }
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(3) { animation-delay: 220ms; }
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(4) { animation-delay: 330ms; }
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(5) { animation-delay: 440ms; }
+html.motion-ready [data-reveal-stagger] > [data-reveal]:nth-child(6) { animation-delay: 550ms; }
+
+html.motion-ready [data-reveal-stagger="slow"] > [data-reveal]:nth-child(1) { animation-delay:   0ms; }
+html.motion-ready [data-reveal-stagger="slow"] > [data-reveal]:nth-child(2) { animation-delay: 160ms; }
+html.motion-ready [data-reveal-stagger="slow"] > [data-reveal]:nth-child(3) { animation-delay: 320ms; }
+
+// ─── Reduced motion ─────────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .hero-eyebrow-enter,
+  .hero-title-enter,
+  .hero-desc-enter,
+  .hero-actions-enter,
+  .hero-portrait-enter,
+  .hero-badge-enter {
+    animation: none !important;
+  }
+
+  html.motion-ready [data-reveal],
+  html.motion-ready [data-reveal].is-visible {
+    opacity:    1 !important;
+    transform:  none !important;
+    animation:  none !important;
+  }
+}

@@ -82,27 +82,45 @@
   flex-direction: column;
   gap: 16px;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   min-height: 240px;
   height: 100%;
   word-break: break-word;
   hyphens: auto;
   transition:
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform  260ms var(--ease-out-quart),
+    box-shadow 260ms var(--ease-out-quart);
   will-change: transform;
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 32px -16px rgba(116, 84, 117, 0.25);
+  // Soft radial glow — slides in from bottom-right on hover
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at 80% 110%,
+      rgba(116, 84, 117, 0.1) 0%,
+      transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 280ms ease;
+    pointer-events: none;
   }
 
-  // Respect users who opt out of motion.
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 0 0 1px rgba(116, 84, 117, 0.08),
+      0 20px 44px -12px rgba(116, 84, 117, 0.22);
+
+    &::before { opacity: 1; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     transition: none;
-    &:hover {
-      transform: none;
-    }
+    &:hover { transform: none; }
+    &::before { display: none; }
   }
 }
 

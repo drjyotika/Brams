@@ -38,7 +38,7 @@ export default async function Home() {
         ctaSlot={
           <div className="topnav-cta-row">
             <a href="/patient/login" className="topnav-login-link">Patient Login</a>
-            <a href={content.nav.cta.href} className="topnav-primary-cta">
+            <a href={content.nav.cta.href} className="topnav-primary-cta topnav-primary-cta--home">
               {content.nav.cta.label}
             </a>
           </div>
