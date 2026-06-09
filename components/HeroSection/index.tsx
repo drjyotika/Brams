@@ -11,7 +11,7 @@ export function HeroSection({ data }: HeroSectionProps) {
       <div className={styles.inner}>
 
         {/* ── Left column: copy ─────────────────────────────────────────── */}
-        <div>
+        <div className={styles.copy}>
           <span className={`${styles.eyebrow} hero-eyebrow-enter`}>
             {data.eyebrow}
           </span>

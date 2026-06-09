@@ -24,6 +24,12 @@
   }
 }
 
+// Left column — sits above the ParallaxLayer stacking context on mobile
+.copy {
+  position: relative;
+  z-index: 1;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
