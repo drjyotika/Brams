@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { trackLogin } from "../../../lib/analytics";
 import styles from "./login.module.scss";
 
@@ -10,6 +10,15 @@ type Step = "email" | "otp";
 
 export default function PatientLoginPage() {
   const router = useRouter();
+  const search = useSearchParams();
+
+  // After sign-in, return to ?next= when it's a safe internal patient path
+  // (e.g. a follow-up booking the user was redirected away from). Falls back to
+  // the dashboard otherwise — and rejects open-redirect / traversal attempts.
+  const nextDest = (() => {
+    const raw = search.get("next");
+    return raw && raw.startsWith("/patient") && !raw.includes("..") ? raw : "/patient";
+  })();
 
   const [step,        setStep]        = useState<Step>("email");
   const [email,       setEmail]       = useState("");
@@ -68,7 +77,7 @@ export default function PatientLoginPage() {
         setError(data.error ?? "Incorrect or expired code. Please try again.");
       } else if (data.patient) {
         trackLogin();
-        router.replace("/patient");
+        router.replace(nextDest);
       } else {
         // OTP valid, but no patient account exists for this email yet.
         setError("No account found for this email. Please book an appointment to get started.");

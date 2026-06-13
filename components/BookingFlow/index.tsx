@@ -38,6 +38,12 @@ export function BookingFlow() {
   const search = useSearchParams();
   const planId = search.get("plan") ?? "initial";
 
+  // Follow-up consultations are for returning patients only, so they must be
+  // signed in first. Gate this plan: route already-authenticated patients into
+  // the pre-filled patient booking flow, and send everyone else to sign in and
+  // return here afterwards.
+  const requiresAuth = planId === "follow-up";
+
   const [plan, setPlan]           = useState<PlanInfo | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
   const [step, setStep]           = useState<Step>(1);
@@ -64,8 +70,28 @@ export function BookingFlow() {
     reason:    "",
   });
 
+  // Auth gate for follow-up bookings — resolve sign-in state, then redirect.
+  useEffect(() => {
+    if (!requiresAuth) return;
+    let cancelled = false;
+    const next = encodeURIComponent("/patient/book?plan=follow-up");
+    fetch("/api/patient/me")
+      .then((r) => {
+        if (cancelled) return;
+        // Signed in → continue in the patient flow (profile pre-filled, OTP
+        // skipped). Otherwise → sign in first, then come back to this booking.
+        if (r.ok) router.replace("/patient/book?plan=follow-up");
+        else      router.replace(`/patient/login?next=${next}`);
+      })
+      .catch(() => {
+        if (!cancelled) router.replace(`/patient/login?next=${next}`);
+      });
+    return () => { cancelled = true; };
+  }, [requiresAuth, router]);
+
   // Load plan info + booking flow config in parallel
   useEffect(() => {
+    if (requiresAuth) return; // handled by the auth gate above
     fetch(`/api/plans/${planId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
       .then((p: PlanInfo) => setPlan(p))
@@ -78,13 +104,18 @@ export function BookingFlow() {
         if (cfg.step2) setStep2Config(cfg.step2);
       })
       .catch(() => { /* keep defaults */ });
-  }, [planId]);
+  }, [planId, requiresAuth]);
 
   // Scroll to top on step change
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
+
+  // While the follow-up auth gate resolves (and redirects away), show a loader.
+  if (requiresAuth) {
+    return <BramsLoader fullPage />;
+  }
 
   if (planError) {
     return (

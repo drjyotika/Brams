@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { DaySchedule, PricingPlan, BookingStep2Data } from "../../../lib/content";
 import { defaultContent } from "../../../lib/content";
 
@@ -68,6 +68,8 @@ const STEP_META: Record<Step, { title: string; subtitle: string }> = {
 
 export function PatientBookingFlow() {
   const router = useRouter();
+  const search = useSearchParams();
+  const presetPlanId = search.get("plan"); // e.g. a returning patient booking a follow-up
 
   const [step, setStep]       = useState<Step>(1);
   const [patient, setPatient] = useState<PatientInfo | null>(null);
@@ -143,6 +145,17 @@ export function PatientBookingFlow() {
       .catch(() => {})
       .finally(() => setPlansLoading(false));
   }, [router]);
+
+  // Preselect a plan passed via ?plan= (e.g. a returning patient routed here to
+  // book a follow-up) and jump straight to the date picker.
+  useEffect(() => {
+    if (!presetPlanId || plansLoading || plans.length === 0 || selectedPlanRaw) return;
+    const match = plans.find((p) => p.id === presetPlanId);
+    if (match) {
+      setSelectedPlanRaw(match);
+      setStep(2);
+    }
+  }, [presetPlanId, plansLoading, plans, selectedPlanRaw]);
 
   // Scroll to top on step change
   useEffect(() => {
