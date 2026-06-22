@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trackLogin } from "../../../lib/analytics";
@@ -8,7 +8,17 @@ import styles from "./login.module.scss";
 
 type Step = "email" | "otp";
 
+// useSearchParams() must sit inside a Suspense boundary or the production build
+// de-opts the whole page (which can blank the login screen — notably on mobile).
 export default function PatientLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
 
