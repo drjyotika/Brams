@@ -88,8 +88,12 @@ export function PatientBookingFlow() {
   // Selected plan (converted to PlanInfo shape for StepDetails)
   const [selectedPlanRaw, setSelectedPlanRaw] = useState<PricingPlan | null>(null);
 
-  // Step 2 — date & time
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Step 2 — date & time. Pre-select today so the calendar is never blank on
+  // arrival (mirrors the public /book flow).
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   // Step 3 — patient details (pre-filled from profile)
