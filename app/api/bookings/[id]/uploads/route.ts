@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE, verifySessionToken } from "../../../../../lib/auth";
 import {
   addAppointmentUpload,
   getAppointmentById,
@@ -13,10 +15,21 @@ import {
 
 type Ctx = { params: Promise<{ id: string }> };
 
+// Prescription files are clinical documents — only an authenticated admin may
+// list or upload them here. (Patients read their own via /api/patient/reports.)
+async function requireAdmin(): Promise<boolean> {
+  const jar   = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  return token ? verifySessionToken(token) : false;
+}
+
 // GET /api/bookings/[id]/uploads
 // Returns all uploads for the appointment; S3-stored files get a fresh
 // pre-signed download URL (valid 1 hour) injected as `signed_url`.
 export async function GET(_req: NextRequest, ctx: Ctx) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await ctx.params;
   const uploads = await getUploadsForAppointment(id);
 
@@ -42,6 +55,9 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 // Call multiple times to upload multiple files.
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await ctx.params;
 
     const appointment = await getAppointmentById(id);

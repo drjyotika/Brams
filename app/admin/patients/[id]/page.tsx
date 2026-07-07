@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
@@ -187,6 +187,7 @@ export default function PatientDetailPage() {
                     rxLoading={rxLoading}
                     onDelete={(apptId) => setAppointments((prev) => prev.filter((x) => x.id !== apptId))}
                     onOpenFile={openFile}
+                    onUploaded={(rx) => setPrescriptions((prev) => [rx, ...prev])}
                   />
                 );
               })}
@@ -355,14 +356,55 @@ function AppointmentCard({
   rxLoading,
   onDelete,
   onOpenFile,
+  onUploaded,
 }: {
   appointment: Appointment;
   prescriptions: Prescription[];
   rxLoading: boolean;
   onDelete: (id: string) => void;
   onOpenFile: (rx: Prescription) => void;
+  onUploaded: (rx: Prescription) => void;
 }) {
   const [deleting, setDeleting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError("");
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res  = await fetch(`/api/bookings/${a.id}/uploads`, { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+
+      // The POST returns the DB row + a fresh signed URL. Enrich with the
+      // appointment context so it renders immediately in the list.
+      const created: Prescription = {
+        id:               data.id,
+        appointment_id:   a.id,
+        file_name:        data.file_name,
+        file_url:         data.file_url,
+        signed_url:       data.signed_url ?? null,
+        file_size:        data.file_size ?? file.size,
+        mime_type:        data.mime_type ?? (file.type || null),
+        uploaded_at:      data.uploaded_at ?? new Date().toISOString(),
+        appointment_date: a.scheduled_date,
+        appointment_time: a.scheduled_time,
+        plan_title:       a.plan_title,
+      };
+      onUploaded(created);
+    } catch (err) {
+      setUploadError((err as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = ""; // allow re-selecting the same file
+    }
+  }
 
   async function handleDelete() {
     if (!window.confirm(`Delete this appointment (${a.plan_title} on ${a.scheduled_date.slice(0, 10)})? This cannot be undone.`)) return;
@@ -418,7 +460,7 @@ function AppointmentCard({
         </p>
       )}
 
-      {!rxLoading && prescriptions.length > 0 && (
+      {!rxLoading && (
         <div className={pStyles.apptReports}>
           <div className={pStyles.apptReportsLabel}>
             Reports / Prescriptions ({prescriptions.length})
@@ -451,6 +493,36 @@ function AppointmentCard({
               </span>
             </div>
           ))}
+
+          {prescriptions.length === 0 && (
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#9b8fa0" }}>
+              No prescriptions uploaded for this appointment yet.
+            </p>
+          )}
+
+          {/* Upload control — sends the file to the existing S3-backed endpoint.
+              The patient sees it in their "Files & Reports" tab after login. */}
+          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/*,.doc,.docx"
+              onChange={handleUpload}
+              style={{ display: "none" }}
+            />
+            <button
+              type="button"
+              className={pStyles.rxViewBtn}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{ opacity: uploading ? 0.6 : 1 }}
+            >
+              {uploading ? "Uploading…" : "＋ Upload prescription"}
+            </button>
+            {uploadError && (
+              <span style={{ color: "#dc2626", fontSize: 12 }}>{uploadError}</span>
+            )}
+          </div>
         </div>
       )}
     </div>

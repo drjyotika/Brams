@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE, verifySessionToken } from "../../../../../lib/auth";
 import { getUploadsForPatient } from "../../../../../lib/bookings";
 import { getPresignedUrl, uriToKey } from "../../../../../lib/s3";
 
 type Ctx = { params: Promise<{ id: string }> };
+
+// Admin-only: exposes a patient's prescription files with signed download URLs.
+async function requireAdmin(): Promise<boolean> {
+  const jar   = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  return token ? verifySessionToken(token) : false;
+}
 
 // GET /api/patients/[id]/uploads
 // Returns all uploads across every appointment for this patient,
 // each enriched with a fresh 1-hour presigned S3 download URL.
 export async function GET(_req: NextRequest, ctx: Ctx) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await ctx.params;
     const uploads = await getUploadsForPatient(id);
 
