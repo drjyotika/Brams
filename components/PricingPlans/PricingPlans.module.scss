@@ -3,7 +3,8 @@
 
 .section {
   background: $color-bg;
-  padding-block: 128px 208px;
+  // Reduced bottom padding now that the FAQ section follows (was 208px).
+  padding-block: 128px 96px;
 }
 
 .inner {

@@ -24,6 +24,7 @@ import { HeroSection } from "../components/HeroSection";
 import { SpecializedSupport } from "../components/SpecializedSupport";
 import { HowItWorks } from "../components/HowItWorks";
 import { PricingPlans } from "../components/PricingPlans";
+import { FaqSection } from "../components/FaqSection";
 import { NewsletterCTA } from "../components/NewsletterCTA";
 import { Footer } from "../components/Footer";
 import { FaqLd, ConsultationOffersLd } from "../components/JsonLd";
@@ -53,6 +54,7 @@ export default async function Home() {
         <SpecializedSupport data={content.support} />
         <HowItWorks data={content.howItWorks} />
         <PricingPlans data={content.pricing} />
+        <FaqSection />
         <NewsletterCTA data={content.newsletter} />
       </main>
       <Footer data={content.footer} />

@@ -1,0 +1,137 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.section {
+  // Smaller top padding to tighten the gap after Consultation Plans.
+  padding-block: 64px 128px;
+}
+
+.inner {
+  @include container;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.eyebrow {
+  @include eyebrow;
+  color: $color-plum;
+}
+
+.title {
+  @include h2;
+}
+
+.description {
+  margin: 0;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink-soft;
+}
+
+// ─── List ─────────────────────────────────────────────────────────────────────
+
+.list {
+  width: 100%;
+  max-width: 768px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-md;
+  overflow: hidden;
+  scroll-margin-top: 96px;        // clear the sticky nav when deep-linked
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+
+  &:hover {
+    border-color: rgba(116, 84, 117, 0.35);
+  }
+
+  &[open] {
+    border-color: rgba(116, 84, 117, 0.4);
+    box-shadow: 0 10px 30px -12px rgba(116, 84, 117, 0.18);
+  }
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  list-style: none;               // hide default marker (Firefox)
+
+  // Hide the default disclosure triangle (WebKit/Blink)
+  &::-webkit-details-marker { display: none; }
+
+  &:focus-visible {
+    outline: 2px solid $color-plum;
+    outline-offset: -2px;
+    border-radius: $radius-md;
+  }
+}
+
+// The question is an <h3> for crawlable structure; style it to read as normal
+// FAQ text, not a big heading.
+.questionText {
+  margin: 0;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 26px;
+  color: $color-ink;
+}
+
+// Chevron drawn with a rotating border — rotates 180° when the item is open.
+.icon {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid $color-plum;
+  border-bottom: 2px solid $color-plum;
+  transform: rotate(45deg);       // points down
+  transition: transform 240ms var(--ease-out-quart);
+}
+
+.item[open] .icon {
+  transform: rotate(-135deg);     // points up
+}
+
+// Collapsed by default. Native <details> auto-hiding doesn't apply once the
+// <summary> uses `display: flex`, so we toggle visibility explicitly on [open].
+.answer {
+  display: none;
+  padding: 0 24px 22px;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 26px;
+    color: $color-ink-soft;
+  }
+}
+
+.item[open] .answer {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .icon { transition: none; }
+}

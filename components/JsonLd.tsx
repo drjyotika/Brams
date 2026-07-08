@@ -1,4 +1,5 @@
 import { SITE, DOCTOR, SOCIAL_PROFILES } from "../lib/seo";
+import { FAQ_ITEMS, faqAnchorId } from "../lib/faq";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -126,71 +127,22 @@ export function FaqLd() {
   const data = {
     "@context": "https://schema.org",
     "@type":    "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name:    "What kind of mental health conditions does Dr. Jyotika Kanwar treat?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Dr. Jyotika Kanwar is a consultant psychiatrist specializing in anxiety and panic disorders, depression, adult ADHD, and trauma recovery. She provides evidence-based care including psychotherapy guidance and medication management when clinically appropriate.",
-        },
+    "@id":      `${SITE.url}/#faq`,
+    inLanguage: SITE.language,
+    isPartOf:   { "@id": `${SITE.url}/#website` },
+    about:      { "@id": `${SITE.url}/#physician` },
+    // Built from the same source as the visible FAQ section so the structured
+    // data always matches the on-page text (see lib/faq.ts). Each Question's
+    // `url` points at its visible anchor so answer engines can deep-link.
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name:    item.question,
+      url:     `${SITE.url}/#${faqAnchorId(item.question)}`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text:    item.answer,
       },
-      {
-        "@type": "Question",
-        name:    "How do online psychiatric consultations work?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Online consultations happen via a secure, encrypted video link. After booking your appointment and completing the payment, you receive the meeting link by email and WhatsApp. Sessions are typically 20–60 minutes depending on whether it's a follow-up or initial consultation.",
-        },
-      },
-      {
-        "@type": "Question",
-        name:    "Is online psychiatric care confidential?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Yes. All consultations are conducted over a HIPAA-aligned encrypted platform. Patient records, reports, and conversations are confidential and accessible only to you and Dr. Jyotika. We never share information with third parties without your explicit consent.",
-        },
-      },
-      {
-        "@type": "Question",
-        name:    "How much does an online psychiatric consultation cost?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Brams Mind Care offers three plans: Follow-up at ₹1,000 (20–30 min), Initial Consultation at ₹2,000 (45–60 min) for new patients, and Priority Plus at ₹3,000 for urgent same-day support with an extended 90-minute session.",
-        },
-      },
-      {
-        "@type": "Question",
-        name:    "Do you serve patients outside major cities?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Yes. Brams Mind Care is an online-only practice, serving patients across India. As long as you have a stable internet connection and a private space, you can book a consultation from anywhere in the country.",
-        },
-      },
-      {
-        "@type": "Question",
-        name:    "What should I do in a mental health emergency?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "If you are in immediate danger or experiencing a crisis, please call your local emergency services or India's iCall helpline at +91-9152987821. Brams Mind Care is not an emergency service. For urgent but non-crisis support, our Priority Plus plan offers same-day appointment availability.",
-        },
-      },
-      {
-        "@type": "Question",
-        name:    "Can I get a prescription through online consultation?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Yes. Where clinically appropriate, Dr. Jyotika can issue digital prescriptions following telemedicine guidelines. Prescriptions are uploaded to your secure patient dashboard and can also be sent to a pharmacy of your choice.",
-        },
-      },
-    ],
+    })),
   };
   return <Script data={data} />;
 }
