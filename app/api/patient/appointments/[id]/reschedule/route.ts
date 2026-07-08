@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { PATIENT_SESSION_COOKIE, verifyPatientToken } from "../../../../../../lib/auth";
 import { getAppointmentById, updateAppointment } from "../../../../../../lib/bookings";
+import { rescheduleMeetEventForAppointment } from "../../../../../../lib/google-calendar";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -10,7 +11,8 @@ type Ctx = { params: Promise<{ id: string }> };
  * Body: { scheduled_date: string (YYYY-MM-DD), scheduled_time: string (HH:mm:ss) }
  *
  * Patients can only reschedule their own non-cancelled, non-completed appointments.
- * Rescheduling resets the status to "pending" and clears the meeting link.
+ * The Google Meet/calendar event is moved to the new time (keeping the same Meet
+ * link) and the patient is re-notified via the calendar invite.
  */
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
@@ -39,14 +41,15 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     if (!scheduled_date || !scheduled_time)
       return NextResponse.json({ error: "Date and time are required." }, { status: 400 });
 
-    await updateAppointment(id, {
-      scheduled_date,
-      scheduled_time,
-      status:       "pending",   // needs admin re-confirmation
-      meeting_link: null,        // old link is no longer valid
-    });
+    // Move to the new slot first (status + existing Meet link are preserved).
+    await updateAppointment(id, { scheduled_date, scheduled_time });
 
-    return NextResponse.json({ ok: true });
+    // Move the Google Meet/calendar event to the new time. Non-fatal — a Google
+    // hiccup must not block the reschedule the patient already committed to.
+    const { meetLink, error } = await rescheduleMeetEventForAppointment(id);
+    if (error) console.error("[patient/reschedule] meet move failed:", error);
+
+    return NextResponse.json({ ok: true, meeting_link: meetLink });
   } catch (e) {
     console.error("[patient/reschedule]", e);
     return NextResponse.json({ error: "Server error." }, { status: 500 });

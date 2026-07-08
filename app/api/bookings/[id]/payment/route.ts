@@ -11,6 +11,7 @@ import {
   buildAppointmentAdminNotificationEmail,
   sendEmail,
 } from "../../../../../lib/email";
+import { ensureMeetLinkForAppointment } from "../../../../../lib/google-calendar";
 
 // Clinic addresses that should receive a copy of every new booking.
 const CLINIC_NOTIFY = ["drjyotika@bramsmindcare.com", "info@bramsmindcare.com"];
@@ -76,6 +77,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
     await updateAppointment(id, { payment_status: "paid", status: "confirmed" });
 
+    // Auto-generate the Google Meet link for this now-confirmed upcoming
+    // appointment (on drjyotika@bramsmindcare.com's calendar). Non-fatal — a
+    // Google hiccup must never break the already-recorded payment. The link is
+    // awaited so the confirmation email below can include it.
+    const { meetLink } = await ensureMeetLinkForAppointment(id);
+
     // Increment coupon usage count if one was applied (fire-and-forget).
     if (appointment.coupon_code) {
       incrementCouponUsage(appointment.coupon_code)
@@ -98,7 +105,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
           scheduledDate:   appointment.scheduled_date,
           scheduledTime:   appointment.scheduled_time,
           durationMinutes: appointment.duration_minutes,
-          meetingLink:     appointment.meeting_link,
+          meetingLink:     meetLink ?? appointment.meeting_link,
           manageUrl:       `${origin}/patient`,
         });
         await sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });

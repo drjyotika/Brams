@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppointmentById, getPatientById, updateAppointment, type AppointmentStatus } from "../../../../../../lib/bookings";
-import { createMeetEvent } from "../../../../../../lib/google-calendar";
+import { ensureMeetLinkForAppointment } from "../../../../../../lib/google-calendar";
 import { sendEmail, buildFeedbackRequestEmail } from "../../../../../../lib/email";
-import { sql } from "../../../../../../lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -36,23 +35,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   // ── Auto side-effects ──────────────────────────────────────────────────────
 
-  // 1. Confirmed → generate Meet if none exists
-  if (status === "confirmed" && !appt.meeting_link) {
-    try {
-      meetLink = await createMeetEvent({
-        appointmentId:   appt.id,
-        planTitle:       appt.plan_title,
-        patientName:     patient.full_name,
-        patientEmail:    patient.email,
-        scheduledDate:   appt.scheduled_date,
-        scheduledTime:   appt.scheduled_time,
-        durationMinutes: appt.duration_minutes ?? 60,
-      });
-      await sql`UPDATE appointments SET meeting_link = ${meetLink}, updated_at = NOW() WHERE id = ${id}`;
-    } catch (err) {
-      meetError = err instanceof Error ? err.message : "Meet generation failed";
-      console.error("[status/confirmed] meet gen failed:", err);
-    }
+  // 1. Confirmed → generate Meet if none exists (idempotent helper)
+  if (status === "confirmed") {
+    const result = await ensureMeetLinkForAppointment(id);
+    meetLink  = result.meetLink ?? meetLink;
+    meetError = result.error;
   }
 
   // 2. Completed → send feedback email
