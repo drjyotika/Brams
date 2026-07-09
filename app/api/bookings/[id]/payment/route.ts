@@ -89,29 +89,15 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         .catch((e) => console.error("[payment] coupon increment failed:", e));
     }
 
-    // Send confirmation (patient) + notification (clinic) emails.
-    // Awaited — on serverless, un-awaited work after the response is returned
-    // can be killed before the email actually sends. Wrapped so an email
-    // failure never breaks the (already-recorded) payment confirmation.
+    // Booking emails. Awaited — on serverless, un-awaited work after the
+    // response is returned can be killed before the email actually sends. The
+    // clinic notification and patient confirmation run in SEPARATE try/catch
+    // blocks so a failure in one can never suppress the other — drjyotika@ must
+    // always be notified of a new appointment.
+    const patient = await getPatientById(appointment.patient_id).catch(() => null);
+
+    // 1) Clinic notification → drjyotika@ + info@ (sent first; highest priority)
     try {
-      const patient = await getPatientById(appointment.patient_id);
-      const origin  = new URL(req.url).origin;
-
-      // 1) Patient confirmation
-      if (patient?.email) {
-        const tpl = buildAppointmentConfirmationEmail({
-          fullName:        patient.full_name,
-          planTitle:       appointment.plan_title,
-          scheduledDate:   appointment.scheduled_date,
-          scheduledTime:   appointment.scheduled_time,
-          durationMinutes: appointment.duration_minutes,
-          meetingLink:     meetLink ?? appointment.meeting_link,
-          manageUrl:       `${origin}/patient`,
-        });
-        await sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
-      }
-
-      // 2) Clinic notification → drjyotika@ + info@
       const adminTpl = buildAppointmentAdminNotificationEmail({
         bookingId:       id,
         patientName:     patient?.full_name ?? "Unknown",
@@ -123,9 +109,29 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         durationMinutes: appointment.duration_minutes,
         amountPaise:     appointment.total_paise,
       });
-      await sendEmail({ to: CLINIC_NOTIFY, subject: adminTpl.subject, html: adminTpl.html, text: adminTpl.text });
+      const res = await sendEmail({ to: CLINIC_NOTIFY, subject: adminTpl.subject, html: adminTpl.html, text: adminTpl.text });
+      if (!res.ok) console.error("[payment] clinic notification failed:", res.error);
     } catch (e) {
-      console.error("[payment] booking emails failed:", e);
+      console.error("[payment] clinic notification threw:", e);
+    }
+
+    // 2) Patient confirmation (independent — never blocks the clinic email)
+    try {
+      if (patient?.email) {
+        const origin = new URL(req.url).origin;
+        const tpl = buildAppointmentConfirmationEmail({
+          fullName:        patient.full_name,
+          planTitle:       appointment.plan_title,
+          scheduledDate:   appointment.scheduled_date,
+          scheduledTime:   appointment.scheduled_time,
+          durationMinutes: appointment.duration_minutes,
+          meetingLink:     meetLink ?? appointment.meeting_link,
+          manageUrl:       `${origin}/patient`,
+        });
+        await sendEmail({ to: patient.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+      }
+    } catch (e) {
+      console.error("[payment] patient confirmation failed:", e);
     }
 
     return NextResponse.json({ payment });
