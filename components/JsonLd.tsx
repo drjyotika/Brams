@@ -1,6 +1,7 @@
 import { SITE, DOCTOR, SOCIAL_PROFILES } from "../lib/seo";
 import type { FaqData } from "../lib/faq";
 import { faqAnchorId } from "../lib/faq";
+import type { AboutData } from "../lib/about";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -191,6 +192,55 @@ export function ConsultationOffersLd() {
         procedureType: "https://schema.org/TherapeuticProcedure",
       },
     })),
+  };
+  return <Script data={data} />;
+}
+
+// ─── About / ProfilePage (enriches the Physician entity for E-E-A-T) ─────────
+
+export function AboutLd({ about }: { about: AboutData }) {
+  const physician: AnyObject = {
+    "@type":          "Physician",
+    "@id":            `${SITE.url}/#physician`,
+    name:             about.name,
+    jobTitle:         about.role,
+    image:            `${SITE.url}${about.photo}`,
+    url:              `${SITE.url}/about`,
+    medicalSpecialty: "Psychiatry",
+    worksFor:         { "@id": `${SITE.url}/#organization` },
+    description:      about.intro,
+    knowsAbout:       about.specialties,
+  };
+
+  if (about.qualifications.length) {
+    physician.hasCredential = about.qualifications.map((q) => ({
+      "@type":            "EducationalOccupationalCredential",
+      credentialCategory: "degree",
+      name:               q.label,
+    }));
+  }
+  if (about.memberships.length) {
+    physician.memberOf = about.memberships.map((m) => ({ "@type": "Organization", name: m }));
+  }
+  if (about.languages.length) physician.knowsLanguage = about.languages;
+  if (about.registrationNumber) {
+    physician.identifier = {
+      "@type":     "PropertyValue",
+      propertyID:  about.registrationCouncil || "Medical registration",
+      value:       about.registrationNumber,
+    };
+  }
+
+  const data = {
+    "@context":  "https://schema.org",
+    "@type":     "ProfilePage",
+    "@id":       `${SITE.url}/about#profilepage`,
+    url:         `${SITE.url}/about`,
+    name:        `About ${about.name}`,
+    inLanguage:  SITE.language,
+    isPartOf:    { "@id": `${SITE.url}/#website` },
+    about:       { "@id": `${SITE.url}/#physician` },
+    mainEntity:  physician,
   };
   return <Script data={data} />;
 }

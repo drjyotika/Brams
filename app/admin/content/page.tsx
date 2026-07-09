@@ -21,6 +21,7 @@ import type {
   FooterData,
   FaqData,
   FaqItem,
+  AboutData,
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
@@ -31,7 +32,7 @@ const SUPPORT_TONES: SupportCard["tone"][] = [
   "sky", "lilac", "muted", "lime", "sand", "mint", "dark",
 ];
 
-type Tab = "hero" | "support" | "howItWorks" | "pricing" | "faq" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "faq" | "about" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "hero",           label: "Hero"               },
@@ -39,6 +40,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "howItWorks",     label: "How it Works"        },
   { id: "pricing",        label: "Pricing Plans"       },
   { id: "faq",            label: "FAQ"                 },
+  { id: "about",          label: "About Dr. Jyotika"   },
   { id: "newsletter",     label: "Newsletter CTA"      },
   { id: "nav",            label: "Navigation"          },
   { id: "footer",         label: "Footer"              },
@@ -89,6 +91,7 @@ export default function ContentPage() {
           {tab === "howItWorks"     && <HowEditor            data={content.howItWorks}     onChange={(v) => update("howItWorks",     v)} />}
           {tab === "pricing"        && <PricingEditor        data={content.pricing}        onChange={(v) => update("pricing",        v)} />}
           {tab === "faq"            && <FaqEditor            data={content.faq}            onChange={(v) => update("faq",            v)} />}
+          {tab === "about"          && <AboutEditor          data={content.about}          onChange={(v) => update("about",          v)} />}
           {tab === "newsletter"     && <NewsletterEditor     data={content.newsletter}     onChange={(v) => update("newsletter",     v)} />}
           {tab === "nav"            && <NavEditor            data={content.nav}            onChange={(v) => update("nav",            v)} />}
           {tab === "footer"         && <FooterEditor         data={content.footer}         onChange={(v) => update("footer",         v)} />}
@@ -413,6 +416,87 @@ function FaqEditor({ data, onChange }: { data: FaqData; onChange: (v: FaqData) =
       <div className={styles.actions}>
         <button className={styles.secondary} type="button" onClick={addItem}>+ Add question</button>
         <button className={styles.primary} onClick={() => save(data)}>Save FAQ</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── About Dr. Jyotika ──────────────────────────────────────────────────────
+
+function AboutEditor({ data, onChange }: { data: AboutData; onChange: (v: AboutData) => void }) {
+  const { status, save } = useSaver("about");
+  const set = <K extends keyof AboutData>(k: K, v: AboutData[K]) => onChange({ ...data, [k]: v });
+
+  // Sanitize the newline-driven lists on save (empty lines are kept while typing
+  // so the textareas stay editable, then trimmed here).
+  const handleSave = () => {
+    const clean: AboutData = {
+      ...data,
+      qualifications: data.qualifications
+        .filter((q) => q.label.trim())
+        .map((q, i) => ({ id: `q-${i}`, label: q.label.trim() })),
+      specialties: data.specialties.map((s) => s.trim()).filter(Boolean),
+      memberships: data.memberships.map((s) => s.trim()).filter(Boolean),
+      languages:   data.languages.map((s) => s.trim()).filter(Boolean),
+    };
+    onChange(clean);
+    save(clean);
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>About Dr. Jyotika</h2>
+      <p className={styles.panelHint}>
+        Authority page (medical E-E-A-T for SEO). Registration, experience, and
+        memberships are left blank until you add them — fill in only real,
+        verifiable details.
+      </p>
+
+      <div className={styles.row}>
+        <Field label="Eyebrow"><input className={styles.input} value={data.eyebrow} onChange={(e) => set("eyebrow", e.target.value)} /></Field>
+        <Field label="Name"><input className={styles.input} value={data.name} onChange={(e) => set("name", e.target.value)} /></Field>
+      </div>
+      <div className={styles.row}>
+        <Field label="Role / title"><input className={styles.input} value={data.role} onChange={(e) => set("role", e.target.value)} /></Field>
+        <Field label="Photo URL"><input className={styles.input} value={data.photo} onChange={(e) => set("photo", e.target.value)} /></Field>
+      </div>
+      <Field label="Intro"><textarea className={styles.textarea} value={data.intro} onChange={(e) => set("intro", e.target.value)} /></Field>
+      <Field label="Approach"><textarea className={styles.textarea} value={data.approach} onChange={(e) => set("approach", e.target.value)} /></Field>
+
+      <Field label="Qualifications (one per line)">
+        <textarea
+          className={styles.textarea}
+          value={data.qualifications.map((q) => q.label).join("\n")}
+          onChange={(e) => set("qualifications", e.target.value.split("\n").map((label, i) => ({ id: `q-${i}`, label })))}
+        />
+      </Field>
+      <Field label="Areas of focus (one per line)">
+        <textarea className={styles.textarea} value={data.specialties.join("\n")} onChange={(e) => set("specialties", e.target.value.split("\n"))} />
+      </Field>
+
+      <div className={styles.row}>
+        <Field label="Registration number">
+          <input className={styles.input} value={data.registrationNumber} placeholder="e.g. state/NMC registration no." onChange={(e) => set("registrationNumber", e.target.value)} />
+        </Field>
+        <Field label="Registration council">
+          <input className={styles.input} value={data.registrationCouncil} placeholder="e.g. National Medical Commission" onChange={(e) => set("registrationCouncil", e.target.value)} />
+        </Field>
+      </div>
+      <div className={styles.row}>
+        <Field label="Years of experience">
+          <input className={styles.input} value={data.experienceYears} placeholder="e.g. 10+" onChange={(e) => set("experienceYears", e.target.value)} />
+        </Field>
+      </div>
+      <Field label="Memberships (one per line)">
+        <textarea className={styles.textarea} value={data.memberships.join("\n")} onChange={(e) => set("memberships", e.target.value.split("\n"))} />
+      </Field>
+      <Field label="Consultation languages (one per line)">
+        <textarea className={styles.textarea} value={data.languages.join("\n")} onChange={(e) => set("languages", e.target.value.split("\n"))} />
+      </Field>
+
+      <div className={styles.actions}>
+        <button className={styles.primary} onClick={handleSave}>Save About</button>
         <StatusBadge status={status} />
       </div>
     </section>

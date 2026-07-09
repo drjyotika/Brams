@@ -3,6 +3,8 @@
 
 import { DEFAULT_FAQ, type FaqData } from "./faq";
 export type { FaqData, FaqItem } from "./faq";
+import { DEFAULT_ABOUT, type AboutData } from "./about";
+export type { AboutData, AboutCredential } from "./about";
 
 export type NavLink = { label: string; href: string };
 
@@ -192,6 +194,7 @@ export type SiteContent = {
   bookingStep1: BookingStep1Data;
   bookingStep2: BookingStep2Data;
   faq: FaqData;
+  about: AboutData;
 };
 
 // Default content — used as fallback when no API data is supplied. Mirrors
@@ -202,7 +205,7 @@ export const defaultContent: SiteContent = {
     links: [
       { label: "Consultations", href: "#consultations" },
       { label: "Approach", href: "#approach" },
-      { label: "About", href: "#about" },
+      { label: "About", href: "/about" },
       { label: "FAQ", href: "#faq" },
     ],
     cta: { label: "Book Session", href: "#book" },
@@ -423,4 +426,5 @@ export const defaultContent: SiteContent = {
     ],
   },
   faq: DEFAULT_FAQ,
+  about: DEFAULT_ABOUT,
 };

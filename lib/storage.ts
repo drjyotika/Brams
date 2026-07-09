@@ -62,6 +62,7 @@ export function mergeContent(
     bookingStep1:   migrateStep1(override.bookingStep1 ?? base.bookingStep1),
     bookingStep2:   override.bookingStep2   ?? base.bookingStep2,
     faq:            override.faq            ?? base.faq,
+    about:          override.about          ?? base.about,
   };
 }
 

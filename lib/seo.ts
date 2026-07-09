@@ -52,6 +52,7 @@ export const SOCIAL_PROFILES: string[] = [
 /** Routes that should be indexed by search engines. */
 export const PUBLIC_ROUTES = [
   "/",
+  "/about",
   "/book",
   "/contact",
   "/privacy-policy",

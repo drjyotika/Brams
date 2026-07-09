@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const priorities: Record<string, number> = {
     "/":                   1.0,
+    "/about":              0.8,
     "/book":               0.9,
     "/contact":            0.7,
     "/privacy-policy":     0.4,
@@ -16,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const changeFreq: Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]> = {
     "/":                   "weekly",
+    "/about":              "monthly",
     "/book":               "weekly",
     "/contact":            "monthly",
     "/privacy-policy":     "yearly",

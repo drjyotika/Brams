@@ -1,0 +1,266 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.page {
+  background: $color-bg;
+}
+
+// ─── Intro ─────────────────────────────────────────────────────────────────────
+
+.intro {
+  background: radial-gradient(
+    1500px 1500px at 100% 0%,
+    rgba(200, 162, 200, 0.8) 0%,
+    rgba(225, 206, 226, 0.7) 30%,
+    rgba(249, 249, 251, 1) 62%
+  );
+  padding-block: 72px;
+}
+
+.introInner {
+  @include container;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  align-items: center;
+
+  @include lg {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 64px;
+  }
+}
+
+.eyebrow {
+  @include eyebrow;
+  color: $color-plum;
+}
+
+.name {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: $color-ink;
+  margin: 16px 0 0;
+}
+
+.role {
+  margin: 8px 0 0;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 18px;
+  color: $color-plum;
+}
+
+.lede {
+  margin: 24px 0 0;
+  font-size: 18px;
+  line-height: 30px;
+  color: $color-ink-soft;
+  max-width: 560px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  transition: transform 200ms var(--ease-out-quart), box-shadow 200ms var(--ease-out-quart);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -6px rgba(116, 84, 117, 0.45);
+  }
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid $color-lilac-soft;
+  color: $color-ink;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  transition: background 200ms ease, border-color 200ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(116, 84, 117, 0.25);
+  }
+}
+
+.portraitWrap {
+  position: relative;
+  max-width: 420px;
+  width: 100%;
+  justify-self: center;
+}
+
+.portrait {
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: $shadow-portrait;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+}
+
+.badge {
+  position: absolute;
+  left: -12px;
+  bottom: -20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  background: #fff;
+  border-radius: $radius-md;
+  padding: 14px 18px;
+  box-shadow: $shadow-pop;
+}
+
+.badgeIcon { color: $color-plum; flex-shrink: 0; }
+
+.badgeText {
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: $color-ink;
+}
+
+// ─── Detail grid ───────────────────────────────────────────────────────────────
+
+.detail {
+  padding-block: 80px;
+}
+
+.detailInner {
+  @include container;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include md {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-lg;
+  padding: 32px;
+}
+
+// Approach card spans full width and sits last.
+.approachCard {
+  @include md { grid-column: 1 / -1; }
+}
+
+.cardTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 20px;
+  color: $color-ink;
+  margin: 0 0 20px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink-soft;
+}
+
+.tick {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $color-lilac;
+  color: $color-plum-deep;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  background: $color-bg-muted;
+  color: $color-ink;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: $radius-pill;
+}
+
+.kv {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kvRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  dt {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: $color-ink-muted;
+  }
+  dd {
+    margin: 0;
+    font-size: 16px;
+    color: $color-ink;
+  }
+}
+
+.approach {
+  margin: 0;
+  font-size: 16px;
+  line-height: 28px;
+  color: $color-ink-soft;
+  max-width: 720px;
+}
