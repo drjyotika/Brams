@@ -47,6 +47,7 @@ export const DOCTOR = {
  */
 export const SOCIAL_PROFILES: string[] = [
   "https://share.google/hqdWQYI1x3T3WjKht", // Google Business Profile
+  "https://www.linkedin.com/in/dr-jyotika-kanwar-93b33417a", // LinkedIn
 ];
 
 /** Routes that should be indexed by search engines. */

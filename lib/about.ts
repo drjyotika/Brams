@@ -29,21 +29,23 @@ export type AboutData = {
 export const DEFAULT_ABOUT: AboutData = {
   eyebrow: "ABOUT YOUR PSYCHIATRIST",
   name: "Dr. Jyotika Kanwar",
-  role: "Consultant Psychiatrist",
+  role: "Psychiatrist · MD Psychiatry, PGIMER Chandigarh",
   photo: "/hero.png",
   intro:
-    "Dr. Jyotika Kanwar is a consultant psychiatrist providing confidential, evidence-based mental health care online to patients across India. She completed her MD in Psychiatry at PGIMER, Chandigarh — one of India's foremost medical institutes — and focuses on anxiety and panic disorders, depression, adult ADHD, and trauma recovery.",
+    "Dr. Jyotika Kanwar is a psychiatrist who completed her MD in Psychiatry at PGIMER, Chandigarh — one of India's premier tertiary-care institutes — with comprehensive clinical training in adult psychiatry across both outpatient (OPD) and inpatient (IPD) settings. Her clinical work spans ICD-11–based diagnostic assessment, psychopharmacology, and evidence-based management of mood disorders, anxiety disorders, psychotic disorders, substance-use disorders, and psychiatric emergencies.",
   approach:
-    "Her approach pairs careful clinical assessment with compassionate, judgement-free care. Where clinically appropriate, treatment blends psychotherapy guidance with medication management, tailored to each person and reviewed collaboratively over time. Every consultation is conducted over a secure, private video link, so patients can access expert psychiatric care from the comfort and confidentiality of home.",
+    "Known for a compassionate, patient-centered approach and a firm commitment to evidence-based, ethical psychiatric practice. Care begins with a thorough psychiatric evaluation and mental status examination, followed by collaborative treatment planning — combining psychotherapy guidance, including cognitive behavioural therapy (CBT), with medication management where clinically appropriate. Every consultation is conducted over a secure, private video link, so you can access expert care from the comfort and confidentiality of home.",
   qualifications: [
-    { id: "q-mbbs", label: "MBBS" },
-    { id: "q-md", label: "MD (Psychiatry) — PGIMER, Chandigarh" },
+    { id: "q-md", label: "MD (Psychiatry) — PGIMER, Chandigarh (2025)" },
+    { id: "q-mbbs", label: "MBBS — Bharati Vidyapeeth Medical College, Pune (2017)" },
   ],
   specialties: [
     "Anxiety & panic disorders",
     "Depression & mood disorders",
-    "Adult ADHD evaluation & management",
-    "Trauma recovery",
+    "Psychotic disorders",
+    "Addiction & substance-use disorders",
+    "Psychiatric emergencies & suicide-risk assessment",
+    "Child & adolescent psychiatry",
   ],
   // Fill these in via Admin → Content → About (left blank so nothing unverified
   // is published):

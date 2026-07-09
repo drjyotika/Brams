@@ -175,6 +175,29 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  // Links to the About page (best-practice "meet the doctor" affordance).
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform  220ms var(--ease-out-quart),
+    box-shadow 220ms var(--ease-out-quart);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 48px -16px rgba(116, 84, 117, 0.32);
+  }
+}
+
+.badgeLink {
+  margin-top: 4px;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 13px;
+  color: $color-plum;
+
+  span { transition: transform 200ms var(--ease-out-quart); display: inline-block; }
+  .badge:hover & span { transform: translateX(3px); }
 }
 
 .badgeRow {

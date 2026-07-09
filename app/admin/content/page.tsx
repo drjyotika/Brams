@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   BookingFailedData,
   BookingSuccessData,
@@ -428,6 +428,30 @@ function AboutEditor({ data, onChange }: { data: AboutData; onChange: (v: AboutD
   const { status, save } = useSaver("about");
   const set = <K extends keyof AboutData>(k: K, v: AboutData[K]) => onChange({ ...data, [k]: v });
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState("");
+
+  const uploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadErr("");
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`${API_BASE}/admin/about/upload`, { method: "POST", body: form });
+      const d = await res.json();
+      if (!res.ok || !d.url) throw new Error(d.error ?? `HTTP ${res.status}`);
+      set("photo", d.url);
+    } catch (err) {
+      setUploadErr((err as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   // Sanitize the newline-driven lists on save (empty lines are kept while typing
   // so the textareas stay editable, then trimmed here).
   const handleSave = () => {
@@ -457,10 +481,24 @@ function AboutEditor({ data, onChange }: { data: AboutData; onChange: (v: AboutD
         <Field label="Eyebrow"><input className={styles.input} value={data.eyebrow} onChange={(e) => set("eyebrow", e.target.value)} /></Field>
         <Field label="Name"><input className={styles.input} value={data.name} onChange={(e) => set("name", e.target.value)} /></Field>
       </div>
-      <div className={styles.row}>
-        <Field label="Role / title"><input className={styles.input} value={data.role} onChange={(e) => set("role", e.target.value)} /></Field>
-        <Field label="Photo URL"><input className={styles.input} value={data.photo} onChange={(e) => set("photo", e.target.value)} /></Field>
-      </div>
+      <Field label="Role / title"><input className={styles.input} value={data.role} onChange={(e) => set("role", e.target.value)} /></Field>
+
+      <Field label="Photo">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {data.photo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={data.photo} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(0,0,0,0.1)" }} />
+            )}
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={uploadPhoto} style={{ display: "none" }} />
+            <button type="button" className={styles.secondary} onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? "Uploading…" : "Upload image"}
+            </button>
+          </div>
+          <input className={styles.input} value={data.photo} placeholder="/hero.png or an uploaded URL" onChange={(e) => set("photo", e.target.value)} />
+          {uploadErr && <span style={{ color: "#dc2626", fontSize: 12 }}>{uploadErr}</span>}
+        </div>
+      </Field>
       <Field label="Intro"><textarea className={styles.textarea} value={data.intro} onChange={(e) => set("intro", e.target.value)} /></Field>
       <Field label="Approach"><textarea className={styles.textarea} value={data.approach} onChange={(e) => set("approach", e.target.value)} /></Field>
 

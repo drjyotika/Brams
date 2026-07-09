@@ -55,7 +55,7 @@ export function HeroSection({ data }: HeroSectionProps) {
             </picture>
           </div>
 
-          <div className={`${styles.badge} hero-badge-enter`}>
+          <a href="/about" className={`${styles.badge} hero-badge-enter`} aria-label="Read more about Dr. Jyotika Kanwar">
             <div className={styles.badgeRow}>
               <span className={styles.badgeIcon}>
                 <Icon name="badge-check" size={18} />
@@ -63,7 +63,8 @@ export function HeroSection({ data }: HeroSectionProps) {
               <span className={styles.badgeLabel}>{data.badge.label}</span>
             </div>
             <p className={styles.badgeQuote}>&ldquo;{data.badge.quote}&rdquo;</p>
-          </div>
+            <span className={styles.badgeLink}>Meet Dr. Jyotika <span aria-hidden="true">→</span></span>
+          </a>
         </ParallaxLayer>
 
       </div>
