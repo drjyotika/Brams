@@ -41,8 +41,18 @@ export function HeroSection({ data }: HeroSectionProps) {
           className={`${styles.portraitWrap} hero-portrait-enter`}
         >
           <div className={styles.portrait}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.portrait.src} alt={data.portrait.alt} />
+            <picture>
+              {/* Optimized formats for the default portrait (1.6 MB PNG →
+                  76 KB WebP). Custom admin-set portraits use their own src. */}
+              {data.portrait.src === "/hero.png" && (
+                <>
+                  <source srcSet="/hero.webp" type="image/webp" />
+                  <source srcSet="/hero.jpg" type="image/jpeg" />
+                </>
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={data.portrait.src} alt={data.portrait.alt} />
+            </picture>
           </div>
 
           <div className={`${styles.badge} hero-badge-enter`}>

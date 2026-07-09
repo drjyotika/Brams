@@ -54,13 +54,13 @@ export default async function Home() {
         <SpecializedSupport data={content.support} />
         <HowItWorks data={content.howItWorks} />
         <PricingPlans data={content.pricing} />
-        <FaqSection />
+        <FaqSection data={content.faq} />
         <NewsletterCTA data={content.newsletter} />
       </main>
       <Footer data={content.footer} />
 
       {/* Homepage-specific structured data (AEO/GEO) */}
-      <FaqLd />
+      <FaqLd faq={content.faq} />
       <ConsultationOffersLd />
     </>
   );

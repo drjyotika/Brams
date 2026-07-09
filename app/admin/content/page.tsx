@@ -19,6 +19,8 @@ import type {
   SupportCard,
   SupportData,
   FooterData,
+  FaqData,
+  FaqItem,
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
@@ -29,13 +31,14 @@ const SUPPORT_TONES: SupportCard["tone"][] = [
   "sky", "lilac", "muted", "lime", "sand", "mint", "dark",
 ];
 
-type Tab = "hero" | "support" | "howItWorks" | "pricing" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "faq" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "hero",           label: "Hero"               },
   { id: "support",        label: "Specialized Support" },
   { id: "howItWorks",     label: "How it Works"        },
   { id: "pricing",        label: "Pricing Plans"       },
+  { id: "faq",            label: "FAQ"                 },
   { id: "newsletter",     label: "Newsletter CTA"      },
   { id: "nav",            label: "Navigation"          },
   { id: "footer",         label: "Footer"              },
@@ -85,6 +88,7 @@ export default function ContentPage() {
           {tab === "support"        && <SupportEditor        data={content.support}        onChange={(v) => update("support",        v)} />}
           {tab === "howItWorks"     && <HowEditor            data={content.howItWorks}     onChange={(v) => update("howItWorks",     v)} />}
           {tab === "pricing"        && <PricingEditor        data={content.pricing}        onChange={(v) => update("pricing",        v)} />}
+          {tab === "faq"            && <FaqEditor            data={content.faq}            onChange={(v) => update("faq",            v)} />}
           {tab === "newsletter"     && <NewsletterEditor     data={content.newsletter}     onChange={(v) => update("newsletter",     v)} />}
           {tab === "nav"            && <NavEditor            data={content.nav}            onChange={(v) => update("nav",            v)} />}
           {tab === "footer"         && <FooterEditor         data={content.footer}         onChange={(v) => update("footer",         v)} />}
@@ -337,6 +341,78 @@ function NewsletterEditor({ data, onChange }: { data: NewsletterData; onChange: 
       </div>
       <div className={styles.actions}>
         <button className={styles.primary} onClick={() => save(data)}>Save Newsletter</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── FAQ ────────────────────────────────────────────────────────────────────
+
+function FaqEditor({ data, onChange }: { data: FaqData; onChange: (v: FaqData) => void }) {
+  const { status, save } = useSaver("faq");
+
+  const setItem = (idx: number, patch: Partial<FaqItem>) => {
+    const items = data.items.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+    onChange({ ...data, items });
+  };
+  const removeItem = (idx: number) =>
+    onChange({ ...data, items: data.items.filter((_, i) => i !== idx) });
+  const move = (idx: number, dir: -1 | 1) => {
+    const j = idx + dir;
+    if (j < 0 || j >= data.items.length) return;
+    const items = [...data.items];
+    [items[idx], items[j]] = [items[j], items[idx]];
+    onChange({ ...data, items });
+  };
+  const addItem = () =>
+    onChange({
+      ...data,
+      items: [
+        ...data.items,
+        { id: `faq-${Date.now()}`, question: "New question?", answer: "Answer goes here." },
+      ],
+    });
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>FAQ</h2>
+      <p className={styles.panelHint}>
+        Shown on the homepage and emitted as FAQ structured data (SEO/AEO/GEO).
+        Keep answers concise and self-contained.
+      </p>
+
+      <div className={styles.row}>
+        <Field label="Section title">
+          <input className={styles.input} value={data.title} onChange={(e) => onChange({ ...data, title: e.target.value })} />
+        </Field>
+      </div>
+      <Field label="Section description">
+        <textarea className={styles.textarea} value={data.description} onChange={(e) => onChange({ ...data, description: e.target.value })} />
+      </Field>
+
+      {data.items.map((item, i) => (
+        <div key={item.id} className={styles.cardArrayItem}>
+          <div className={styles.cardArrayHead}>
+            <span>Q{i + 1}</span>
+            <span style={{ display: "flex", gap: 8 }}>
+              <button type="button" className={styles.secondary} onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
+              <button type="button" className={styles.secondary} onClick={() => move(i, 1)} disabled={i === data.items.length - 1} aria-label="Move down">↓</button>
+              <button type="button" className={styles.danger} onClick={() => removeItem(i)}>Remove</button>
+            </span>
+          </div>
+          <Field label="Question">
+            <input className={styles.input} value={item.question} onChange={(e) => setItem(i, { question: e.target.value })} />
+          </Field>
+          <Field label="Answer">
+            <textarea className={styles.textarea} value={item.answer} onChange={(e) => setItem(i, { answer: e.target.value })} />
+          </Field>
+        </div>
+      ))}
+
+      <div className={styles.actions}>
+        <button className={styles.secondary} type="button" onClick={addItem}>+ Add question</button>
+        <button className={styles.primary} onClick={() => save(data)}>Save FAQ</button>
         <StatusBadge status={status} />
       </div>
     </section>

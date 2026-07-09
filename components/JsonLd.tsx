@@ -1,5 +1,6 @@
 import { SITE, DOCTOR, SOCIAL_PROFILES } from "../lib/seo";
-import { FAQ_ITEMS, faqAnchorId } from "../lib/faq";
+import type { FaqData } from "../lib/faq";
+import { faqAnchorId } from "../lib/faq";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -123,7 +124,8 @@ export function WebsiteLd() {
 
 // ─── FAQ (AEO gold standard) ──────────────────────────────────────────────────
 
-export function FaqLd() {
+export function FaqLd({ faq }: { faq: FaqData }) {
+  if (!faq?.items?.length) return null;
   const data = {
     "@context": "https://schema.org",
     "@type":    "FAQPage",
@@ -131,10 +133,10 @@ export function FaqLd() {
     inLanguage: SITE.language,
     isPartOf:   { "@id": `${SITE.url}/#website` },
     about:      { "@id": `${SITE.url}/#physician` },
-    // Built from the same source as the visible FAQ section so the structured
-    // data always matches the on-page text (see lib/faq.ts). Each Question's
+    // Built from the same admin-editable source as the visible FAQ section so
+    // the structured data always matches the on-page text. Each Question's
     // `url` points at its visible anchor so answer engines can deep-link.
-    mainEntity: FAQ_ITEMS.map((item) => ({
+    mainEntity: faq.items.map((item) => ({
       "@type": "Question",
       name:    item.question,
       url:     `${SITE.url}/#${faqAnchorId(item.question)}`,

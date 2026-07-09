@@ -1,6 +1,9 @@
 // Content types — every section component accepts a typed `data` prop so the
 // shapes below double as the contract for the API.
 
+import { DEFAULT_FAQ, type FaqData } from "./faq";
+export type { FaqData, FaqItem } from "./faq";
+
 export type NavLink = { label: string; href: string };
 
 export type NavData = {
@@ -188,6 +191,7 @@ export type SiteContent = {
   bookingFailed: BookingFailedData;
   bookingStep1: BookingStep1Data;
   bookingStep2: BookingStep2Data;
+  faq: FaqData;
 };
 
 // Default content — used as fallback when no API data is supplied. Mirrors
@@ -418,4 +422,5 @@ export const defaultContent: SiteContent = {
       { id: "f-reason",    key: "reason",    label: "Reason for consultation",  type: "textarea", placeholder: "Briefly describe what you'd like to discuss…",       required: false, visible: true,  width: "full" },
     ],
   },
+  faq: DEFAULT_FAQ,
 };
