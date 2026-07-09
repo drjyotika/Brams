@@ -317,6 +317,7 @@ export function buildAppointmentAdminNotificationEmail(input: {
   scheduledTime:   string;
   durationMinutes: number;
   amountPaise?:    number | null;
+  meetingLink?:    string | null;
 }): EmailMessage {
   const subj = `New booking — ${input.patientName} · ${formatDate(input.scheduledDate)} at ${formatTime12(input.scheduledTime)}`;
 
@@ -329,18 +330,21 @@ export function buildAppointmentAdminNotificationEmail(input: {
     { label: "Date",         value: formatDate(input.scheduledDate) },
     { label: "Time",         value: `${formatTime12(input.scheduledTime)} (${input.durationMinutes} min)` },
     ...(input.amountPaise != null ? [{ label: "Amount paid", value: `₹${(input.amountPaise / 100).toFixed(2)}` }] : []),
+    ...(input.meetingLink ? [{ label: "Meeting link", value: input.meetingLink }] : []),
   ];
 
   const html = layout({
     preheader: `New booking from ${input.patientName} on ${formatDate(input.scheduledDate)}.`,
     heading:   "New appointment booked",
     content:   infoCard(rows),
+    cta:       input.meetingLink ? { label: "Join consultation", url: input.meetingLink } : undefined,
     footer:    `Automated booking notification from ${BRAND.name}.`,
   });
 
   const text = plainText({
     heading: "New appointment booked",
     body:    rows.map((r) => `${r.label}: ${r.value}`).join("\n"),
+    cta:     input.meetingLink ? { label: "Join consultation", url: input.meetingLink } : undefined,
   });
 
   return { subject: subj, html, text };

@@ -108,6 +108,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         scheduledTime:   appointment.scheduled_time,
         durationMinutes: appointment.duration_minutes,
         amountPaise:     appointment.total_paise,
+        meetingLink:     meetLink ?? appointment.meeting_link,
       });
       const res = await sendEmail({ to: CLINIC_NOTIFY, subject: adminTpl.subject, html: adminTpl.html, text: adminTpl.text });
       if (!res.ok) console.error("[payment] clinic notification failed:", res.error);
