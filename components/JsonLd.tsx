@@ -3,6 +3,7 @@ import type { FaqData } from "../lib/faq";
 import { faqAnchorId } from "../lib/faq";
 import type { AboutData } from "../lib/about";
 import type { ConditionItem } from "../lib/conditions";
+import type { HowItWorksData } from "../lib/content";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -295,6 +296,28 @@ export function ConditionLd({ condition }: { condition: ConditionItem }) {
       {faqPage && <Script data={faqPage} />}
     </>
   );
+}
+
+// ─── How It Works → HowTo (AEO: "how do I book an online psychiatrist?") ─────
+
+export function HowToLd({ howItWorks }: { howItWorks: HowItWorksData }) {
+  if (!howItWorks?.steps?.length) return null;
+  const data = {
+    "@context":    "https://schema.org",
+    "@type":       "HowTo",
+    "@id":         `${SITE.url}/#how-it-works`,
+    name:          howItWorks.title,
+    description:   howItWorks.description,
+    inLanguage:    SITE.language,
+    isPartOf:      { "@id": `${SITE.url}/#website` },
+    step: howItWorks.steps.map((s, i) => ({
+      "@type":   "HowToStep",
+      position:  i + 1,
+      name:      s.title,
+      text:      s.description,
+    })),
+  };
+  return <Script data={data} />;
 }
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────

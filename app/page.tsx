@@ -28,7 +28,7 @@ import { PricingPlans } from "../components/PricingPlans";
 import { FaqSection } from "../components/FaqSection";
 import { NewsletterCTA } from "../components/NewsletterCTA";
 import { Footer } from "../components/Footer";
-import { FaqLd, ConsultationOffersLd } from "../components/JsonLd";
+import { FaqLd, ConsultationOffersLd, HowToLd } from "../components/JsonLd";
 
 export default async function Home() {
   const content = await getSiteContent();
@@ -64,6 +64,7 @@ export default async function Home() {
       {/* Homepage-specific structured data (AEO/GEO) */}
       <FaqLd faq={content.faq} />
       <ConsultationOffersLd />
+      <HowToLd howItWorks={content.howItWorks} />
     </>
   );
 }

@@ -368,12 +368,14 @@ export const defaultContent: SiteContent = {
         links: [
           { label: "Privacy Policy", href: "#privacy" },
           { label: "Confidentiality Agreement", href: "#confidentiality" },
+          { label: "About Dr. Jyotika", href: "/about" },
         ],
       },
       {
         links: [
           { label: "Terms of Service", href: "#terms" },
           { label: "Emergency Contact", href: "#emergency" },
+          { label: "Conditions We Treat", href: "/#conditions" },
         ],
       },
     ],
