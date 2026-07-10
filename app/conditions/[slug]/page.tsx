@@ -7,8 +7,26 @@ import { TopNavBar } from "../../../components/TopNavBar";
 import { Footer } from "../../../components/Footer";
 import { ConditionPage } from "../../../components/ConditionPage";
 import { ConditionLd, BreadcrumbsLd } from "../../../components/JsonLd";
+import { DEFAULT_CONDITIONS } from "../../../lib/conditions";
 
 type Params = { params: Promise<{ slug: string }> };
+
+// Only the known condition slugs are valid routes; any other slug returns a
+// real 404 (avoids soft-404s). Pages still render dynamically, so content edits
+// go live immediately — but ADDING a new condition needs a redeploy to register
+// its route here.
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  try {
+    const content = await getSiteContent();
+    const items = content.conditions?.items ?? [];
+    if (items.length) return items.map((c) => ({ slug: c.slug }));
+  } catch {
+    /* fall back to defaults below */
+  }
+  return DEFAULT_CONDITIONS.items.map((c) => ({ slug: c.slug }));
+}
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
