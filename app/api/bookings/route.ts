@@ -5,6 +5,13 @@ import {
   type Gender,
 } from "../../../lib/bookings";
 import { getPlanById, parsePriceToPaise, parseDurationMinutes } from "../../../lib/plans";
+import { isEmailRecentlyVerified } from "../../../lib/otp";
+import { markEmailVerified } from "../../../lib/patient-auth";
+import {
+  createPatientToken,
+  PATIENT_SESSION_COOKIE,
+  PATIENT_SESSION_MAX_AGE,
+} from "../../../lib/auth";
 
 // POST /api/bookings
 // Body: { plan_id, scheduled_date, scheduled_time, patient: {...}, reason? }
@@ -76,7 +83,7 @@ export async function POST(req: NextRequest) {
       total_paise:             totalPaise,
     });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       id:                     appointment.id,
       patient_id:             patientRow.id,
       consultation_fee_paise: appointment.consultation_fee_paise,
@@ -87,6 +94,28 @@ export async function POST(req: NextRequest) {
       scheduled_time:         appointment.scheduled_time,
       duration_minutes:       appointment.duration_minutes,
     });
+
+    // If the booking email was OTP-verified in this flow, mark the patient's
+    // email verified and log them in (session cookie) so they land in the
+    // dashboard from the confirmation screen — without a second verification.
+    const bookingEmail = patient.email?.trim() || null;
+    if (bookingEmail && (await isEmailRecentlyVerified(bookingEmail).catch(() => false))) {
+      await markEmailVerified(patientRow.id).catch(() => {});
+      try {
+        const token = await createPatientToken(patientRow.id);
+        res.cookies.set(PATIENT_SESSION_COOKIE, token, {
+          httpOnly: true,
+          secure:   process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path:     "/",
+          maxAge:   PATIENT_SESSION_MAX_AGE,
+        });
+      } catch (e) {
+        console.error("[bookings] session issue failed:", e);
+      }
+    }
+
+    return res;
   } catch (e) {
     console.error("[bookings] POST failed:", e);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

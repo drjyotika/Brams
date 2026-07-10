@@ -192,6 +192,12 @@ export function BookingSuccess({ data }: { data: BookingSuccessData }) {
             </a>
           ))}
 
+          {/* Dashboard — the booking flow logs the (verified) patient in, so
+              this takes them straight into their account. */}
+          <Link href="/patient" className={styles.joinBtn}>
+            <span aria-hidden>📋</span> Go to your dashboard
+          </Link>
+
           {/* ── Calendar + Receipt row (always shown) ── */}
           <div className={styles.utilRow}>
             <button

@@ -117,3 +117,29 @@ export async function verifyOtp(
 
   return { verified: true };
 }
+
+// ─── Recently-verified check ────────────────────────────────────────────────
+
+/**
+ * True when this email had an OTP successfully verified within the last
+ * `withinMinutes`. Lets the booking flow securely confirm the just-booked email
+ * was proven (server-side) before marking the patient's email verified / logging
+ * them in.
+ */
+export async function isEmailRecentlyVerified(
+  email: string,
+  withinMinutes = 20,
+): Promise<boolean> {
+  await ensureOtpSchema();
+  const normalised = email.toLowerCase().trim();
+  const since = new Date(Date.now() - withinMinutes * 60_000).toISOString();
+  const rows = await sql`
+    SELECT 1
+    FROM booking_email_otps
+    WHERE email        = ${normalised}
+      AND verified_at IS NOT NULL
+      AND verified_at  > ${since}
+    LIMIT 1
+  ` as unknown[];
+  return rows.length > 0;
+}

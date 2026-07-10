@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOtp } from "../../../../lib/otp";
-import { findPatientByLogin, recordPatientLogin } from "../../../../lib/patient-auth";
+import { findPatientByLogin, recordPatientLogin, markEmailVerified } from "../../../../lib/patient-auth";
 import {
   createPatientToken,
   PATIENT_SESSION_COOKIE,
@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Entering an OTP sent to their email proves ownership → mark the email
+      // verified so the dashboard never re-prompts after an OTP login/booking.
+      await markEmailVerified(patient.id).catch(() => {});
       await recordPatientLogin(patient.id).catch(() => {});
       const token = await createPatientToken(patient.id);
 
