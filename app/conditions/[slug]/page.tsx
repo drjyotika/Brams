@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const content = await getSiteContent();
   const c = content.conditions.items.find((x) => x.slug === slug);
-  if (!c) return { title: "Condition not found" };
+  if (!c) notFound(); // bail in metadata too so the response is a real 404, not a soft-404
   return {
     title:       c.metaTitle,
     description: c.metaDescription,
