@@ -3,11 +3,12 @@ import { cookies } from "next/headers";
 import { SESSION_COOKIE, verifySessionToken } from "../../../../../lib/auth";
 
 /**
- * POST /api/admin/about/upload
+ * POST /api/admin/media/upload  (admin-only)
  *
- * Admin-only. Accepts multipart/form-data with a single `file` (image),
- * uploads it to Vercel Blob (public), and returns the public URL for use as
- * the About page portrait.
+ * Uploads an image to the (private) Vercel Blob store under `site-media/` and
+ * returns a STABLE public proxy URL (`/api/media/site-media/…`) that serves the
+ * private blob through our own domain — because the store rejects public access
+ * and pre-signed URLs 403.
  */
 export async function POST(req: NextRequest) {
   const jar   = await cookies();
@@ -37,18 +38,20 @@ export async function POST(req: NextRequest) {
     }
 
     const { put } = await import("@vercel/blob");
-    const ext  = file.name.split(".").pop() ?? "jpg";
-    const name = `about/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const ext  = (file.name.split(".").pop() ?? "jpg").toLowerCase();
+    const name = `site-media/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
+    // Private store — matches how site content is written (see lib/storage.ts).
     const blob = await put(name, file.stream(), {
-      access:          "public",
+      access:          "private",
       contentType:     file.type,
       addRandomSuffix: false,
     });
 
-    return NextResponse.json({ ok: true, url: blob.url });
+    // Return a proxy URL served publicly by /api/media/[...path].
+    return NextResponse.json({ ok: true, url: `/api/media/${blob.pathname}` });
   } catch (e) {
-    console.error("[about/upload] failed:", e);
+    console.error("[media/upload] failed:", e);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
