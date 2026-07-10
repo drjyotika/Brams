@@ -190,9 +190,7 @@ export default function PatientDashboard() {
 
   // Derived data
   const nextAppt       = appointments.find(isUpcoming) ?? null;
-  const completed      = appointments.filter(a => a.status === "completed").length;
   const totalAppts     = appointments.length;
-  const progressPct    = totalAppts > 0 ? Math.round((completed / totalAppts) * 100) : 0;
   const needsPay       = (a: Appointment) => a.payment_status === "unpaid" || a.payment_status === "pending";
   const pendingPayment = appointments.filter(needsPay);
   const isNewPatient   = totalAppts === 0;
@@ -338,16 +336,6 @@ export default function PatientDashboard() {
 
         {/* Stats column */}
         <div className={styles.statsCol}>
-          {/* Session progress */}
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>Session Progress</div>
-            <div className={styles.statValue}>{completed}</div>
-            <div className={styles.statSub}>of {totalAppts} sessions completed</div>
-            <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
-            </div>
-          </div>
-
           {/* Reports / Prescriptions */}
           <div className={styles.statCard}>
             <div className={styles.statLabel}>Files & Reports</div>
