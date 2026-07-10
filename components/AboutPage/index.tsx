@@ -44,14 +44,6 @@ export function AboutPage({ data, bookHref }: { data: AboutData; bookHref: strin
                 <img src={data.photo} alt={`${data.name}, ${data.role}`} />
               </picture>
             </div>
-            {data.qualifications.length > 0 && (
-              <div className={styles.badge}>
-                <span className={styles.badgeIcon}><Icon name="badge-check" size={18} /></span>
-                <span className={styles.badgeText}>
-                  {data.qualifications.map((q) => q.label).join(" · ")}
-                </span>
-              </div>
-            )}
           </div>
         </div>
       </section>
