@@ -63,6 +63,7 @@ export function mergeContent(
     bookingStep2:   override.bookingStep2   ?? base.bookingStep2,
     faq:            override.faq            ?? base.faq,
     about:          override.about          ?? base.about,
+    conditions:     override.conditions     ?? base.conditions,
   };
 }
 

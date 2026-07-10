@@ -93,7 +93,9 @@ export function AboutPage({ data, bookHref }: { data: AboutData; bookHref: strin
                   <div className={styles.kvRow}>
                     <dt>Medical registration</dt>
                     <dd>
-                      {[data.registrationNumber, data.registrationCouncil].filter(Boolean).join(" · ")}
+                      {data.registrationNumber
+                        ? [data.registrationNumber, data.registrationCouncil].filter(Boolean).join(" · ")
+                        : `Registered under ${data.registrationCouncil}`}
                     </dd>
                   </div>
                 )}

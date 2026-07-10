@@ -5,6 +5,8 @@ import { DEFAULT_FAQ, type FaqData } from "./faq";
 export type { FaqData, FaqItem } from "./faq";
 import { DEFAULT_ABOUT, type AboutData } from "./about";
 export type { AboutData, AboutCredential } from "./about";
+import { DEFAULT_CONDITIONS, type ConditionsData } from "./conditions";
+export type { ConditionsData, ConditionItem, ConditionFaq } from "./conditions";
 
 export type NavLink = { label: string; href: string };
 
@@ -195,6 +197,7 @@ export type SiteContent = {
   bookingStep2: BookingStep2Data;
   faq: FaqData;
   about: AboutData;
+  conditions: ConditionsData;
 };
 
 // Default content — used as fallback when no API data is supplied. Mirrors
@@ -427,4 +430,5 @@ export const defaultContent: SiteContent = {
   },
   faq: DEFAULT_FAQ,
   about: DEFAULT_ABOUT,
+  conditions: DEFAULT_CONDITIONS,
 };

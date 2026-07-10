@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 import { TopNavBar } from "../components/TopNavBar";
 import { HeroSection } from "../components/HeroSection";
 import { SpecializedSupport } from "../components/SpecializedSupport";
+import { ConditionsStrip } from "../components/ConditionsStrip";
 import { HowItWorks } from "../components/HowItWorks";
 import { PricingPlans } from "../components/PricingPlans";
 import { FaqSection } from "../components/FaqSection";
@@ -52,6 +53,7 @@ export default async function Home() {
       <main>
         <HeroSection data={content.hero} />
         <SpecializedSupport data={content.support} />
+        <ConditionsStrip data={content.conditions} />
         <HowItWorks data={content.howItWorks} />
         <PricingPlans data={content.pricing} />
         <FaqSection data={content.faq} />

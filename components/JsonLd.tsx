@@ -2,6 +2,7 @@ import { SITE, DOCTOR, SOCIAL_PROFILES } from "../lib/seo";
 import type { FaqData } from "../lib/faq";
 import { faqAnchorId } from "../lib/faq";
 import type { AboutData } from "../lib/about";
+import type { ConditionItem } from "../lib/conditions";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -243,6 +244,57 @@ export function AboutLd({ about }: { about: AboutData }) {
     mainEntity:  physician,
   };
   return <Script data={data} />;
+}
+
+// ─── Condition page (MedicalWebPage + MedicalCondition + FAQ) ────────────────
+
+export function ConditionLd({ condition }: { condition: ConditionItem }) {
+  const url = `${SITE.url}/conditions/${condition.slug}`;
+
+  const medicalWebPage = {
+    "@context":  "https://schema.org",
+    "@type":     "MedicalWebPage",
+    "@id":       `${url}#webpage`,
+    url,
+    name:        condition.h1,
+    description: condition.metaDescription,
+    inLanguage:  SITE.language,
+    isPartOf:    { "@id": `${SITE.url}/#website` },
+    reviewedBy:  { "@id": `${SITE.url}/#physician` },
+    provider:    { "@id": `${SITE.url}/#organization` },
+    about: {
+      "@type": "MedicalCondition",
+      name:    condition.name,
+      signOrSymptom: condition.symptoms.map((s) => ({ "@type": "MedicalSignOrSymptom", name: s })),
+      possibleTreatment: {
+        "@type": "MedicalTherapy",
+        name:    `Online psychiatric treatment for ${condition.name}`,
+      },
+    },
+  };
+
+  const faqPage = condition.faqs.length
+    ? {
+        "@context":  "https://schema.org",
+        "@type":     "FAQPage",
+        "@id":       `${url}#faq`,
+        inLanguage:  SITE.language,
+        isPartOf:    { "@id": `${url}#webpage` },
+        mainEntity: condition.faqs.map((f) => ({
+          "@type": "Question",
+          name:    f.question,
+          url:     `${url}#faq-${f.id}`,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      }
+    : null;
+
+  return (
+    <>
+      <Script data={medicalWebPage} />
+      {faqPage && <Script data={faqPage} />}
+    </>
+  );
 }
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────

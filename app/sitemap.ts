@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { SITE, PUBLIC_ROUTES } from "../lib/seo";
+import { getSiteContent } from "../lib/api";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 
   const priorities: Record<string, number> = {
@@ -26,10 +27,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/emergency-contact":  "yearly",
   };
 
-  return PUBLIC_ROUTES.map((route) => ({
+  const staticEntries: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) => ({
     url: `${SITE.url}${route === "/" ? "" : route}`,
     lastModified,
     changeFrequency: changeFreq[route] ?? "monthly",
     priority:        priorities[route] ?? 0.5,
   }));
+
+  // Admin-editable condition landing pages.
+  let conditionEntries: MetadataRoute.Sitemap = [];
+  try {
+    const content = await getSiteContent();
+    conditionEntries = content.conditions.items.map((c) => ({
+      url:             `${SITE.url}/conditions/${c.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority:        0.8,
+    }));
+  } catch {
+    /* fall back to static entries only */
+  }
+
+  return [...staticEntries, ...conditionEntries];
 }

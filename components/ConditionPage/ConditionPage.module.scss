@@ -1,0 +1,268 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.page { background: $color-bg; }
+
+// ─── Intro ─────────────────────────────────────────────────────────────────────
+
+.intro {
+  background: radial-gradient(
+    1400px 1400px at 100% 0%,
+    rgba(200, 162, 200, 0.7) 0%,
+    rgba(225, 206, 226, 0.6) 32%,
+    rgba(249, 249, 251, 1) 64%
+  );
+  padding-block: 72px;
+}
+
+.introInner {
+  @include container;
+  max-width: 820px;
+}
+
+.eyebrow {
+  @include eyebrow;
+  color: $color-plum;
+}
+
+.h1 {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(32px, 4.6vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: $color-ink;
+  margin: 16px 0 0;
+}
+
+.lede {
+  margin: 24px 0 0;
+  font-size: 18px;
+  line-height: 30px;
+  color: $color-ink-soft;
+  max-width: 680px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  background: $color-plum;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  transition: transform 200ms var(--ease-out-quart), box-shadow 200ms var(--ease-out-quart);
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -6px rgba(116, 84, 117, 0.45); }
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid $color-lilac-soft;
+  color: $color-ink;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  transition: background 200ms ease, border-color 200ms ease;
+
+  &:hover { background: rgba(255, 255, 255, 0.72); border-color: rgba(116, 84, 117, 0.25); }
+}
+
+// ─── Body (symptoms + treatment) ───────────────────────────────────────────────
+
+.body { padding-block: 72px 40px; }
+
+.bodyInner {
+  @include container;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include md { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-lg;
+  padding: 32px;
+}
+
+.cardTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 20px;
+  color: $color-ink;
+  margin: 0 0 20px;
+}
+
+.symptoms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.symptom {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink-soft;
+}
+
+.tick {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $color-lilac;
+  color: $color-plum-deep;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.treatment {
+  margin: 0;
+  font-size: 16px;
+  line-height: 28px;
+  color: $color-ink-soft;
+}
+
+// ─── FAQ ───────────────────────────────────────────────────────────────────────
+
+.faq { padding-block: 40px 72px; }
+
+.faqInner {
+  @include container;
+  max-width: 820px;
+}
+
+.faqTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 28px;
+  color: $color-ink;
+  margin: 0 0 28px;
+  text-align: center;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item {
+  background: #fff;
+  border: 1px solid rgba(207, 195, 204, 0.4);
+  border-radius: $radius-md;
+  overflow: hidden;
+
+  &[open] {
+    border-color: rgba(116, 84, 117, 0.4);
+    box-shadow: 0 10px 30px -12px rgba(116, 84, 117, 0.18);
+  }
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker { display: none; }
+  &:focus-visible { outline: 2px solid $color-plum; outline-offset: -2px; border-radius: $radius-md; }
+}
+
+.questionText {
+  margin: 0;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  color: $color-ink;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid $color-plum;
+  border-bottom: 2px solid $color-plum;
+  transform: rotate(45deg);
+  transition: transform 240ms var(--ease-out-quart);
+}
+
+.item[open] .icon { transform: rotate(-135deg); }
+
+.answer {
+  display: none;
+  padding: 0 22px 20px;
+
+  p { margin: 0; font-size: 15px; line-height: 25px; color: $color-ink-soft; }
+}
+
+.item[open] .answer { display: block; }
+
+// ─── Closing CTA ───────────────────────────────────────────────────────────────
+
+.cta {
+  background: $color-plum;
+  padding-block: 72px;
+}
+
+.ctaInner {
+  @include container;
+  max-width: 720px;
+  text-align: center;
+}
+
+.ctaTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(26px, 3.4vw, 34px);
+  color: #fff;
+  margin: 0;
+}
+
+.ctaText {
+  margin: 16px auto 28px;
+  max-width: 520px;
+  font-size: 17px;
+  line-height: 27px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.cta .primary {
+  background: #fff;
+  color: $color-plum-deep;
+
+  &:hover { box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon, .item { transition: none; }
+}

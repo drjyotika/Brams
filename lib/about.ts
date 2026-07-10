@@ -47,11 +47,11 @@ export const DEFAULT_ABOUT: AboutData = {
     "Psychiatric emergencies & suicide-risk assessment",
     "Child & adolescent psychiatry",
   ],
-  // Fill these in via Admin → Content → About (left blank so nothing unverified
-  // is published):
+  // Registration shown as a plain statement (no number). Other fields left
+  // blank — fill via Admin → Content → About if/when confirmed.
   experienceYears: "",
   registrationNumber: "",
-  registrationCouncil: "",
+  registrationCouncil: "Delhi Medical Council",
   memberships: [],
   languages: [],
 };

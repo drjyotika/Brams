@@ -22,6 +22,9 @@ import type {
   FaqData,
   FaqItem,
   AboutData,
+  ConditionsData,
+  ConditionItem,
+  ConditionFaq,
 } from "../../../lib/content";
 import { ICON_NAMES, pickIconForHeading } from "../../../components/Icon";
 import { API_BASE } from "../../../lib/config";
@@ -32,7 +35,7 @@ const SUPPORT_TONES: SupportCard["tone"][] = [
   "sky", "lilac", "muted", "lime", "sand", "mint", "dark",
 ];
 
-type Tab = "hero" | "support" | "howItWorks" | "pricing" | "faq" | "about" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
+type Tab = "hero" | "support" | "howItWorks" | "pricing" | "faq" | "about" | "conditions" | "newsletter" | "nav" | "footer" | "bookingSuccess" | "bookingFailed" | "bookingStep1" | "bookingStep2";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "hero",           label: "Hero"               },
@@ -41,6 +44,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "pricing",        label: "Pricing Plans"       },
   { id: "faq",            label: "FAQ"                 },
   { id: "about",          label: "About Dr. Jyotika"   },
+  { id: "conditions",     label: "Conditions"          },
   { id: "newsletter",     label: "Newsletter CTA"      },
   { id: "nav",            label: "Navigation"          },
   { id: "footer",         label: "Footer"              },
@@ -92,6 +96,7 @@ export default function ContentPage() {
           {tab === "pricing"        && <PricingEditor        data={content.pricing}        onChange={(v) => update("pricing",        v)} />}
           {tab === "faq"            && <FaqEditor            data={content.faq}            onChange={(v) => update("faq",            v)} />}
           {tab === "about"          && <AboutEditor          data={content.about}          onChange={(v) => update("about",          v)} />}
+          {tab === "conditions"     && <ConditionsEditor     data={content.conditions}     onChange={(v) => update("conditions",     v)} />}
           {tab === "newsletter"     && <NewsletterEditor     data={content.newsletter}     onChange={(v) => update("newsletter",     v)} />}
           {tab === "nav"            && <NavEditor            data={content.nav}            onChange={(v) => update("nav",            v)} />}
           {tab === "footer"         && <FooterEditor         data={content.footer}         onChange={(v) => update("footer",         v)} />}
@@ -535,6 +540,115 @@ function AboutEditor({ data, onChange }: { data: AboutData; onChange: (v: AboutD
 
       <div className={styles.actions}>
         <button className={styles.primary} onClick={handleSave}>Save About</button>
+        <StatusBadge status={status} />
+      </div>
+    </section>
+  );
+}
+
+// ─── Conditions ─────────────────────────────────────────────────────────────
+
+function ConditionsEditor({ data, onChange }: { data: ConditionsData; onChange: (v: ConditionsData) => void }) {
+  const { status, save } = useSaver("conditions");
+  const setSection = <K extends keyof ConditionsData>(k: K, v: ConditionsData[K]) => onChange({ ...data, [k]: v });
+
+  const setItem = (idx: number, patch: Partial<ConditionItem>) =>
+    onChange({ ...data, items: data.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) });
+  const removeItem = (idx: number) => onChange({ ...data, items: data.items.filter((_, i) => i !== idx) });
+  const move = (idx: number, dir: -1 | 1) => {
+    const j = idx + dir;
+    if (j < 0 || j >= data.items.length) return;
+    const items = [...data.items];
+    [items[idx], items[j]] = [items[j], items[idx]];
+    onChange({ ...data, items });
+  };
+  const addItem = () =>
+    onChange({
+      ...data,
+      items: [
+        ...data.items,
+        {
+          slug: `condition-${Date.now()}`, name: "New condition", metaTitle: "", metaDescription: "",
+          h1: "New condition", intro: "", symptomsTitle: "Common signs & symptoms", symptoms: [],
+          treatmentTitle: "How treatment works", treatment: "", faqs: [],
+        },
+      ],
+    });
+
+  const setFaq = (ci: number, fi: number, patch: Partial<ConditionFaq>) =>
+    setItem(ci, { faqs: data.items[ci].faqs.map((f, i) => (i === fi ? { ...f, ...patch } : f)) });
+  const addFaq = (ci: number) =>
+    setItem(ci, { faqs: [...data.items[ci].faqs, { id: `f-${Date.now()}`, question: "New question?", answer: "" }] });
+  const removeFaq = (ci: number, fi: number) =>
+    setItem(ci, { faqs: data.items[ci].faqs.filter((_, i) => i !== fi) });
+
+  const handleSave = () => {
+    const clean: ConditionsData = {
+      ...data,
+      items: data.items.map((it) => ({
+        ...it,
+        slug: it.slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, ""),
+        symptoms: it.symptoms.map((s) => s.trim()).filter(Boolean),
+        faqs: it.faqs.filter((f) => f.question.trim()),
+      })),
+    };
+    onChange(clean);
+    save(clean);
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitle}>Conditions</h2>
+      <p className={styles.panelHint}>
+        Landing pages at <code>/conditions/[slug]</code> (SEO/AEO/GEO). Each renders visible
+        content plus medical + FAQ structured data. Keep content accurate — general information,
+        not a diagnosis.
+      </p>
+
+      <Field label="Section eyebrow"><input className={styles.input} value={data.eyebrow} onChange={(e) => setSection("eyebrow", e.target.value)} /></Field>
+      <Field label="Section title"><input className={styles.input} value={data.title} onChange={(e) => setSection("title", e.target.value)} /></Field>
+      <Field label="Section description"><textarea className={styles.textarea} value={data.description} onChange={(e) => setSection("description", e.target.value)} /></Field>
+
+      {data.items.map((c, i) => (
+        <div key={`${c.slug}-${i}`} className={styles.cardArrayItem}>
+          <div className={styles.cardArrayHead}>
+            <span>{c.name || `Condition ${i + 1}`}</span>
+            <span style={{ display: "flex", gap: 8 }}>
+              <button type="button" className={styles.secondary} onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
+              <button type="button" className={styles.secondary} onClick={() => move(i, 1)} disabled={i === data.items.length - 1} aria-label="Move down">↓</button>
+              <button type="button" className={styles.danger} onClick={() => removeItem(i)}>Remove</button>
+            </span>
+          </div>
+          <div className={styles.row}>
+            <Field label="Name"><input className={styles.input} value={c.name} onChange={(e) => setItem(i, { name: e.target.value })} /></Field>
+            <Field label="URL slug"><input className={styles.input} value={c.slug} onChange={(e) => setItem(i, { slug: e.target.value })} /></Field>
+          </div>
+          <Field label="Page heading (H1)"><input className={styles.input} value={c.h1} onChange={(e) => setItem(i, { h1: e.target.value })} /></Field>
+          <Field label="Intro"><textarea className={styles.textarea} value={c.intro} onChange={(e) => setItem(i, { intro: e.target.value })} /></Field>
+          <Field label="Meta title (SEO)"><input className={styles.input} value={c.metaTitle} onChange={(e) => setItem(i, { metaTitle: e.target.value })} /></Field>
+          <Field label="Meta description (SEO)"><textarea className={styles.textarea} value={c.metaDescription} onChange={(e) => setItem(i, { metaDescription: e.target.value })} /></Field>
+          <Field label="Symptoms heading"><input className={styles.input} value={c.symptomsTitle} onChange={(e) => setItem(i, { symptomsTitle: e.target.value })} /></Field>
+          <Field label="Symptoms (one per line)"><textarea className={styles.textarea} value={c.symptoms.join("\n")} onChange={(e) => setItem(i, { symptoms: e.target.value.split("\n") })} /></Field>
+          <Field label="Treatment heading"><input className={styles.input} value={c.treatmentTitle} onChange={(e) => setItem(i, { treatmentTitle: e.target.value })} /></Field>
+          <Field label="Treatment overview"><textarea className={styles.textarea} value={c.treatment} onChange={(e) => setItem(i, { treatment: e.target.value })} /></Field>
+
+          <p className={styles.panelHint} style={{ marginTop: 12, marginBottom: 8 }}>FAQ for this condition</p>
+          {c.faqs.map((f, fi) => (
+            <div key={f.id} style={{ borderLeft: "2px solid rgba(116,84,117,0.2)", paddingLeft: 12, marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button type="button" className={styles.danger} onClick={() => removeFaq(i, fi)}>Remove Q</button>
+              </div>
+              <Field label="Question"><input className={styles.input} value={f.question} onChange={(e) => setFaq(i, fi, { question: e.target.value })} /></Field>
+              <Field label="Answer"><textarea className={styles.textarea} value={f.answer} onChange={(e) => setFaq(i, fi, { answer: e.target.value })} /></Field>
+            </div>
+          ))}
+          <button type="button" className={styles.secondary} onClick={() => addFaq(i)}>+ Add question</button>
+        </div>
+      ))}
+
+      <div className={styles.actions}>
+        <button className={styles.secondary} type="button" onClick={addItem}>+ Add condition</button>
+        <button className={styles.primary} onClick={handleSave}>Save Conditions</button>
         <StatusBadge status={status} />
       </div>
     </section>
