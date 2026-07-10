@@ -1,0 +1,158 @@
+@use "../../styles/tokens" as *;
+@use "../../styles/mixins" as *;
+
+.page {
+  background: $color-bg;
+  padding-block: 56px 0;
+}
+
+.article {
+  @include container;
+  max-width: 760px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.back {
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 13px;
+  color: $color-plum;
+}
+
+.h1 {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  color: $color-ink;
+  margin: 8px 0 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: $color-ink-muted;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tag {
+  background: $color-bg-muted;
+  color: $color-ink;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+}
+
+.coverWrap {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  margin-bottom: 40px;
+  box-shadow: $shadow-portrait;
+}
+
+.cover {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+// ─── Markdown body ─────────────────────────────────────────────────────────────
+
+.body {
+  font-size: 17px;
+  line-height: 1.8;
+  color: $color-ink-soft;
+  padding-bottom: 64px;
+
+  h1, h2, h3 { font-family: $font-display; font-weight: 700; color: $color-ink; margin: 40px 0 16px; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+  p { margin: 0 0 20px; }
+  ul, ol { margin: 0 0 20px; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  a { color: $color-plum; text-decoration: underline; }
+  strong { color: $color-ink; font-weight: 600; }
+  blockquote {
+    margin: 24px 0;
+    padding: 4px 24px;
+    border-left: 3px solid $color-lilac;
+    color: $color-ink-muted;
+    font-style: italic;
+  }
+  img { max-width: 100%; border-radius: $radius-md; margin: 24px 0; }
+  code { background: $color-bg-muted; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+  pre {
+    background: $color-ink;
+    color: #fff;
+    padding: 16px 20px;
+    border-radius: $radius-md;
+    overflow-x: auto;
+    margin: 0 0 20px;
+
+    code { background: none; padding: 0; }
+  }
+}
+
+// ─── Closing CTA ─────────────────────────────────────────────────────────────
+
+.cta {
+  background: $color-plum;
+  padding-block: 72px;
+}
+
+.ctaInner {
+  @include container;
+  max-width: 720px;
+  text-align: center;
+}
+
+.ctaTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: clamp(26px, 3.4vw, 34px);
+  color: #fff;
+  margin: 0;
+}
+
+.ctaText {
+  margin: 16px auto 28px;
+  max-width: 520px;
+  font-size: 17px;
+  line-height: 27px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  color: $color-plum-deep;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: $radius-sm;
+  transition: box-shadow 200ms var(--ease-out-quart), transform 200ms var(--ease-out-quart);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35);
+  }
+}

@@ -15,6 +15,13 @@ const NAV = [
     items: [{ label: "Homepage", href: "/admin/content" }],
   },
   {
+    group: "Blog",
+    items: [
+      { label: "All Posts", href: "/admin/blog"     },
+      { label: "New Post",  href: "/admin/blog/new" },
+    ],
+  },
+  {
     group: "Bookings",
     items: [
       { label: "Patients",           href: "/admin/patients",             countKey: "patients"     as CountKey },

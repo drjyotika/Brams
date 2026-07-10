@@ -38,7 +38,7 @@
       "href": "#services"
     },
     "portrait": {
-      "src": "/hero.png",
+      "src": "/api/media/site-media/1783673851235-fvtswro34v.png",
       "alt": "Dr. Jyotika Kanwar, board-certified psychiatrist"
     },
     "badge": {
@@ -95,6 +95,13 @@
         "description": "For severe distress, self-harm thoughts, suicidal thoughts, agitation, or sudden behavioral changes.\nClinical assessment and guidance for urgent mental health concerns, with clear next steps for safety and care.",
         "iconName": "brain",
         "tone": "sand"
+      },
+      {
+        "id": "card-1779516973795",
+        "title": "Psychotic Disorders",
+        "description": "For experiences such as hearing voices, unusual beliefs, suspiciousness, disorganized thoughts, confusion, or changes in perception and behavior. Compassionate psychiatric assessment, diagnosis, treatment planning, and ongoing support for recovery and stability.",
+        "iconName": "cloud-rain",
+        "tone": "mint"
       }
     ]
   },
@@ -210,6 +217,14 @@
           {
             "label": "Confidentiality Agreement",
             "href": "https://bramsmindcare.com/confidentiality"
+          },
+          {
+            "label": "About Dr. Jyotika",
+            "href": "https://bramsmindcare.com/about"
+          },
+          {
+            "label": "Blog",
+            "href": "https://bramsmindcare.com/blog"
           }
         ]
       },
@@ -222,6 +237,10 @@
           {
             "label": "Emergency Contact",
             "href": "https://bramsmindcare.com/emergency-contact"
+          },
+          {
+            "label": "Conditions We Treat",
+            "href": "https://bramsmindcare.com/#conditions"
           }
         ]
       }
@@ -263,7 +282,7 @@
   },
   "bookingFailed": {
     "title": "Payment Failed",
-    "body": "Your payment could not be completed. Don't worry — your appointment slot is still temporarily held.",
+    "body": "Your payment could not be completed. Don't worry, your appointment slot is still temporarily held.",
     "ctas": [
       {
         "id": "retry",
@@ -321,10 +340,6 @@
           {
             "id": "s1-4",
             "time": "17:00"
-          },
-          {
-            "id": "s1-5",
-            "time": "19:00"
           }
         ]
       },
@@ -351,10 +366,6 @@
           {
             "id": "s2-4",
             "time": "17:00"
-          },
-          {
-            "id": "s2-5",
-            "time": "19:00"
           }
         ]
       },
@@ -381,10 +392,6 @@
           {
             "id": "s3-4",
             "time": "17:00"
-          },
-          {
-            "id": "s3-5",
-            "time": "19:00"
           }
         ]
       },
@@ -411,10 +418,6 @@
           {
             "id": "s4-4",
             "time": "17:00"
-          },
-          {
-            "id": "s4-5",
-            "time": "19:00"
           }
         ]
       },
@@ -441,10 +444,6 @@
           {
             "id": "s5-4",
             "time": "17:00"
-          },
-          {
-            "id": "s5-5",
-            "time": "19:00"
           }
         ]
       },
@@ -454,11 +453,11 @@
         "slots": [
           {
             "id": "s6-1779362682018",
-            "time": "09:00"
+            "time": "10:00"
           },
           {
             "id": "s6-1779362684576",
-            "time": "11:00"
+            "time": "00:00"
           }
         ]
       }
@@ -541,6 +540,237 @@
         "required": false,
         "visible": true,
         "width": "full"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "description": "Everything you need to know about online psychiatric care with Dr. Jyotika Kanwar.",
+    "items": [
+      {
+        "id": "f-conditions",
+        "question": "What kind of mental health conditions does Dr. Jyotika Kanwar treat?",
+        "answer": "Dr. Jyotika Kanwar is a consultant psychiatrist specializing in anxiety and panic disorders, depression, adult ADHD, and trauma recovery. She provides evidence-based care including psychotherapy guidance and medication management when clinically appropriate."
+      },
+      {
+        "id": "f-how-it-works",
+        "question": "How do online psychiatric consultations work?",
+        "answer": "Online consultations happen via a secure, encrypted video link. After booking your appointment and completing the payment, you receive the meeting link by email and WhatsApp. Sessions are typically 20–60 minutes depending on whether it's a follow-up or initial consultation."
+      },
+      {
+        "id": "f-confidential",
+        "question": "Is online psychiatric care confidential?",
+        "answer": "Yes. All consultations are conducted over a HIPAA-aligned encrypted platform. Patient records, reports, and conversations are confidential and accessible only to you and Dr. Jyotika. We never share information with third parties without your explicit consent."
+      },
+      {
+        "id": "f-cost",
+        "question": "How much does an online psychiatric consultation cost?",
+        "answer": "Brams Mind Care offers three plans: Follow-up at ₹1,000 (20–30 min), Initial Consultation at ₹2,000 (45–60 min) for new patients, and Priority Plus at ₹3,000 for urgent same-day support with an extended 90-minute session."
+      },
+      {
+        "id": "f-coverage",
+        "question": "Do you serve patients outside major cities?",
+        "answer": "Yes. Brams Mind Care is an online-only practice, serving patients across India. As long as you have a stable internet connection and a private space, you can book a consultation from anywhere in the country."
+      },
+      {
+        "id": "f-emergency",
+        "question": "What should I do in a mental health emergency?",
+        "answer": "If you are in immediate danger or experiencing a crisis, please call your local emergency services or India's iCall helpline at +91-9152987821. Brams Mind Care is not an emergency service. For urgent but non-crisis support, our Priority Plus plan offers same-day appointment availability."
+      },
+      {
+        "id": "f-prescription",
+        "question": "Can I get a prescription through online consultation?",
+        "answer": "Yes. Where clinically appropriate, Dr. Jyotika can issue digital prescriptions following telemedicine guidelines. Prescriptions are uploaded to your secure patient dashboard and can also be sent to a pharmacy of your choice."
+      }
+    ]
+  },
+  "about": {
+    "eyebrow": "ABOUT YOUR PSYCHIATRIST",
+    "name": "Dr. Jyotika Kanwar",
+    "role": "Psychiatrist · MD Psychiatry, PGIMER Chandigarh",
+    "photo": "/api/media/site-media/1783676303041-32st8yn7e78.png",
+    "intro": "Dr. Jyotika Kanwar is a psychiatrist who completed her MD in Psychiatry at PGIMER, Chandigarh — one of India's premier tertiary-care institutes — with comprehensive clinical training in adult psychiatry across both outpatient (OPD) and inpatient (IPD) settings. Her clinical work spans ICD-11–based diagnostic assessment, psychopharmacology, and evidence-based management of mood disorders, anxiety disorders, psychotic disorders, substance-use disorders, and psychiatric emergencies.",
+    "approach": "Known for a compassionate, patient-centered approach and a firm commitment to evidence-based, ethical psychiatric practice. Care begins with a thorough psychiatric evaluation and mental status examination, followed by collaborative treatment planning — combining psychotherapy guidance, including cognitive behavioural therapy (CBT), with medication management where clinically appropriate. Every consultation is conducted over a secure, private video link, so you can access expert care from the comfort and confidentiality of home.",
+    "qualifications": [
+      {
+        "id": "q-0",
+        "label": "MD (Psychiatry) — PGIMER, Chandigarh (2025)"
+      },
+      {
+        "id": "q-1",
+        "label": "MBBS — Bharati Vidyapeeth Medical College, Pune (2017)"
+      }
+    ],
+    "specialties": [
+      "Anxiety & panic disorders",
+      "Depression & mood disorders",
+      "Psychotic disorders",
+      "Addiction & substance-use disorders",
+      "Psychiatric emergencies & suicide-risk assessment",
+      "Child & adolescent psychiatry"
+    ],
+    "experienceYears": "",
+    "registrationNumber": "",
+    "registrationCouncil": "Delhi Medical Council",
+    "memberships": [],
+    "languages": []
+  },
+  "conditions": {
+    "eyebrow": "CONDITIONS WE TREAT",
+    "title": "Specialised online care, for the conditions that matter",
+    "description": "Confidential, evidence-based psychiatric care for adults across India — from the comfort of home.",
+    "items": [
+      {
+        "slug": "anxiety",
+        "name": "Anxiety & panic disorders",
+        "metaTitle": "Online Treatment for Anxiety & Panic Disorders in India — Dr. Jyotika Kanwar",
+        "metaDescription": "Confidential online psychiatric care for anxiety and panic disorders across India. Evidence-based treatment — CBT guidance and medication management — with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "h1": "Online treatment for anxiety & panic disorders",
+        "intro": "Anxiety becomes a clinical concern when worry, fear, or physical tension is persistent, hard to control, and starts to interfere with everyday life, sleep, work, or relationships. Anxiety and panic disorders are common and highly treatable — with the right support, most people experience meaningful relief.",
+        "symptomsTitle": "Common signs & symptoms",
+        "symptoms": [
+          "Persistent or excessive worry",
+          "Restlessness or feeling on edge",
+          "Racing heart, palpitations or breathlessness",
+          "Difficulty concentrating",
+          "Trouble sleeping",
+          "Panic attacks — sudden, intense fear",
+          "Avoiding situations that trigger anxiety",
+          "Muscle tension, headaches or fatigue"
+        ],
+        "treatmentTitle": "How treatment works",
+        "treatment": "Dr. Jyotika Kanwar provides evidence-based, ICD-11–informed assessment and care for anxiety and panic disorders. Treatment is tailored to you and may combine psychotherapy guidance — including cognitive behavioural therapy (CBT) — with medication management where clinically appropriate. Care is collaborative and reviewed over time, all over a secure, private video consultation.",
+        "faqs": [
+          {
+            "id": "anx-online",
+            "question": "Can anxiety be treated online?",
+            "answer": "Yes. Anxiety and panic disorders are well suited to online psychiatric care. After a confidential video assessment, Dr. Jyotika creates a personalised plan that may include therapy guidance and, where appropriate, medication — with follow-ups to track your progress."
+          },
+          {
+            "id": "anx-meds",
+            "question": "Will I need medication for anxiety?",
+            "answer": "Not always. Many people improve with psychotherapy approaches such as CBT, structured support, and lifestyle changes. Medication is considered only when clinically appropriate, and is always discussed with you before starting."
+          },
+          {
+            "id": "anx-time",
+            "question": "How long does anxiety treatment take?",
+            "answer": "It varies by person and severity. Many people notice improvement within a few weeks of starting treatment, with continued gains over the following months as the plan is reviewed and adjusted."
+          }
+        ]
+      },
+      {
+        "slug": "depression",
+        "name": "Depression & mood disorders",
+        "metaTitle": "Online Depression Treatment in India — Dr. Jyotika Kanwar, Psychiatrist",
+        "metaDescription": "Confidential online treatment for depression and mood disorders across India. Evidence-based psychiatric care with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh) — therapy guidance and medication management.",
+        "h1": "Online treatment for depression & mood disorders",
+        "intro": "Depression is more than feeling low — it is a persistent change in mood, energy, and interest that lasts for weeks and affects daily functioning. It is common, and it is treatable. Seeking help early can make recovery faster and fuller.",
+        "symptomsTitle": "Common signs & symptoms",
+        "symptoms": [
+          "Low or sad mood most of the day",
+          "Loss of interest or pleasure in activities",
+          "Fatigue or low energy",
+          "Changes in sleep or appetite",
+          "Difficulty concentrating or making decisions",
+          "Feelings of guilt or worthlessness",
+          "Slowed thoughts or movements",
+          "Thoughts of self-harm — please seek urgent help"
+        ],
+        "treatmentTitle": "How treatment works",
+        "treatment": "Care begins with a thorough psychiatric evaluation to understand your symptoms and their impact. Treatment for depression and mood disorders is individualised and evidence-based — combining psychotherapy guidance with medication management where clinically appropriate, and regular review to track recovery. Every consultation is private and conducted over secure video.",
+        "faqs": [
+          {
+            "id": "dep-online",
+            "question": "Is online treatment effective for depression?",
+            "answer": "Yes. Online psychiatric care for depression is effective for most people. A confidential video assessment leads to a personalised plan, with follow-ups to monitor progress and adjust treatment as needed."
+          },
+          {
+            "id": "dep-diff",
+            "question": "How is clinical depression different from feeling sad?",
+            "answer": "Sadness is a normal, passing emotion. Clinical depression is persistent — low mood, loss of interest, and changes in sleep, energy, or appetite lasting two weeks or more and interfering with daily life. If that sounds familiar, a professional assessment can help."
+          },
+          {
+            "id": "dep-urgent",
+            "question": "What if I'm having thoughts of self-harm?",
+            "answer": "If you are in immediate danger, please contact local emergency services or India's iCall helpline at +91-9152987821 right away. Brams Mind Care is not an emergency service, but for urgent non-crisis support, same-day appointments are available."
+          }
+        ]
+      },
+      {
+        "slug": "adult-adhd",
+        "name": "Adult ADHD",
+        "metaTitle": "Adult ADHD Evaluation & Treatment Online in India — Dr. Jyotika Kanwar",
+        "metaDescription": "Online adult ADHD evaluation and management across India. Confidential, evidence-based psychiatric assessment with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "h1": "Adult ADHD — online evaluation & management",
+        "intro": "Attention-deficit/hyperactivity disorder often continues into adulthood and frequently goes unrecognised. When focus, organisation, and impulsivity consistently affect work, studies, or relationships, a proper evaluation can bring clarity — and effective management can make a real difference.",
+        "symptomsTitle": "Common signs in adults",
+        "symptoms": [
+          "Difficulty sustaining attention or focus",
+          "Restlessness or inner tension",
+          "Disorganisation and difficulty planning",
+          "Procrastination and trouble finishing tasks",
+          "Forgetfulness in daily activities",
+          "Impulsivity in decisions or speech",
+          "Poor time management",
+          "Difficulty regulating emotions"
+        ],
+        "treatmentTitle": "How evaluation & treatment works",
+        "treatment": "Management begins with a comprehensive diagnostic evaluation to distinguish ADHD from other conditions with overlapping symptoms. Where ADHD is confirmed, an individualised plan may combine behavioural strategies and psychotherapy guidance with medication management when clinically appropriate — all reviewed over secure online follow-ups.",
+        "faqs": [
+          {
+            "id": "adhd-adult",
+            "question": "Can adults be diagnosed with ADHD?",
+            "answer": "Yes. ADHD frequently persists into adulthood and can be diagnosed for the first time as an adult. A structured psychiatric evaluation reviews your history and current symptoms to reach an accurate diagnosis."
+          },
+          {
+            "id": "adhd-online",
+            "question": "Can ADHD be assessed online?",
+            "answer": "A comprehensive ADHD evaluation can be conducted over secure video, including detailed history-taking and validated assessment. Dr. Jyotika will explain the findings and discuss a management plan tailored to you."
+          },
+          {
+            "id": "adhd-meds",
+            "question": "Does ADHD treatment always involve medication?",
+            "answer": "No. Treatment is individualised. Behavioural strategies, structure, and psychotherapy guidance are often central, with medication considered only where clinically appropriate and always discussed with you first."
+          }
+        ]
+      },
+      {
+        "slug": "trauma",
+        "name": "Trauma & PTSD",
+        "metaTitle": "Online Trauma & PTSD Treatment in India — Dr. Jyotika Kanwar, Psychiatrist",
+        "metaDescription": "Confidential online psychiatric care for trauma and PTSD across India. Safe, evidence-based support with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "h1": "Online support for trauma & PTSD",
+        "intro": "Difficult or overwhelming experiences can leave lasting effects on how you feel, think, and sleep. When these reactions persist and interfere with daily life, structured psychiatric support can help you process what happened and regain a sense of safety and control.",
+        "symptomsTitle": "Common signs & symptoms",
+        "symptoms": [
+          "Intrusive memories or flashbacks",
+          "Distressing dreams or nightmares",
+          "Avoiding reminders of the event",
+          "Feeling on guard or easily startled",
+          "Emotional numbness or detachment",
+          "Irritability or angry outbursts",
+          "Difficulty sleeping or concentrating",
+          "Persistent fear, guilt or shame"
+        ],
+        "treatmentTitle": "How treatment works",
+        "treatment": "Care is provided in a safe, confidential, and judgement-free space. Treatment for trauma and PTSD is paced to you — combining specialised psychotherapeutic approaches with medication management where clinically appropriate — and delivered over secure video so you can engage from a place where you feel comfortable.",
+        "faqs": [
+          {
+            "id": "trauma-online",
+            "question": "Can trauma be treated over video?",
+            "answer": "Yes. Many people find online consultations comfortable and effective for trauma-related care, as they can engage from a private, familiar space. Treatment is paced carefully and tailored to your needs."
+          },
+          {
+            "id": "trauma-time",
+            "question": "How long does trauma treatment take?",
+            "answer": "There is no fixed timeline — it depends on the nature of the experience and your goals. Care is collaborative and reviewed regularly, moving at a pace that feels safe for you."
+          },
+          {
+            "id": "trauma-ready",
+            "question": "What if I'm not ready to talk about what happened?",
+            "answer": "That's completely okay. You are never required to share more than you're comfortable with. Early sessions focus on safety, stability, and building trust before exploring difficult experiences."
+          }
+        ]
       }
     ]
   }

@@ -369,6 +369,7 @@ export const defaultContent: SiteContent = {
           { label: "Privacy Policy", href: "#privacy" },
           { label: "Confidentiality Agreement", href: "#confidentiality" },
           { label: "About Dr. Jyotika", href: "/about" },
+          { label: "Blog", href: "/blog" },
         ],
       },
       {

@@ -4,6 +4,7 @@ import { faqAnchorId } from "../lib/faq";
 import type { AboutData } from "../lib/about";
 import type { ConditionItem } from "../lib/conditions";
 import type { HowItWorksData } from "../lib/content";
+import type { BlogPost } from "../lib/blog";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -316,6 +317,30 @@ export function HowToLd({ howItWorks }: { howItWorks: HowItWorksData }) {
       name:      s.title,
       text:      s.description,
     })),
+  };
+  return <Script data={data} />;
+}
+
+// ─── Blog post → Article (author = physician entity, E-E-A-T) ────────────────
+
+export function ArticleLd({ post }: { post: BlogPost }) {
+  const url = `${SITE.url}/blog/${post.slug}`;
+  const data = {
+    "@context":      "https://schema.org",
+    "@type":         "MedicalWebPage",
+    "@id":           `${url}#article`,
+    url,
+    headline:        post.title,
+    description:     post.meta_description || post.excerpt || undefined,
+    image:           post.cover_image ? [post.cover_image] : [SITE.ogImage],
+    datePublished:   post.published_at ?? post.created_at,
+    dateModified:    post.updated_at,
+    inLanguage:      SITE.language,
+    isPartOf:        { "@id": `${SITE.url}/#website` },
+    author:          { "@id": `${SITE.url}/#physician` },
+    reviewedBy:      { "@id": `${SITE.url}/#physician` },
+    publisher:       { "@id": `${SITE.url}/#organization` },
+    keywords:        post.tags.length ? post.tags.join(", ") : undefined,
   };
   return <Script data={data} />;
 }
