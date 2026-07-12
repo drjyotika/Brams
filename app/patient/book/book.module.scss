@@ -28,6 +28,19 @@
   flex-wrap: wrap;
 }
 
+.newCustomerNotice {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  border-radius: $radius-md;
+  background: $color-sky-tint;
+  border: 1px solid rgba(67, 98, 126, 0.2);
+  color: #2c4a63;
+  font-size: 14px;
+  line-height: 22px;
+
+  strong { color: #1e3a52; font-weight: 700; }
+}
+
 .stepEyebrow {
   display: block;
   font-family: $font-body;

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { trackLogin } from "../../../lib/analytics";
 import styles from "./login.module.scss";
 
-type Step = "email" | "otp";
+type Step = "email" | "otp" | "details";
 
 // useSearchParams() must sit inside a Suspense boundary or the production build
 // de-opts the whole page (which can blank the login screen — notably on mobile).
@@ -33,6 +33,8 @@ function LoginForm() {
   const [step,        setStep]        = useState<Step>("email");
   const [email,       setEmail]       = useState("");
   const [otp,         setOtp]         = useState("");
+  const [fullName,    setFullName]    = useState("");
+  const [phone,       setPhone]       = useState("");
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState("");
   const [resendTimer, setResendTimer] = useState(0);
@@ -86,11 +88,39 @@ function LoginForm() {
       if (!data.verified) {
         setError(data.error ?? "Incorrect or expired code. Please try again.");
       } else if (data.patient) {
+        // Existing account — signed in.
         trackLogin();
         router.replace(nextDest);
       } else {
-        // OTP valid, but no patient account exists for this email yet.
-        setError("No account found for this email. Please book an appointment to get started.");
+        // OTP valid but no account yet → collect a few details to create one.
+        setStep("details");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── New user — create the account, then sign in ─────────────────────────────
+  const completeSignup = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!fullName.trim()) { setError("Please enter your full name."); return; }
+    if (phone.replace(/\D/g, "").length < 8) { setError("Please enter a valid phone number."); return; }
+    setLoading(true);
+    try {
+      const res  = await fetch("/api/patient/complete-signup", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email: email.trim(), full_name: fullName.trim(), phone: phone.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        trackLogin();
+        router.replace(nextDest);
+      } else {
+        setError(data.error ?? "Couldn't create your account. Please try again.");
       }
     } catch {
       setError("Network error. Please try again.");
@@ -105,11 +135,15 @@ function LoginForm() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Brams Mind Care" className={styles.logo} />
 
-        <h1 className={styles.title}>Welcome back</h1>
+        <h1 className={styles.title}>
+          {step === "details" ? "Create your account" : "Welcome"}
+        </h1>
         <p className={styles.subtitle}>
           {step === "email"
             ? "Enter your email and we'll send you a secure sign-in code."
-            : "Enter the 6-digit code we just emailed you."}
+            : step === "otp"
+            ? "Enter the 6-digit code we just emailed you."
+            : "Your email is verified. Add a couple of details to finish."}
         </p>
 
         {/* ── Step 1: email ── */}
@@ -184,6 +218,47 @@ function LoginForm() {
                 Change email
               </button>
             </p>
+          </form>
+        )}
+
+        {/* ── Step 3: new-user details ── */}
+        {step === "details" && (
+          <form className={styles.form} onSubmit={completeSignup} noValidate>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="fullName">Full name</label>
+              <input
+                id="fullName"
+                type="text"
+                autoComplete="name"
+                required
+                className={styles.input}
+                placeholder="Your full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="phone">Phone number</label>
+              <input
+                id="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                className={styles.input}
+                placeholder="+91 9876 543 210"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            {error && <p className={styles.error}>{error}</p>}
+
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Creating account…" : "Create account & sign in"}
+            </button>
           </form>
         )}
 

@@ -74,6 +74,10 @@ export function PatientBookingFlow() {
   const [step, setStep]       = useState<Step>(1);
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  // null = unknown yet; true = has a prior real consultation (eligible for
+  // Follow-up pricing); false = new customer.
+  const [isReturning, setIsReturning] = useState<boolean | null>(null);
+  const [newCustomerNotice, setNewCustomerNotice] = useState(false);
 
   // Plans (full PricingPlan with features)
   const [plans, setPlans]               = useState<PricingPlan[]>([]);
@@ -131,6 +135,16 @@ export function PatientBookingFlow() {
             city:      p.city ?? "",
             reason:    "",
           });
+          // "Returning" = has at least one paid/confirmed/completed appointment,
+          // which is what qualifies for the discounted Follow-up plan.
+          const appts = Array.isArray(data.appointments) ? data.appointments : [];
+          setIsReturning(
+            appts.some((a: { status?: string; payment_status?: string }) =>
+              a.payment_status === "paid" || a.status === "confirmed" || a.status === "completed",
+            ),
+          );
+        } else {
+          setIsReturning(false);
         }
       })
       .catch(() => {})
@@ -150,16 +164,24 @@ export function PatientBookingFlow() {
       .finally(() => setPlansLoading(false));
   }, [router]);
 
-  // Preselect a plan passed via ?plan= (e.g. a returning patient routed here to
-  // book a follow-up) and jump straight to the date picker.
+  // Preselect a plan passed via ?plan= and jump straight to the date picker.
+  // Follow-up is a returning-patient plan — if a new customer lands here, book
+  // them on the Initial Consultation instead and tell them why.
   useEffect(() => {
-    if (!presetPlanId || plansLoading || plans.length === 0 || selectedPlanRaw) return;
-    const match = plans.find((p) => p.id === presetPlanId);
+    if (!presetPlanId || plansLoading || plans.length === 0 || selectedPlanRaw || isReturning === null) return;
+
+    let targetId = presetPlanId;
+    if (presetPlanId === "follow-up" && !isReturning) {
+      targetId = "initial";
+      setNewCustomerNotice(true);
+    }
+
+    const match = plans.find((p) => p.id === targetId) ?? plans.find((p) => p.id === presetPlanId);
     if (match) {
       setSelectedPlanRaw(match);
       setStep(2);
     }
-  }, [presetPlanId, plansLoading, plans, selectedPlanRaw]);
+  }, [presetPlanId, plansLoading, plans, selectedPlanRaw, isReturning]);
 
   // Scroll to top on step change
   useEffect(() => {
@@ -209,6 +231,16 @@ export function PatientBookingFlow() {
           </div>
         </div>
 
+        {/* New customer routed away from the returning-patient Follow-up plan */}
+        {newCustomerNotice && selectedPlan && (
+          <div className={styles.newCustomerNotice}>
+            <strong>You&rsquo;re booking as a new patient.</strong> The Follow-up plan is for
+            returning patients, so we&rsquo;ve set this up as an{" "}
+            <strong>{selectedPlan.title}</strong> ({selectedPlan.price}). Your future follow-ups
+            will qualify for the discounted rate.
+          </div>
+        )}
+
         {/* ── Step 1: Plan selection ── */}
         {step === 1 && (
           <div className={planStyles.planGrid}>
@@ -220,6 +252,17 @@ export function PatientBookingFlow() {
                   key={p.id}
                   plan={p}
                   onSelect={() => {
+                    // New customers can't book the returning-patient Follow-up plan.
+                    if (p.id === "follow-up" && isReturning === false) {
+                      const initial = plans.find((pl) => pl.id === "initial");
+                      if (initial) {
+                        setSelectedPlanRaw(initial);
+                        setNewCustomerNotice(true);
+                        setStep(2);
+                        return;
+                      }
+                    }
+                    setNewCustomerNotice(false);
                     setSelectedPlanRaw(p);
                     setStep(2);
                   }}
