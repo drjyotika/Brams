@@ -745,6 +745,39 @@ export function buildFeedbackRequestEmail(input: {
   return { subject, html, text };
 }
 
+// ─── Auto-generated blog draft ready for review ──────────────────────────────
+
+export function buildBlogDraftReadyEmail(input: {
+  title:    string;
+  excerpt:  string;
+  reviewUrl: string;
+}): EmailMessage {
+  const subject = `New blog draft ready to review: "${input.title}"`;
+
+  const rows = [
+    { label: "Title",   value: input.title },
+    { label: "Excerpt", value: input.excerpt },
+  ];
+
+  const html = layout({
+    preheader: `An AI-drafted blog post is waiting for your review before it can go live.`,
+    heading:   "New blog draft ready for review",
+    content:
+      infoCard(rows) +
+      `<p style="margin:16px 0 0;font-size:14px;color:#4c444b;">This draft was generated automatically and has NOT been published. Please review, edit as needed, and publish it yourself from the admin panel.</p>`,
+    cta:    { label: "Review draft", url: input.reviewUrl },
+    footer: `Automated content notification from ${BRAND.name}.`,
+  });
+
+  const text = plainText({
+    heading: "New blog draft ready for review",
+    body:    `${rows.map((r) => `${r.label}: ${r.value}`).join("\n")}\n\nThis draft was generated automatically and has NOT been published. Please review, edit as needed, and publish it yourself.`,
+    cta:     { label: "Review draft", url: input.reviewUrl },
+  });
+
+  return { subject, html, text };
+}
+
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {

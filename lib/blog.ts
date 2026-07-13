@@ -112,6 +112,24 @@ export async function listAllPosts(): Promise<BlogPost[]> {
   return rows.map(rowToPost);
 }
 
+/**
+ * Timestamp of the most recently CREATED post (any status). Used to gate the
+ * auto-generation cron on a real elapsed-time check rather than trusting the
+ * cron scheduler's exact cadence — robust to missed/late/extra invocations.
+ */
+export async function getMostRecentPostCreatedAt(): Promise<Date | null> {
+  await ensureBlogSchema();
+  const rows = await sql`SELECT created_at FROM blog_posts ORDER BY created_at DESC LIMIT 1`;
+  return rows[0] ? new Date(rows[0].created_at as string) : null;
+}
+
+/** Titles of the most recent posts (any status) — used to steer the topic generator away from repeats. */
+export async function listRecentPostTitles(limit = 30): Promise<string[]> {
+  await ensureBlogSchema();
+  const rows = await sql`SELECT title FROM blog_posts ORDER BY created_at DESC LIMIT ${limit}`;
+  return rows.map((r) => r.title as string);
+}
+
 export async function getPostById(id: string): Promise<BlogPost | null> {
   await ensureBlogSchema();
   const rows = await sql`SELECT * FROM blog_posts WHERE id = ${id} LIMIT 1`;

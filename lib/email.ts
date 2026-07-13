@@ -88,4 +88,5 @@ export {
   buildHelpRequestNotificationEmail,
   buildHelpRequestConfirmationEmail,
   buildFeedbackRequestEmail,
+  buildBlogDraftReadyEmail,
 } from "./email-templates";
