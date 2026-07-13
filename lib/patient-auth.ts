@@ -286,6 +286,56 @@ export async function findPatientForAuth(id: string): Promise<PatientAuthData | 
   return (rows[0] as PatientAuthData) ?? null;
 }
 
+/**
+ * Strict email-only lookup — used by the passwordless OTP login/sign-up flow,
+ * where the account's identity is the email address. Never matches on phone,
+ * so two different (individually email-verified) people can never collide or
+ * merge just because they share/mistype a phone number.
+ */
+export async function findPatientByEmail(email: string): Promise<PatientAuthData | null> {
+  await ensurePatientAuthSchema();
+  const value = email.trim().toLowerCase();
+  if (!value) return null;
+  const rows = await sql`SELECT * FROM patients WHERE LOWER(email) = ${value} LIMIT 1`;
+  return (rows[0] as PatientAuthData) ?? null;
+}
+
+/**
+ * Creates a new patient account keyed by email (passwordless sign-up).
+ * A plain INSERT — not the phone-keyed ON CONFLICT upsert used by the public
+ * booking flow — because identity here is the email, not the phone. Phone is
+ * still a required, unique column, so a genuine phone collision (typo, shared
+ * number, family member) is caught and returned as a friendly error rather
+ * than silently overwriting a different person's account.
+ */
+export async function createPatientAccount(input: {
+  full_name: string;
+  phone:     string;
+  email:     string;
+}): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  await ensurePatientAuthSchema();
+  try {
+    const rows = await sql`
+      INSERT INTO patients (full_name, phone, email)
+      VALUES (${input.full_name}, ${input.phone}, ${input.email.toLowerCase()})
+      RETURNING id
+    `;
+    return { ok: true, id: rows[0].id as string };
+  } catch (e) {
+    const msg = (e as Error).message ?? "";
+    if (msg.includes("patients_phone_key")) {
+      return {
+        ok: false,
+        error: "This phone number is already registered to a different account. Please use a different number, or contact support if this is your number.",
+      };
+    }
+    if (msg.includes("patients_email_lower_unique")) {
+      return { ok: false, error: "This email is already registered. Please try signing in again." };
+    }
+    throw e;
+  }
+}
+
 // ─── Login tracking ──────────────────────────────────────────────────────────
 
 export async function recordPatientLogin(id: string): Promise<void> {

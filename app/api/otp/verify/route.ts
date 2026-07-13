@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOtp } from "../../../../lib/otp";
-import { findPatientByLogin, recordPatientLogin, markEmailVerified } from "../../../../lib/patient-auth";
+import { findPatientByEmail, recordPatientLogin, markEmailVerified } from "../../../../lib/patient-auth";
 import {
   createPatientToken,
   PATIENT_SESSION_COOKIE,
@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
     // ── Seamless patient login ────────────────────────────────────────────────
     // If this email belongs to a registered patient, issue a session cookie so
     // the booking flow can pre-fill their details and they're logged in.
-    const patient = await findPatientByLogin(email).catch(() => null);
+    // Identity is the email — strictly no phone matching.
+    const patient = await findPatientByEmail(email).catch(() => null);
 
     if (patient) {
       // Suspended patients cannot sign in (OTP login) or verify for booking.

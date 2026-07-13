@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isEmailRecentlyVerified } from "../../../../lib/otp";
-import { findPatientByLogin, markEmailVerified, recordPatientLogin } from "../../../../lib/patient-auth";
-import { upsertPatient } from "../../../../lib/bookings";
+import {
+  findPatientByEmail,
+  createPatientAccount,
+  markEmailVerified,
+  recordPatientLogin,
+} from "../../../../lib/patient-auth";
 import {
   createPatientToken,
   PATIENT_SESSION_COOKIE,
@@ -16,11 +20,12 @@ import {
  * that has no account yet. Email ownership is proven server-side via a recent
  * OTP verification (booking_email_otps.verified_at); we never trust the client.
  *
- * Phone is the account key, so:
- *   • unused phone            → create a new account
- *   • phone with NO email yet → link this verified email (helps patients who
- *                               booked by phone before we captured an email)
- *   • phone that already has an email → reject (prevents account takeover)
+ * Identity is the EMAIL address, full stop — phone is only ever stored as a
+ * contact field on the new row. We never look accounts up by phone or link/merge
+ * based on it, so two different (individually email-verified) people can never
+ * collide just because they share or mistype a phone number. If the entered
+ * phone happens to collide with someone else's account (it's a unique column),
+ * that's surfaced as a clear error rather than silently merging identities.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -46,33 +51,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please verify your email again before continuing." }, { status: 401 });
     }
 
-    // If the email already belongs to an account, just sign that account in.
-    const byEmail = await findPatientByLogin(email);
-    const byPhone = await findPatientByLogin(phone);
+    // If the email already belongs to an account, just sign that account in —
+    // strictly by email, no phone matching.
+    const existing = await findPatientByEmail(email);
 
     let patientId: string;
 
-    if (byEmail) {
-      if (byEmail.is_suspended) {
+    if (existing) {
+      if (existing.is_suspended) {
         return NextResponse.json({ error: "This account has been suspended. Please contact support." }, { status: 403 });
       }
-      patientId = byEmail.id;
-    } else if (byPhone) {
-      if (byPhone.is_suspended) {
-        return NextResponse.json({ error: "This account has been suspended. Please contact support." }, { status: 403 });
-      }
-      // Only link if the phone account has no email yet — otherwise refuse to
-      // overwrite an existing account's email.
-      if (byPhone.email && byPhone.email.toLowerCase() !== email) {
-        return NextResponse.json(
-          { error: "An account with this phone number already exists. Please sign in with its registered email address, or contact support." },
-          { status: 409 },
-        );
-      }
-      const linked = await upsertPatient({ full_name, phone, email });
-      patientId = linked.id;
+      patientId = existing.id;
     } else {
-      const created = await upsertPatient({ full_name, phone, email });
+      const created = await createPatientAccount({ full_name, phone, email });
+      if (!created.ok) {
+        return NextResponse.json({ error: created.error }, { status: 409 });
+      }
       patientId = created.id;
     }
 
