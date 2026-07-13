@@ -29,6 +29,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     if (body.valid_from    !== undefined) updates.valid_from       = body.valid_from  || null;
     if (body.valid_until   !== undefined) updates.valid_until      = body.valid_until || null;
     if (body.is_active     !== undefined) updates.is_active        = body.is_active;
+    if (body.plan_ids      !== undefined) updates.plan_ids         = Array.isArray(body.plan_ids) ? body.plan_ids : [];
 
     const updated = await updateCoupon(id, updates);
     if (!updated) return NextResponse.json({ error: "Coupon not found." }, { status: 404 });

@@ -19,9 +19,12 @@ type Coupon = {
   valid_from:       string | null;
   valid_until:      string | null;
   is_active:        boolean;
+  plan_ids:         string[];
   created_at:       string;
   updated_at:       string;
 };
+
+type Plan = { id: string; title: string };
 
 type FormState = {
   code:            string;
@@ -33,6 +36,7 @@ type FormState = {
   valid_from:      string;
   valid_until:     string;
   is_active:       boolean;
+  plan_ids:        string[]; // empty = valid for every plan
 };
 
 const EMPTY_FORM: FormState = {
@@ -45,6 +49,7 @@ const EMPTY_FORM: FormState = {
   valid_from:     "",
   valid_until:    "",
   is_active:      true,
+  plan_ids:       [],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -60,6 +65,7 @@ function couponToForm(c: Coupon): FormState {
     valid_from:     c.valid_from ? c.valid_from.slice(0, 10) : "",
     valid_until:    c.valid_until ? c.valid_until.slice(0, 10) : "",
     is_active:      c.is_active,
+    plan_ids:       c.plan_ids ?? [],
   };
 }
 
@@ -76,6 +82,7 @@ function fmtDate(iso: string | null) {
 
 export default function CouponsPage() {
   const [coupons,    setCoupons]    = useState<Coupon[]>([]);
+  const [plans,      setPlans]      = useState<Plan[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState<string | null>(null);
 
@@ -106,7 +113,22 @@ export default function CouponsPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    fetch("/api/plans")
+      .then((r) => r.json())
+      .then((p) => setPlans(Array.isArray(p) ? p.map((pl) => ({ id: pl.id, title: pl.title })) : []))
+      .catch(() => {});
+  }, []);
+
+  function togglePlan(planId: string) {
+    setForm((f) => ({
+      ...f,
+      plan_ids: f.plan_ids.includes(planId)
+        ? f.plan_ids.filter((id) => id !== planId)
+        : [...f.plan_ids, planId],
+    }));
+  }
 
   // ── Open modal ─────────────────────────────────────────────────────────────
 
@@ -163,6 +185,7 @@ export default function CouponsPage() {
         valid_from:     form.valid_from || null,
         valid_until:    form.valid_until || null,
         is_active:      form.is_active,
+        plan_ids:       form.plan_ids,
       };
 
       let res: Response;
@@ -247,6 +270,7 @@ export default function CouponsPage() {
               <tr>
                 <th>Code</th>
                 <th>Discount</th>
+                <th>Plans</th>
                 <th>Min. Order</th>
                 <th>Uses</th>
                 <th>Valid From</th>
@@ -260,6 +284,9 @@ export default function CouponsPage() {
                 const expired = c.valid_until && new Date(c.valid_until) < new Date();
                 const exhausted = c.max_uses != null && c.used_count >= c.max_uses;
                 const effectiveStatus = !c.is_active ? "inactive" : expired ? "expired" : exhausted ? "exhausted" : "active";
+                const planLabel = c.plan_ids.length === 0
+                  ? "All plans"
+                  : c.plan_ids.map((id) => plans.find((p) => p.id === id)?.title ?? id).join(", ");
                 return (
                   <tr key={c.id}>
                     <td>
@@ -271,6 +298,7 @@ export default function CouponsPage() {
                         ? `${c.discount_value}% off`
                         : `${fmt(c.discount_value)} off`}
                     </td>
+                    <td className={styles.planCell}>{planLabel}</td>
                     <td>{c.min_amount_paise > 0 ? fmt(c.min_amount_paise) : "—"}</td>
                     <td>
                       {c.used_count}
@@ -416,6 +444,28 @@ export default function CouponsPage() {
                   />
                 </label>
               </div>
+
+              {/* Applicable plans */}
+              <label className={styles.label}>
+                Applicable Plans
+                <span className={styles.planHint}>
+                  {form.plan_ids.length === 0
+                    ? "Leave all unchecked to allow this coupon on every consultation plan."
+                    : "Only checked plans can use this coupon."}
+                </span>
+                <div className={styles.planCheckboxes}>
+                  {plans.map((p) => (
+                    <label key={p.id} className={styles.checkLabel}>
+                      <input
+                        type="checkbox"
+                        checked={form.plan_ids.includes(p.id)}
+                        onChange={() => togglePlan(p.id)}
+                      />
+                      {p.title}
+                    </label>
+                  ))}
+                </div>
+              </label>
 
               {/* Active toggle */}
               <label className={styles.checkLabel}>

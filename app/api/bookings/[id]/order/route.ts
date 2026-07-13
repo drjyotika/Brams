@@ -56,9 +56,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     let discountPaise    = 0;
     let appliedCode: string | undefined;
 
-    // Validate & apply coupon if provided
+    // Validate & apply coupon if provided. plan_id comes from the appointment
+    // row itself (server-authoritative), never from the request body, so a
+    // plan restriction can't be bypassed by a crafted client request.
     if (couponCode) {
-      const result = await validateCoupon(couponCode, originalAmount);
+      const result = await validateCoupon(couponCode, originalAmount, appointment.plan_id);
       if (!result.valid) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }

@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       valid_from:       body.valid_from  || null,
       valid_until:      body.valid_until || null,
       is_active:        body.is_active !== false,
+      plan_ids:         Array.isArray(body.plan_ids) ? body.plan_ids : [],
     });
 
     return NextResponse.json(coupon, { status: 201 });

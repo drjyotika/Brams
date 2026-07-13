@@ -263,7 +263,7 @@ export function StepDetails({
       const res  = await fetch("/api/coupons/validate", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ code, amount_paise: consultationFee }),
+        body:    JSON.stringify({ code, amount_paise: consultationFee, plan_id: plan.id }),
       });
       const data = await res.json();
       if (!data.valid) {

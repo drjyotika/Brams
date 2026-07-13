@@ -5,12 +5,12 @@ import { validateCoupon } from "../../../../lib/coupons";
  * POST /api/coupons/validate
  * Public — no auth required (no sensitive data returned).
  *
- * Body: { code: string; amount_paise: number }
+ * Body: { code: string; amount_paise: number; plan_id?: string }
  * Returns discount details if valid, or an error message if not.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { code?: string; amount_paise?: number };
+    const body = await req.json() as { code?: string; amount_paise?: number; plan_id?: string };
 
     if (!body.code?.trim()) {
       return NextResponse.json({ valid: false, error: "Please enter a coupon code." }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, error: "Invalid amount." }, { status: 400 });
     }
 
-    const result = await validateCoupon(body.code, body.amount_paise);
+    const result = await validateCoupon(body.code, body.amount_paise, body.plan_id);
 
     if (!result.valid) {
       return NextResponse.json({ valid: false, error: result.error });
