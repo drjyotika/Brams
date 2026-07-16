@@ -1,0 +1,57 @@
+@use "../../styles/tokens" as *;
+
+.shareBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  position: relative;
+}
+
+.label {
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 13px;
+  color: $color-ink-muted;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-pill;
+  background: $color-bg-muted;
+  color: $color-ink-soft;
+  border: none;
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-quart), color 160ms var(--ease-out-quart), transform 160ms var(--ease-out-quart);
+
+  &:hover {
+    background: $color-plum;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+}
+
+.copiedToast {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-plum;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 160ms var(--ease-out-quart), transform 160ms var(--ease-out-quart);
+
+  &[data-visible="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

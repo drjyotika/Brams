@@ -66,7 +66,7 @@ export default async function BlogPostRoute({ params }: Params) {
         ]}
       />
 
-      <BlogPostPage post={post} bookHref="/book" />
+      <BlogPostPage post={post} bookHref="/book" url={`${SITE.url}/blog/${post.slug}`} />
 
       <Footer data={content.footer} />
 

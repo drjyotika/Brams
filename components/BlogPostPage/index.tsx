@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { BlogPost } from "../../lib/blog";
 import { renderMarkdown } from "../../lib/markdown";
+import { ShareButtons } from "./ShareButtons";
 import styles from "./BlogPostPage.module.scss";
 
 function fmtDate(iso: string | null): string {
@@ -8,7 +9,7 @@ function fmtDate(iso: string | null): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 }
 
-export function BlogPostPage({ post, bookHref }: { post: BlogPost; bookHref: string }) {
+export function BlogPostPage({ post, bookHref, url }: { post: BlogPost; bookHref: string; url: string }) {
   const html = renderMarkdown(post.body_markdown);
 
   return (
@@ -31,6 +32,7 @@ export function BlogPostPage({ post, bookHref }: { post: BlogPost; bookHref: str
               {post.tags.map((t) => <span key={t} className={styles.tag}>{t}</span>)}
             </div>
           )}
+          <ShareButtons url={url} title={post.title} />
         </header>
 
         {post.cover_image && (
