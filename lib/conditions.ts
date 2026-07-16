@@ -59,25 +59,25 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
       ],
       treatmentTitle: "How treatment works",
       treatment:
-        "Dr. Jyotika Kanwar provides evidence-based, ICD-11–informed assessment and care for anxiety and panic disorders. Treatment is tailored to you and may combine psychotherapy guidance — including cognitive behavioural therapy (CBT) — with medication management where clinically appropriate. Care is collaborative and reviewed over time, all over a secure, private video consultation.",
+        "Your first session is really about understanding what your anxiety looks like day to day: when it started, what makes it worse, how it's getting in the way of your life. From there, Dr. Jyotika builds a plan around you, which might mean CBT-based therapy techniques, medication, or often both together. Nothing gets decided without talking it through with you first, and the plan shifts as you improve.",
       faqs: [
         {
           id: "anx-online",
           question: "Can anxiety be treated online?",
           answer:
-            "Yes. Anxiety and panic disorders are well suited to online psychiatric care. After a confidential video assessment, Dr. Jyotika creates a personalised plan that may include therapy guidance and, where appropriate, medication — with follow-ups to track your progress.",
+            "Very much so. Anxiety and panic disorders respond well to online care, since so much of the assessment and follow-up happens through conversation. After an initial video assessment, Dr. Jyotika puts together a plan that might include therapy guidance, medication, or both, with regular check-ins to see how things are going.",
         },
         {
           id: "anx-meds",
           question: "Will I need medication for anxiety?",
           answer:
-            "Not always. Many people improve with psychotherapy approaches such as CBT, structured support, and lifestyle changes. Medication is considered only when clinically appropriate, and is always discussed with you before starting.",
+            "Not necessarily. Plenty of people see real improvement through CBT, structured support, and changes to daily habits alone. Medication only comes into it when it makes clinical sense, and it's always discussed with you first, never started without your input.",
         },
         {
           id: "anx-time",
           question: "How long does anxiety treatment take?",
           answer:
-            "It varies by person and severity. Many people notice improvement within a few weeks of starting treatment, with continued gains over the following months as the plan is reviewed and adjusted.",
+            "It really depends on you and how severe things have been. Most people start noticing changes within a few weeks, with improvement building over the following months as the plan gets reviewed and adjusted.",
         },
       ],
     },
@@ -103,25 +103,25 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
       ],
       treatmentTitle: "How treatment works",
       treatment:
-        "Care begins with a thorough psychiatric evaluation to understand your symptoms and their impact. Treatment for depression and mood disorders is individualised and evidence-based — combining psychotherapy guidance with medication management where clinically appropriate, and regular review to track recovery. Every consultation is private and conducted over secure video.",
+        "The first conversation is about how you've been feeling, for how long, and what's changed in your daily life and habits. Depression responds well to treatment, and for many people that means a mix of therapy support and, where it helps, medication. Dr. Jyotika checks in at every follow-up so the plan can adjust as you start to feel like yourself again.",
       faqs: [
         {
           id: "dep-online",
           question: "Is online treatment effective for depression?",
           answer:
-            "Yes. Online psychiatric care for depression is effective for most people. A confidential video assessment leads to a personalised plan, with follow-ups to monitor progress and adjust treatment as needed.",
+            "For most people, yes. A confidential video assessment gives Dr. Jyotika what she needs to build a plan around you, and follow-up sessions track how you're doing so treatment can be adjusted along the way.",
         },
         {
           id: "dep-diff",
           question: "How is clinical depression different from feeling sad?",
           answer:
-            "Sadness is a normal, passing emotion. Clinical depression is persistent — low mood, loss of interest, and changes in sleep, energy, or appetite lasting two weeks or more and interfering with daily life. If that sounds familiar, a professional assessment can help.",
+            "Sadness comes and goes. Clinical depression sticks around, low mood, losing interest in things you used to enjoy, changes in sleep or appetite, for two weeks or more, and it starts getting in the way of daily life. If that sounds familiar, it's worth getting a proper assessment.",
         },
         {
           id: "dep-urgent",
           question: "What if I'm having thoughts of self-harm?",
           answer:
-            "If you are in immediate danger, please contact local emergency services or India's iCall helpline at +91-9152987821 right away. Brams Mind Care is not an emergency service, but for urgent non-crisis support, same-day appointments are available.",
+            "If you're in immediate danger, please contact emergency services or India's iCall helpline at +91-9152987821 right away. Brams Mind Care isn't set up for emergencies, but for urgent non-crisis support, same-day appointments are available.",
         },
       ],
     },
@@ -147,25 +147,25 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
       ],
       treatmentTitle: "How evaluation & treatment works",
       treatment:
-        "Management begins with a comprehensive diagnostic evaluation to distinguish ADHD from other conditions with overlapping symptoms. Where ADHD is confirmed, an individualised plan may combine behavioural strategies and psychotherapy guidance with medication management when clinically appropriate — all reviewed over secure online follow-ups.",
+        "Because ADHD symptoms overlap with several other conditions, the first step is a detailed evaluation to make sure the diagnosis is actually right. If it is ADHD, treatment centres on what genuinely helps you function better, whether that's practical strategies for organisation and time management, medication, or a combination. Everything gets reviewed and fine-tuned at your follow-ups.",
       faqs: [
         {
           id: "adhd-adult",
           question: "Can adults be diagnosed with ADHD?",
           answer:
-            "Yes. ADHD frequently persists into adulthood and can be diagnosed for the first time as an adult. A structured psychiatric evaluation reviews your history and current symptoms to reach an accurate diagnosis.",
+            "Definitely. ADHD often carries into adulthood, and plenty of people are diagnosed for the first time later in life. A structured evaluation looks closely at your history and current symptoms to reach an accurate diagnosis.",
         },
         {
           id: "adhd-online",
           question: "Can ADHD be assessed online?",
           answer:
-            "A comprehensive ADHD evaluation can be conducted over secure video, including detailed history-taking and validated assessment. Dr. Jyotika will explain the findings and discuss a management plan tailored to you.",
+            "Yes, a full evaluation can be done over secure video, including a detailed look at your history and a validated assessment. Dr. Jyotika walks you through what she finds and what a management plan could look like for you.",
         },
         {
           id: "adhd-meds",
           question: "Does ADHD treatment always involve medication?",
           answer:
-            "No. Treatment is individualised. Behavioural strategies, structure, and psychotherapy guidance are often central, with medication considered only where clinically appropriate and always discussed with you first.",
+            "No, not always. Behavioural strategies, structure, and therapy guidance often do most of the work on their own. Medication only comes up when it's clinically appropriate, and it's always a conversation with you first, never a default.",
         },
       ],
     },
@@ -191,25 +191,25 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
       ],
       treatmentTitle: "How treatment works",
       treatment:
-        "Care is provided in a safe, confidential, and judgement-free space. Treatment for trauma and PTSD is paced to you — combining specialised psychotherapeutic approaches with medication management where clinically appropriate — and delivered over secure video so you can engage from a place where you feel comfortable.",
+        "There's no rush here. Sessions move at whatever pace you're ready for, in a space that stays private and free of judgement. Depending on what you've been through, treatment might involve trauma-focused therapy techniques, medication to help with symptoms like sleep or anxiety, or both. Dr. Jyotika works to your pace, not a fixed schedule.",
       faqs: [
         {
           id: "trauma-online",
           question: "Can trauma be treated over video?",
           answer:
-            "Yes. Many people find online consultations comfortable and effective for trauma-related care, as they can engage from a private, familiar space. Treatment is paced carefully and tailored to your needs.",
+            "Yes, and many people actually find it easier this way, since they can talk from a space that feels private and familiar rather than a clinic. Treatment is paced carefully and shaped around what you need.",
         },
         {
           id: "trauma-time",
           question: "How long does trauma treatment take?",
           answer:
-            "There is no fixed timeline — it depends on the nature of the experience and your goals. Care is collaborative and reviewed regularly, moving at a pace that feels safe for you.",
+            "There's genuinely no fixed timeline, it depends on what you've been through and what you're working toward. Care is reviewed regularly and moves at whatever pace feels safe for you.",
         },
         {
           id: "trauma-ready",
           question: "What if I'm not ready to talk about what happened?",
           answer:
-            "That's completely okay. You are never required to share more than you're comfortable with. Early sessions focus on safety, stability, and building trust before exploring difficult experiences.",
+            "That's completely okay, and it's more common than you'd think. You're never expected to share more than you're comfortable with. Early sessions are really about building safety and trust before anything difficult gets explored.",
         },
       ],
     },

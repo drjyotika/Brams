@@ -39,43 +39,43 @@ export const DEFAULT_FAQ: FaqData = {
       id: "f-conditions",
       question: "What kind of mental health conditions does Dr. Jyotika Kanwar treat?",
       answer:
-        "Dr. Jyotika Kanwar is a consultant psychiatrist specializing in anxiety and panic disorders, depression, adult ADHD, and trauma recovery. She provides evidence-based care including psychotherapy guidance and medication management when clinically appropriate.",
+        "Dr. Jyotika Kanwar is a consultant psychiatrist who works with anxiety and panic disorders, depression, adult ADHD, and trauma recovery. Her care combines psychotherapy guidance with medication management when it's clinically appropriate.",
     },
     {
       id: "f-how-it-works",
       question: "How do online psychiatric consultations work?",
       answer:
-        "Online consultations happen via a secure, encrypted video link. After booking your appointment and completing the payment, you receive the meeting link by email and WhatsApp. Sessions are typically 20–60 minutes depending on whether it's a follow-up or initial consultation.",
+        "You'll connect over a secure, encrypted video link. Once you've booked your slot and completed payment, the meeting link lands in your email and WhatsApp. Sessions run 20–60 minutes depending on whether it's a follow-up or a first consultation.",
     },
     {
       id: "f-confidential",
       question: "Is online psychiatric care confidential?",
       answer:
-        "Yes. All consultations are conducted over a HIPAA-aligned encrypted platform. Patient records, reports, and conversations are confidential and accessible only to you and Dr. Jyotika. We never share information with third parties without your explicit consent.",
+        "Completely. Every consultation runs on an encrypted, HIPAA-aligned platform, and everything you share, records, notes, conversations, stays between you and Dr. Jyotika. Nothing gets passed on to anyone else without your explicit consent.",
     },
     {
       id: "f-cost",
       question: "How much does an online psychiatric consultation cost?",
       answer:
-        "Brams Mind Care offers three plans: Follow-up at ₹1,000 (20–30 min), Initial Consultation at ₹2,000 (45–60 min) for new patients, and Priority Plus at ₹3,000 for urgent same-day support with an extended 90-minute session.",
+        "Brams Mind Care runs three plans: Follow-up at ₹1,000 (20–30 min), Initial Consultation at ₹2,000 (45–60 min) for new patients, and Priority Plus at ₹3,000 for urgent same-day support with a longer 90-minute session.",
     },
     {
       id: "f-coverage",
       question: "Do you serve patients outside major cities?",
       answer:
-        "Yes. Brams Mind Care is an online-only practice, serving patients across India. As long as you have a stable internet connection and a private space, you can book a consultation from anywhere in the country.",
+        "That's actually the whole point of being online-only. As long as you've got a stable internet connection and somewhere private to talk, you can book a session from anywhere in India, no matter how far you are from a major city.",
     },
     {
       id: "f-emergency",
       question: "What should I do in a mental health emergency?",
       answer:
-        "If you are in immediate danger or experiencing a crisis, please call your local emergency services or India's iCall helpline at +91-9152987821. Brams Mind Care is not an emergency service. For urgent but non-crisis support, our Priority Plus plan offers same-day appointment availability.",
+        "If you're in immediate danger or in crisis, please call your local emergency services or India's iCall helpline at +91-9152987821 right away. Brams Mind Care isn't set up to handle emergencies, but for urgent non-crisis support, Priority Plus offers same-day appointments.",
     },
     {
       id: "f-prescription",
       question: "Can I get a prescription through online consultation?",
       answer:
-        "Yes. Where clinically appropriate, Dr. Jyotika can issue digital prescriptions following telemedicine guidelines. Prescriptions are uploaded to your secure patient dashboard and can also be sent to a pharmacy of your choice.",
+        "In many cases, yes. Where it's clinically appropriate, Dr. Jyotika issues a digital prescription straight to your secure patient dashboard, and if you'd rather, it can be sent directly to a pharmacy of your choice.",
     },
   ],
 };
