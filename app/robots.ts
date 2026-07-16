@@ -28,6 +28,5 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "anthropic-ai",   allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,
-    host:    SITE.url,
   };
 }
