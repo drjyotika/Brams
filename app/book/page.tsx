@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { readContent } from "../../lib/storage";
+import { parsePriceToPaise, parseDurationMinutes } from "../../lib/plans";
 import { TopNavBar } from "../../components/TopNavBar";
 import { NeedHelpButton } from "../../components/NeedHelpButton";
 import { BookingFlow } from "../../components/BookingFlow";
@@ -14,8 +15,30 @@ export const metadata: Metadata = {
   alternates: { canonical: "/book" },
 };
 
-export default async function BookPage() {
-  const content = await readContent();
+type Props = { searchParams: Promise<{ plan?: string }> };
+
+export default async function BookPage({ searchParams }: Props) {
+  const [content, { plan: planParam }] = await Promise.all([readContent(), searchParams]);
+
+  // Resolve the selected plan server-side so its title/price/description are
+  // present in the initial HTML — the whole flow used to be 100% client-fetched,
+  // which left crawlers seeing only a loading spinner (flagged as a Soft 404 in
+  // Search Console). Follow-up is skipped: it requires an auth check that can
+  // only run client-side.
+  const planId = planParam ?? "initial";
+  const rawPlan = planId === "follow-up" ? null : content.pricing.plans.find((p) => p.id === planId) ?? null;
+  const initialPlan = rawPlan
+    ? {
+        id:               rawPlan.id,
+        title:            rawPlan.title,
+        eyebrow:          rawPlan.eyebrow,
+        price:            rawPlan.price,
+        unit:             rawPlan.unit,
+        price_paise:      parsePriceToPaise(rawPlan.price),
+        duration_minutes: parseDurationMinutes(rawPlan.unit),
+      }
+    : null;
+
   return (
     <>
       <TopNavBar
@@ -32,7 +55,11 @@ export default async function BookPage() {
         ]}
       />
       <Suspense fallback={<BramsLoader fullPage />}>
-        <BookingFlow />
+        <BookingFlow
+          initialPlan={initialPlan}
+          initialStep1Config={content.bookingStep1}
+          initialStep2Config={content.bookingStep2}
+        />
       </Suspense>
     </>
   );

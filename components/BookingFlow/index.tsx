@@ -33,7 +33,17 @@ export type PatientDetails = {
 
 export type Step = 1 | 2;
 
-export function BookingFlow() {
+type BookingFlowProps = {
+  // Server-resolved initial values — filled in for the plain (no query
+  // param redirect) load so crawlers see real plan/price/step content in the
+  // first response instead of just the loading spinner. Still refetched
+  // client-side below to pick up any content edits since the last deploy.
+  initialPlan?:         PlanInfo | null;
+  initialStep1Config?:  BookingStep1Data;
+  initialStep2Config?:  BookingStep2Data;
+};
+
+export function BookingFlow({ initialPlan = null, initialStep1Config, initialStep2Config }: BookingFlowProps) {
   const router = useRouter();
   const search = useSearchParams();
   const planId = search.get("plan") ?? "initial";
@@ -44,13 +54,13 @@ export function BookingFlow() {
   // return here afterwards.
   const requiresAuth = planId === "follow-up";
 
-  const [plan, setPlan]           = useState<PlanInfo | null>(null);
+  const [plan, setPlan]           = useState<PlanInfo | null>(initialPlan);
   const [planError, setPlanError] = useState<string | null>(null);
   const [step, setStep]           = useState<Step>(1);
 
   // Booking flow config (time slots + form fields)
-  const [step1Config, setStep1Config] = useState<BookingStep1Data>(defaultContent.bookingStep1);
-  const [step2Config, setStep2Config] = useState<BookingStep2Data>(defaultContent.bookingStep2);
+  const [step1Config, setStep1Config] = useState<BookingStep1Data>(initialStep1Config ?? defaultContent.bookingStep1);
+  const [step2Config, setStep2Config] = useState<BookingStep2Data>(initialStep2Config ?? defaultContent.bookingStep2);
 
   // Step 1 state — pre-select today so the calendar is never blank on load
   const [selectedDate, setSelectedDate] = useState<string | null>(() => {
