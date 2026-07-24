@@ -38,7 +38,7 @@ export function BlogPostPage({ post, bookHref, url }: { post: BlogPost; bookHref
         {post.cover_image && (
           <div className={styles.coverWrap}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.cover_image} alt="" className={styles.cover} />
+            <img src={post.cover_image} alt={post.title} className={styles.cover} />
           </div>
         )}
 

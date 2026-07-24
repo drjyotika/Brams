@@ -39,7 +39,7 @@ export function BlogPage({
                   {post.cover_image && (
                     <div className={styles.cardImageWrap}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={post.cover_image} alt="" className={styles.cardImage} />
+                      <img src={post.cover_image} alt={post.title} className={styles.cardImage} />
                     </div>
                   )}
                   <div className={styles.cardBody}>
