@@ -105,7 +105,12 @@ export function BookingFlow({ initialPlan = null, initialStep1Config, initialSte
     fetch(`/api/plans/${planId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
       .then((p: PlanInfo) => setPlan(p))
-      .catch(() => setPlanError(`Plan "${planId}" not found.`));
+      .catch(() => {
+        // A transient refetch failure (slow cold start, flaky network) should
+        // never clobber a plan the server already resolved and rendered —
+        // only surface the error when we truly have nothing to show.
+        if (!initialPlan) setPlanError(`Plan "${planId}" not found.`);
+      });
 
     fetch("/api/booking-config")
       .then((r) => r.json())
