@@ -7,8 +7,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: ["/"],
+        // Deliberately NOT blocking /api/ — pages like /book fetch their own
+        // rendering data (plans, availability, booking config) client-side
+        // from these same-origin routes. Disallowing /api/ here blocked
+        // Googlebot's own renderer from completing those fetches, which
+        // Search Console surfaced as a Soft 404 on /book. robots.txt isn't a
+        // security boundary anyway — sensitive routes are protected by real
+        // auth (session cookies), not by hiding them from crawlers.
         disallow: [
-          "/api/",
           "/admin/",
           "/admin",
           "/patient/",
@@ -19,13 +25,13 @@ export default function robots(): MetadataRoute.Robots {
       },
       // Be explicit about AI/answer-engine crawlers — opt-in by default.
       // Remove these blocks if you DON'T want a given crawler to access your site.
-      { userAgent: "GPTBot",         allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "OAI-SearchBot",  allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "ChatGPT-User",   allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "PerplexityBot",  allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "Google-Extended",allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "ClaudeBot",      allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
-      { userAgent: "anthropic-ai",   allow: ["/"], disallow: ["/api/", "/admin/", "/patient/"] },
+      { userAgent: "GPTBot",         allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "OAI-SearchBot",  allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "ChatGPT-User",   allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "PerplexityBot",  allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "Google-Extended",allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "ClaudeBot",      allow: ["/"], disallow: ["/admin/", "/patient/"] },
+      { userAgent: "anthropic-ai",   allow: ["/"], disallow: ["/admin/", "/patient/"] },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,
   };
