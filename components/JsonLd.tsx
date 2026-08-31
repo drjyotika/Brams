@@ -4,7 +4,7 @@ import { faqAnchorId } from "../lib/faq";
 import type { AboutData } from "../lib/about";
 import type { ConditionItem } from "../lib/conditions";
 import type { HowItWorksData } from "../lib/content";
-import type { BlogPost } from "../lib/blog";
+import { extractFaqFromMarkdown, type BlogPost } from "../lib/blog";
 
 /**
  * Server component that renders JSON-LD structured data.
@@ -341,6 +341,28 @@ export function ArticleLd({ post }: { post: BlogPost }) {
     reviewedBy:      { "@id": `${SITE.url}/#physician` },
     publisher:       { "@id": `${SITE.url}/#organization` },
     keywords:        post.tags.length ? post.tags.join(", ") : undefined,
+  };
+  return <Script data={data} />;
+}
+
+// ─── Blog post FAQ (AEO: every post's in-body Q&A, exposed as FAQPage) ───────
+
+export function BlogFaqLd({ post }: { post: BlogPost }) {
+  const items = extractFaqFromMarkdown(post.body_markdown);
+  if (!items.length) return null;
+
+  const url = `${SITE.url}/blog/${post.slug}`;
+  const data = {
+    "@context":  "https://schema.org",
+    "@type":     "FAQPage",
+    "@id":       `${url}#faq`,
+    inLanguage:  SITE.language,
+    isPartOf:    { "@id": `${url}#article` },
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name:    item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
   };
   return <Script data={data} />;
 }

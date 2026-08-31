@@ -234,3 +234,59 @@ export async function listPublishedSlugs(): Promise<{ slug: string; updated_at: 
   `;
   return rows.map((r) => ({ slug: r.slug as string, updated_at: new Date(r.updated_at as string).toISOString() }));
 }
+
+export type BlogFaqItem = { question: string; answer: string };
+
+/**
+ * Pulls the "## Frequently asked questions" section out of a post's Markdown
+ * body (### question headings, each followed by a plain-text answer) so it
+ * can be emitted as FAQPage JSON-LD — see components/JsonLd.tsx. Every post
+ * written to this site's structure includes this section; this just exposes
+ * it to answer engines (ChatGPT, Perplexity, Google Overviews) as structured
+ * data instead of leaving it locked inside rendered HTML.
+ */
+export function extractFaqFromMarkdown(markdown: string): BlogFaqItem[] {
+  const lines = markdown.split("\n");
+  const items: BlogFaqItem[] = [];
+  let inFaq = false;
+  let question: string | null = null;
+  let answerLines: string[] = [];
+
+  const flush = () => {
+    if (question && answerLines.length) {
+      items.push({ question, answer: answerLines.join(" ").trim() });
+    }
+    question = null;
+    answerLines = [];
+  };
+
+  for (const line of lines) {
+    if (!inFaq) {
+      if (/^## Frequently asked questions/i.test(line)) inFaq = true;
+      continue;
+    }
+    if (/^### /.test(line)) {
+      flush();
+      question = line.replace(/^### /, "").trim();
+      continue;
+    }
+    if (line.trim() === "") {
+      // A blank line ends the current answer paragraph — but only once
+      // we've actually collected some answer text. The blank line between
+      // a "### " heading and its answer paragraph must NOT flush yet, or
+      // the question gets cleared before its answer is ever read.
+      if (question && answerLines.length) flush();
+      continue;
+    }
+    if (question) {
+      answerLines.push(line.trim());
+    } else {
+      // Non-blank, non-heading line with no question pending: we're past
+      // the FAQ block (e.g. the closing "book a consultation" paragraph).
+      break;
+    }
+  }
+  flush();
+
+  return items;
+}

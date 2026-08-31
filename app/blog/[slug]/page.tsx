@@ -7,7 +7,7 @@ import type { NavData } from "../../../lib/content";
 import { TopNavBar } from "../../../components/TopNavBar";
 import { Footer } from "../../../components/Footer";
 import { BlogPostPage } from "../../../components/BlogPostPage";
-import { ArticleLd, BreadcrumbsLd } from "../../../components/JsonLd";
+import { ArticleLd, BlogFaqLd, BreadcrumbsLd } from "../../../components/JsonLd";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -71,6 +71,7 @@ export default async function BlogPostRoute({ params }: Params) {
       <Footer data={content.footer} />
 
       <ArticleLd post={post} />
+      <BlogFaqLd post={post} />
       <BreadcrumbsLd
         items={[
           { name: "Home", url: "/" },
