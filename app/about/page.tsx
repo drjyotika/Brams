@@ -8,9 +8,9 @@ import { AboutPage } from "../../components/AboutPage";
 import { AboutLd, BreadcrumbsLd } from "../../components/JsonLd";
 
 export const metadata: Metadata = {
-  title: "About Dr. Jyotika Kanwar — Consultant Psychiatrist",
+  title: "About Dr. Jyotika Kanwar, Psychiatrist",
   description:
-    "Meet Dr. Jyotika Kanwar, MD Psychiatry (PGIMER, Chandigarh) — a consultant psychiatrist offering confidential, evidence-based online mental health care for anxiety, depression, adult ADHD, and trauma across India.",
+    "Meet Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh), a psychiatrist offering confidential online care for anxiety, depression, ADHD and trauma.",
   alternates: { canonical: "/about" },
   openGraph: {
     title:       "About Dr. Jyotika Kanwar — Consultant Psychiatrist",

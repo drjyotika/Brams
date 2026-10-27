@@ -40,9 +40,9 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
     {
       slug: "anxiety",
       name: "Anxiety & panic disorders",
-      metaTitle: "Online Treatment for Anxiety & Panic Disorders in India — Dr. Jyotika Kanwar",
+      metaTitle: "Online Anxiety & Panic Treatment in India",
       metaDescription:
-        "Confidential online psychiatric care for anxiety and panic disorders across India. Evidence-based treatment — CBT guidance and medication management — with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "Confidential online care for anxiety and panic disorders across India: CBT guidance and medication management with Dr. Jyotika Kanwar, MD Psychiatry.",
       h1: "Online treatment for anxiety & panic disorders",
       intro:
         "Anxiety becomes a clinical concern when worry, fear, or physical tension is persistent, hard to control, and starts to interfere with everyday life, sleep, work, or relationships. Anxiety and panic disorders are common and highly treatable — with the right support, most people experience meaningful relief.",
@@ -84,9 +84,9 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
     {
       slug: "depression",
       name: "Depression & mood disorders",
-      metaTitle: "Online Depression Treatment in India — Dr. Jyotika Kanwar, Psychiatrist",
+      metaTitle: "Online Depression Treatment in India",
       metaDescription:
-        "Confidential online treatment for depression and mood disorders across India. Evidence-based psychiatric care with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh) — therapy guidance and medication management.",
+        "Confidential online treatment for depression and mood disorders across India, with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
       h1: "Online treatment for depression & mood disorders",
       intro:
         "Depression is more than feeling low — it is a persistent change in mood, energy, and interest that lasts for weeks and affects daily functioning. It is common, and it is treatable. Seeking help early can make recovery faster and fuller.",
@@ -128,9 +128,9 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
     {
       slug: "adult-adhd",
       name: "Adult ADHD",
-      metaTitle: "Adult ADHD Evaluation & Treatment Online in India — Dr. Jyotika Kanwar",
+      metaTitle: "Adult ADHD Evaluation Online in India",
       metaDescription:
-        "Online adult ADHD evaluation and management across India. Confidential, evidence-based psychiatric assessment with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "Online adult ADHD evaluation and management across India. Confidential, evidence-based assessment with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER).",
       h1: "Adult ADHD — online evaluation & management",
       intro:
         "Attention-deficit/hyperactivity disorder often continues into adulthood and frequently goes unrecognised. When focus, organisation, and impulsivity consistently affect work, studies, or relationships, a proper evaluation can bring clarity — and effective management can make a real difference.",
@@ -172,9 +172,9 @@ export const DEFAULT_CONDITIONS: ConditionsData = {
     {
       slug: "trauma",
       name: "Trauma & PTSD",
-      metaTitle: "Online Trauma & PTSD Treatment in India — Dr. Jyotika Kanwar, Psychiatrist",
+      metaTitle: "Online Trauma & PTSD Treatment in India",
       metaDescription:
-        "Confidential online psychiatric care for trauma and PTSD across India. Safe, evidence-based support with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
+        "Confidential online care for trauma and PTSD across India. Safe, evidence-based support with Dr. Jyotika Kanwar, MD Psychiatry (PGIMER Chandigarh).",
       h1: "Online support for trauma & PTSD",
       intro:
         "Difficult or overwhelming experiences can leave lasting effects on how you feel, think, and sleep. When these reactions persist and interfere with daily life, structured psychiatric support can help you process what happened and regain a sense of safety and control.",

@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How Brams Mind Care collects, uses, and protects your personal and medical information when you book and attend online psychiatric consultations with Dr. Jyotika Kanwar.",
+    "How Brams Mind Care collects, uses, and protects your personal and medical information when you book online psychiatric consultations.",
   alternates: { canonical: "/privacy-policy" },
 };
 

@@ -11,7 +11,7 @@ import { BreadcrumbsLd } from "../../components/JsonLd";
 const PAGE_SIZE = 12;
 
 export const metadata: Metadata = {
-  title: "Blog — Insights on Mental Health & Wellbeing",
+  title: "Mental Health Blog: Insights & Wellbeing",
   description:
     "Articles from Dr. Jyotika Kanwar, Consultant Psychiatrist, on anxiety, depression, ADHD, trauma, and everyday mental wellness.",
   alternates: { canonical: "/blog" },

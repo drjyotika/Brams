@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Book a Session",
   description:
-    "Book a confidential online psychiatric consultation with Dr. Jyotika Kanwar. Choose your plan, pick a time, and join from anywhere in India over a secure video link.",
+    "Book a confidential online psychiatric consultation with Dr. Jyotika Kanwar. Choose your plan, pick a time and join securely from anywhere in India.",
   alternates: { canonical: "/book" },
 };
 

@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Terms governing the use of Brams Mind Care, including booking, payments, cancellations, and the scope of online psychiatric consultations with Dr. Jyotika Kanwar.",
+    "Terms governing the use of Brams Mind Care, including booking, payments, cancellations, and the scope of online psychiatric consultations.",
   alternates: { canonical: "/terms" },
 };
 
